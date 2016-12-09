@@ -1,0 +1,154 @@
+<html>
+    <head>
+        <title>Minimal websocket application</title>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    </head>
+    <body>
+        <div id="conn_status">Not Connected</div>
+        <canvas id="myCanvas" style="border:1px solid #d3d3d3;">Your browser does not support the HTML5 canvas tag.</canvas>
+    </body>
+    <script type="text/javascript"> 
+    var canvas = document.getElementById("myCanvas"),
+        ctx = canvas.getContext("2d");
+
+    canvas.width = 300;
+    canvas.height = 300;
+    window.keys = {};
+    window.users = {};
+    window.user = null;
+        //user = new UserModel(x=20, y=20, width=20, height=20, speed=2);
+        
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function UserModel(id, x, y, width, height, speed, velX, velY, friction) {
+        this.id = id;
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.speed = speed;
+        this.velY = velY;
+        this.velX = velX;
+        this.friction = friction;
+        this.direction;
+        
+        users[id] = this;
+    }
+    UserModel.prototype.collide = function(other) {
+      if (this !== other && this.x < other.x + other.width &&
+         this.x + this.width > other.x &&
+         this.y < other.y + other.height &&
+         this.height + this.y > other.y) {
+          return true;
+      } else {
+          return false;
+      }
+    };
+    UserModel.prototype.redraw = function() {
+        ctx.beginPath();
+        ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.fill();
+    };
+    UserModel.prototype.clear = function() {
+        ctx.clearRect(this.x, this.y, this.width, this.height);
+    };
+    UserModel.prototype.update = function(x, y, velX, velY) {
+        this.x = x;
+        this.y = y;
+        this.velY = velY;
+        this.velX = velX;
+    };
+    UserModel.prototype.move = function(direction) {
+        this.direction = direction;
+
+        var data = JSON.stringify({
+            msg_type: 'player_move',
+            data: {
+                'id': this.id,
+                'direction': direction
+            }
+        })
+        console.log('Direction: ' + this.direction);
+        console.log('UID: ' + this.id);
+        ws.send(data);
+    };
+
+    function update() {
+
+        requestAnimationFrame(update);
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (var user_id in users) {
+            users[user_id].redraw();
+        }
+
+        if (user === null) return;
+
+        if (keys[38] || keys[87]) {
+            user.move('top');
+        }
+        if (keys[40] || keys[83]) {
+            user.move('bottom');
+        }
+        if (keys[39] || keys[68]) {
+            user.move('right');
+        }
+        if (keys[37] || keys[65]) {
+            user.move('left');
+        }
+        
+    }
+
+    update();
+
+    document.body.addEventListener("keydown", function (e) {
+        keys[e.keyCode] = true;
+    });
+    document.body.addEventListener("keyup", function (e) {
+        keys[e.keyCode] = false;
+    });
+    // Open up a connection to our server
+    var ws = new WebSocket("ws://" + window.location.hostname + ":" + 9999 + "/");
+
+    // What do we do when we get a message?
+    ws.onmessage = function(evt) {
+        // ede
+        var answer = JSON.parse(evt.data);
+        var userData = answer.data;
+        if (answer.msg_type == 'register_user') {
+            user = new UserModel(userData.id,
+                                 userData.x,
+                                 userData.y,
+                                 userData.width,
+                                 userData.height,
+                                 userData.speed,
+                                 userData.velX,
+                                 userData.velY,
+                                 userData.friction);
+            console.log('Created new user');
+            console.log(user);
+        } else if (answer.msg_type == 'player_move') {
+            user = users[userData.id];
+            user.update(userData.x,
+                        userData.y,
+                        userData.velX,
+                        userData.velY);
+            console.log('User update data: ' + userData);
+        }
+    }
+    // Just update our conn_status field with the connection status
+    ws.onopen = function(evt) {
+        $('#conn_status').html('<b>WS Connected</b>');
+        var data = JSON.stringify({msg_type: 'register_user'})
+        ws.send(data);
+    }
+    ws.onerror = function(evt) {
+        $('#conn_status').html('<b>WS Error</b>');
+    }
+    ws.onclose = function(evt) {
+        $('#conn_status').html('<b>WS Closed</b>');
+    }
+    </script>
+</html>
