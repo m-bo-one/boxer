@@ -36,9 +36,6 @@ class UserModel(dict):
         self.speed = 2
         self.friction = 1
 
-        self._vel_x = 0
-        self._vel_y = 0
-
         self.update(self.__dict__)
 
     @classmethod
@@ -59,27 +56,44 @@ class UserModel(dict):
 
         return user_id
 
+    @property
     def coords(self):
         return (self.x, self.y)
 
-    def move(self, direction):
-        if (direction == 'top'):
-            if (self._vel_y > -self.speed):
-                self._vel_y -= 1
-        if (direction == 'bottom'):
-            if (self._vel_y < self.speed):
-                self._vel_y += 1
-        if (direction == 'right'):
-            if (self._vel_x < self.speed):
-                self._vel_x += 1
-        if (direction == 'left'):
-            if (self._vel_x > -self.speed):
-                self._vel_x -= 1
+    @property
+    def is_collide(self):
+        for other in DB['users'].values():
+            if (self != other and self.x < other.x + other.width and
+               self.x + self.width > other.x and
+               self.y < other.y + other.height and
+               self.height + self.y > other.y):
+                return True
+        return False
 
-        self._vel_x *= self.friction
-        self.x += self._vel_x
-        self._vel_y *= self.friction
-        self.y += self._vel_y
+    def move(self, direction):
+        logging.info('Current direction: %s', direction)
+        logging.info('Current coords: %s', self.coords)
+
+        x, y = self.x, self.y
+
+        if direction == 'top':
+            self.y -= self.speed
+
+        elif direction == 'bottom':
+            self.y += self.speed
+
+        elif direction == 'right':
+            self.x += self.speed
+
+        elif direction == 'left':
+            self.x -= self.speed
+
+        self.x *= self.friction
+        self.y *= self.friction
+
+        if self.is_collide:
+            self.x = x
+            self.y = y
 
         if (self.x >= DB['map']['width'] - self.width):
             self.x = DB['map']['width'] - self.width

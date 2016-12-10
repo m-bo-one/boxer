@@ -11,7 +11,7 @@ import gevent.pool
 
 import bottle
 
-from utils import setup_logging
+from utils import setup_logging, PY2
 
 
 class BaseHttpRunner(object):
@@ -28,8 +28,9 @@ class BaseHttpRunner(object):
         self._register_routes()
 
         # register signal for killing mongoclient at ctrl+c
-        signal.signal(signal.SIGHUP,
-                      lambda signum, traceback: self.client.close())
+        if PY2:
+            signal.signal(signal.SIGHUP,
+                          lambda signum, traceback: self.client.close())
 
     @property
     def request(self):

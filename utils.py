@@ -1,7 +1,12 @@
 import os
+import sys
 import logging.config
 
 import yaml
+
+
+PY2 = sys.version_info[0] == 2
+PY3 = sys.version_info[0] == 3
 
 
 def setup_logging(default_path='logging.yaml', default_level=logging.INFO,
