@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, unicode_literals
 
+import logging
 import json
 import random
 from collections import OrderedDict
 
 from gevent import monkey; monkey.patch_all()  # noqa
-from geventwebsocket import WebSocketServer, WebSocketApplication, Resource
+from geventwebsocket import (
+    WebSocketServer, WebSocketApplication, Resource, WebSocketError)
+
+from utils import setup_logging
 
 
 DB = {
@@ -15,11 +19,12 @@ DB = {
         'height': 300
     },
     'users': {},
-    'id_counter': 0
+    'sockets': {},
+    'id_counter': 0,
 }
 
 
-class UserModel(object):
+class UserModel(dict):
 
     def __init__(self):
         self.id = DB['id_counter']
@@ -29,29 +34,30 @@ class UserModel(object):
         self.width = 20
         self.height = 20
         self.speed = 2
-        self.friction = 0.98
+        self.friction = 1
 
         self._vel_x = 0
         self._vel_y = 0
 
+        self.update(self.__dict__)
+
     @classmethod
-    def register_user(cls):
+    def register_user(cls, socket):
         user = cls()
         DB['users'][user.id] = user
+        DB['sockets'][socket] = user.id
         return user
 
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'x': self.x,
-            'y': self.y,
-            'width': self.width,
-            'height': self.height,
-            'speed': self.speed,
-            'velX': self._vel_x,
-            'velY': self._vel_y,
-            'friction': self.friction
-        }
+    @classmethod
+    def unregister_user(cls, socket):
+        try:
+            user_id = DB['sockets'][socket]
+            del DB['sockets'][socket]
+            del DB['users'][user_id]
+        except KeyError:
+            user_id = None
+
+        return user_id
 
     def coords(self):
         return (self.x, self.y)
@@ -85,54 +91,65 @@ class UserModel(object):
         elif (self.y <= 0):
             self.y = 0
 
+        self.update(self.__dict__)
+
 
 class EchoApplication(WebSocketApplication):
 
     def on_open(self):
-        print("Connection opened")
+        logging.info("Connection opened")
+        self.register_user()
 
     def on_message(self, message):
+        logging.info('Current clients: %s',
+                     self.ws.handler.server.clients.keys())
         if message is None:
             return
 
         message = json.loads(message)
-        print('Evaluate msg %s' % message['msg_type'])
-        if message['msg_type'] == 'register_user':
-            self.register_user()
-        elif message['msg_type'] == 'player_move':
+        logging.info('Evaluate msg %s' % message['msg_type'])
+        if message['msg_type'] == 'player_move':
             self.move_user(message)
+        if message['msg_type'] == 'unregister_user':
+            self.unregister_user()
+
+        logging.info('Updating map...')
+        self.broadcast_all('users_map', DB['users'])
 
     def on_close(self, reason):
-        print(reason)
+        logging.info(reason)
+        try:
+            self.unregister_user()
+        except WebSocketError as e:
+            logging.error(e.message)
 
     def register_user(self):
-        user = UserModel.register_user()
-        resp = {
-            'msg_type': 'register_user',
-            'data': user.to_dict()
-        }
-        self.ws.send(json.dumps(resp))
+        user = UserModel.register_user(self.ws)
+        self.broadcast('register_user', user)
 
-    def update_all(self):
+    def unregister_user(self):
+        user_id = UserModel.unregister_user(self.ws)
+        self.broadcast_all('unregister_user', {'id': user_id})
+
+    def broadcast(self, msg_type, data):
+        self.ws.send(json.dumps({'msg_type': msg_type, 'data': data}))
+
+    def broadcast_all(self, msg_type, data):
         for client in self.ws.handler.server.clients.values():
-            client.ws.send(json.dumps({
-                'msg_type': 'users_map',
-                'data': DB['users']
-            }))
+            client.ws.send(json.dumps({'msg_type': msg_type, 'data': data}))
 
     def move_user(self, message):
         user = DB['users'][message['data']['id']]
         user.move(message['data']['direction'])
-        resp = {
-            'msg_type': 'player_move',
-            'data': user.to_dict()
-        }
-        self.ws.send(json.dumps(resp))
+        self.broadcast('player_move', user)
 
 
 if __name__ == '__main__':
-    print('Starting server...\n')
-    server = WebSocketServer(('', 9999),
-                             Resource(OrderedDict({'/': EchoApplication})))
-    server.serve_forever()
-    print('Killing server...\n')
+    try:
+        setup_logging()
+        logging.info('Starting server...\n')
+        server = WebSocketServer(('', 9999),
+                                 Resource(OrderedDict({'/': EchoApplication})))
+        server.serve_forever()
+    except KeyboardInterrupt:
+        logging.info('Killing server...\n')

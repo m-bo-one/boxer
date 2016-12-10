@@ -1,0 +1,49 @@
+version: 1
+disable_existing_loggers: False
+formatters:
+    brief:
+        format: '%(message)s'
+    default:
+        format: '%(asctime)s %(levelname)-8s %(name)-15s %(message)s'
+        datefmt: '%Y-%m-%d %H:%M:%S'
+    colored:
+        (): colorlog.ColoredFormatter
+        format: "%(log_color)s[%(asctime)s %(levelname)s %(name)s:%(filename)s:%(lineno)s]%(reset)s %(blue)s%(message)s"
+        datefmt: "%Y-%m-%d %H:%M:%S"
+
+handlers:
+    console:
+        class: logging.StreamHandler
+        level: INFO
+        formatter: colored
+        stream: ext://sys.stdout
+
+    info_file_handler:
+        class: logging.handlers.RotatingFileHandler
+        level: INFO
+        formatter: default
+        filename: logs/info.log
+        maxBytes: 10485760 # 10MB
+        backupCount: 20
+        encoding: utf8
+
+    error_file_handler:
+        class: logging.handlers.RotatingFileHandler
+        level: ERROR
+        formatter: default
+        filename: logs/errors.log
+        maxBytes: 10485760 # 10MB
+        backupCount: 20
+        encoding: utf8
+
+loggers:
+    bottle:
+        level: INFO
+    gevent:
+        level: INFO
+    gevent-websocket:
+        level: INFO
+
+root:
+    level: INFO
+    handlers: [console]

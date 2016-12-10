@@ -3,7 +3,7 @@ from __future__ import print_function, unicode_literals
 
 from gevent import monkey; monkey.patch_all()  # noqa
 
-import sys
+import logging
 import signal
 
 import gevent
@@ -11,16 +11,18 @@ import gevent.pool
 
 import bottle
 
+from utils import setup_logging
+
 
 class BaseHttpRunner(object):
 
     MAX_WORKERS = 20
 
-    def __init__(self, host='127.0.0.1', port=8080):
+    def __init__(self, address):
         self._app = bottle.Bottle()
         self._pool = gevent.pool.Pool(self.MAX_WORKERS)
-        self._host = host
-        self._port = port
+        self._host = address[0]
+        self._port = address[1]
         self._debug = True
 
         self._register_routes()
@@ -48,17 +50,17 @@ class BaseHttpRunner(object):
     def run_forever(self):
         """Start gevent server here
         """
-        try:
-            print('Starting server...\n')
-            self._app.run(server='gevent', fast=True,  # user wsgi, not pywsgi
-                          host=self._host, port=self._port,
-                          reloader=self._debug, interval=0.1,
-                          quiet=not self._debug)
-        except KeyboardInterrupt:
-            print('Killing server...\n')
-            sys.exit()
+        self._app.run(server='gevent', fast=True,  # user wsgi, not pywsgi
+                      host=self._host, port=self._port,
+                      reloader=self._debug, interval=0.1,
+                      quiet=not self._debug)
 
 
 if __name__ == '__main__':
-    server = BaseHttpRunner()
-    server.run_forever()
+    try:
+        setup_logging()
+        logging.info('Starting server...\n')
+        server = BaseHttpRunner(('127.0.0.1', 8080))
+        server.run_forever()
+    except KeyboardInterrupt:
+        logging.info('Killing server...\n')

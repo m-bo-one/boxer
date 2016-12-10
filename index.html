@@ -22,15 +22,26 @@
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
-    function UserModel(id, x, y, width, height, speed, velX, velY, friction) {
+    function update(obj/*, …*/) {
+        for (var i=1; i<arguments.length; i++) {
+            for (var prop in arguments[i]) {
+                var val = arguments[i][prop];
+                if (typeof val == "object") // this also applies to arrays or null!
+                    update(obj[prop], val);
+                else
+                    obj[prop] = val;
+            }
+        }
+        return obj;
+    }
+
+    function UserModel(id, x, y, width, height, speed, friction) {
         this.id = id;
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
         this.speed = speed;
-        this.velY = velY;
-        this.velX = velX;
         this.friction = friction;
         this.direction;
         
@@ -54,11 +65,9 @@
     UserModel.prototype.clear = function() {
         ctx.clearRect(this.x, this.y, this.width, this.height);
     };
-    UserModel.prototype.update = function(x, y, velX, velY) {
+    UserModel.prototype.update = function(x, y) {
         this.x = x;
         this.y = y;
-        this.velY = velY;
-        this.velX = velX;
     };
     UserModel.prototype.move = function(direction) {
         this.direction = direction;
@@ -70,8 +79,8 @@
                 'direction': direction
             }
         })
-        console.log('Direction: ' + this.direction);
-        console.log('UID: ' + this.id);
+        // console.log('Direction: ' + this.direction);
+        // console.log('UID: ' + this.id);
         ws.send(data);
     };
 
@@ -109,8 +118,16 @@
     document.body.addEventListener("keyup", function (e) {
         keys[e.keyCode] = false;
     });
+
     // Open up a connection to our server
     var ws = new WebSocket("ws://" + window.location.hostname + ":" + 9999 + "/");
+
+    window.onbeforeunload = function() {
+        var data = JSON.stringify({
+            msg_type: 'unregister_user'
+        })
+        ws.send(data);
+    };
 
     // What do we do when we get a message?
     ws.onmessage = function(evt) {
@@ -124,18 +141,38 @@
                                  userData.width,
                                  userData.height,
                                  userData.speed,
-                                 userData.velX,
-                                 userData.velY,
                                  userData.friction);
-            console.log('Created new user');
-            console.log(user);
+            // str = JSON.stringify(user, null, 4);
+            // console.log('New registared user: ' + str);
+        } else if (answer.msg_type == 'unregister_user') {
+            delete users[userData.id];
         } else if (answer.msg_type == 'player_move') {
             user = users[userData.id];
             user.update(userData.x,
-                        userData.y,
-                        userData.velX,
-                        userData.velY);
-            console.log('User update data: ' + userData);
+                        userData.y);
+            // str = JSON.stringify(user, null, 4);
+            // console.log('User update data: ' + str);
+        } else if (answer.msg_type == 'users_map') {
+            str = JSON.stringify(user, null, 4);
+            console.log('Update users map: ' + str);
+            console.log('Old users map: ' + str);
+            for (var user_id in userData) {
+                user_id = parseInt(user_id);
+                if (user.id !== user_id) {
+                    if (users.hasOwnProperty(user_id)) {
+                        users[user_id].update(userData[user_id].x,
+                                              userData[user_id].y);
+                    } else {
+                        users[user_id] = new UserModel(userData[user_id].id,
+                                                       userData[user_id].x,
+                                                       userData[user_id].y,
+                                                       userData[user_id].width,
+                                                       userData[user_id].height,
+                                                       userData[user_id].speed,
+                                                       userData[user_id].friction);   
+                    }
+                }
+            }
         }
     }
     // Just update our conn_status field with the connection status
