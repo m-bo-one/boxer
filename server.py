@@ -12,6 +12,10 @@ import gevent.pool
 import bottle
 
 from utils import setup_logging, PY2
+from conf import settings
+
+
+bottle.TEMPLATE_PATH.insert(0, settings.TEMPLATES_PATH)
 
 
 class BaseHttpRunner(object):
@@ -23,7 +27,7 @@ class BaseHttpRunner(object):
         self._pool = gevent.pool.Pool(self.MAX_WORKERS)
         self._host = address[0]
         self._port = address[1]
-        self._debug = True
+        self._debug = settings.DEBUG
 
         self._register_routes()
 
@@ -31,6 +35,16 @@ class BaseHttpRunner(object):
         if PY2:
             signal.signal(signal.SIGHUP,
                           lambda signum, traceback: self.client.close())
+
+    def template_with_context(self, template_name, **extra):
+        context = {
+            'STATIC_URL': settings.STATIC_URL,
+            'MEDIA_URL': settings.MEDIA_URL,
+        }
+        if isinstance(extra, dict):
+            context.update(**extra)
+
+        return bottle.template(template_name, **context)
 
     @property
     def request(self):
@@ -42,16 +56,23 @@ class BaseHttpRunner(object):
         """Assign routes here
         """
         self._app.route('/', method="GET", callback=self.handler_index)
-        self._app.route('/static/<filename:path>', method="GET",
+        self._app.route('/media/<filename:re:.*\.(jpg|png|gif|ico|svg)>',
+                        callback=self.handler_image)
+        self._app.route('/static/<filename:path>',
                         callback=self.handler_static)
 
+    def handler_image(self, filename):
+        return bottle.static_file(filename,
+                                  root=settings.MEDIA_PATH)
+
     def handler_static(self, filename):
-        return bottle.static_file(filename, root='static')
+        return bottle.static_file(filename,
+                                  root=settings.STATIC_PATH)
 
     def handler_index(self):
         """Base index page
         """
-        return bottle.template('templates/index.html')
+        return self.template_with_context('index.html')
 
     def run_forever(self):
         """Start gevent server here
@@ -66,7 +87,7 @@ if __name__ == '__main__':
     try:
         setup_logging()
         logging.info('Starting server...\n')
-        server = BaseHttpRunner(('127.0.0.1', 8080))
+        server = BaseHttpRunner(settings.SITE_ADDRESS)
         server.run_forever()
     except KeyboardInterrupt:
         logging.info('Killing server...\n')
