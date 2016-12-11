@@ -42,11 +42,16 @@ class BaseHttpRunner(object):
         """Assign routes here
         """
         self._app.route('/', method="GET", callback=self.handler_index)
+        self._app.route('/static/<filename:path>', method="GET",
+                        callback=self.handler_static)
+
+    def handler_static(self, filename):
+        return bottle.static_file(filename, root='static')
 
     def handler_index(self):
-        """Takes url as parameter, send to mongo queue collection
+        """Base index page
         """
-        return bottle.template('index.html')
+        return bottle.template('templates/index.html')
 
     def run_forever(self):
         """Start gevent server here

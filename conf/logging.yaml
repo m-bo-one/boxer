@@ -8,7 +8,7 @@ formatters:
         datefmt: '%Y-%m-%d %H:%M:%S'
     colored:
         (): colorlog.ColoredFormatter
-        format: "%(log_color)s[%(asctime)s %(levelname)s %(name)s:%(filename)s:%(lineno)s]%(reset)s %(blue)s%(message)s"
+        format: "%(white)s[%(asctime)s %(levelname)s %(name)s:%(filename)s:%(green)s%(lineno)s%(white)s]%(reset)s %(red)s%(message)s"
         datefmt: "%Y-%m-%d %H:%M:%S"
 
 handlers:
@@ -21,10 +21,13 @@ handlers:
 loggers:
     bottle:
         level: INFO
+        handlers: [console]
     gevent:
         level: INFO
+        handlers: [console]
     gevent-websocket:
         level: INFO
+        handlers: [console]
 
 root:
     level: INFO

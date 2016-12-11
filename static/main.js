@@ -1,13 +1,4 @@
-<html>
-    <head>
-        <title>Minimal websocket application</title>
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-    </head>
-    <body>
-        <div id="conn_status">Not Connected</div>
-        <canvas id="myCanvas" style="border:1px solid #d3d3d3;">Your browser does not support the HTML5 canvas tag.</canvas>
-    </body>
-    <script type="text/javascript"> 
+$(function() {
     var canvas = document.getElementById("myCanvas"),
         ctx = canvas.getContext("2d");
 
@@ -131,48 +122,49 @@
 
     // What do we do when we get a message?
     ws.onmessage = function(evt) {
-        // ede
         var answer = JSON.parse(evt.data);
         var userData = answer.data;
-        if (answer.msg_type == 'register_user') {
-            user = new UserModel(userData.id,
-                                 userData.x,
-                                 userData.y,
-                                 userData.width,
-                                 userData.height,
-                                 userData.speed,
-                                 userData.friction);
-            // str = JSON.stringify(user, null, 4);
-            // console.log('New registared user: ' + str);
-        } else if (answer.msg_type == 'unregister_user') {
-            delete users[userData.id];
-        } else if (answer.msg_type == 'player_move') {
-            user = users[userData.id];
-            user.update(userData.x,
-                        userData.y);
-            // str = JSON.stringify(user, null, 4);
-            // console.log('User update data: ' + str);
-        } else if (answer.msg_type == 'users_map') {
-            str = JSON.stringify(user, null, 4);
-            console.log('Update users map: ' + str);
-            console.log('Old users map: ' + str);
-            for (var user_id in userData) {
-                user_id = parseInt(user_id);
-                if (user.id !== user_id) {
-                    if (users.hasOwnProperty(user_id)) {
-                        users[user_id].update(userData[user_id].x,
-                                              userData[user_id].y);
-                    } else {
-                        users[user_id] = new UserModel(userData[user_id].id,
-                                                       userData[user_id].x,
-                                                       userData[user_id].y,
-                                                       userData[user_id].width,
-                                                       userData[user_id].height,
-                                                       userData[user_id].speed,
-                                                       userData[user_id].friction);   
+        switch (answer.msg_type) {
+            case 'render_map':
+                canvas.width = userData.width;
+                canvas.height = userData.height;
+                break;
+            case 'register_user':
+                user = new UserModel(userData.id,
+                                     userData.x,
+                                     userData.y,
+                                     userData.width,
+                                     userData.height,
+                                     userData.speed,
+                                     userData.friction);
+                break;
+            case 'unregister_user':
+                delete users[userData.id];
+                break;
+            case 'player_move':
+                user = users[userData.id];
+                user.update(userData.x,
+                            userData.y);
+                break;
+            case 'users_map':
+                for (var user_id in userData) {
+                    user_id = parseInt(user_id);
+                    if (user.id !== user_id) {
+                        if (users.hasOwnProperty(user_id)) {
+                            users[user_id].update(userData[user_id].x,
+                                                  userData[user_id].y);
+                        } else {
+                            users[user_id] = new UserModel(userData[user_id].id,
+                                                           userData[user_id].x,
+                                                           userData[user_id].y,
+                                                           userData[user_id].width,
+                                                           userData[user_id].height,
+                                                           userData[user_id].speed,
+                                                           userData[user_id].friction);   
+                        }
                     }
                 }
-            }
+                break;
         }
     }
     // Just update our conn_status field with the connection status
@@ -187,5 +179,4 @@
     ws.onclose = function(evt) {
         $('#conn_status').html('<b>WS Closed</b>');
     }
-    </script>
-</html>
+});
