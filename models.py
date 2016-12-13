@@ -2,10 +2,62 @@ import os
 import logging
 import random
 
-from PIL import Image
 from db import DB
 from conf import settings
-from utils import await_greenlet
+from utils import await_greenlet, get_image
+
+
+class AnimatedSprite(object):
+    """Created animated sprite.
+    Init params:
+        [
+            {
+                'direction': 'rigth',
+                'image_path': '../qwertyko.png',
+                'count': 4,
+                'speed': 0.5
+            },
+
+            ...
+        ]
+    """
+
+    def __init__(self, image_name, direction, count, speed):
+        self.image_name = image_name
+        self.direction = direction
+        self.count = count
+        self.speed = speed
+
+        self.image = await_greenlet(get_image, self.image_name)
+        self.image_url = os.path.join(settings.MEDIA_URL, self.image_name)
+        self.height = self.image.height
+        # width calculated dynamicaly through count
+        self.width = self.image.width / float(count)
+        self.size = (self.width, self.height)
+
+    @classmethod
+    def get_js_data(cls, images_info):
+        prev_count = 0
+        resp_data = {}
+
+        resp_data.setdefault('images', [])
+        resp_data.setdefault('frames', {})
+        resp_data.setdefault('animations', {})
+
+        for image_info in images_info:
+            sprite = cls(**image_info)
+            prev_count += sprite.count
+            resp_data['images'].append(sprite.image_url)
+            resp_data['frames'] = {
+                'height': sprite.height,
+                'width': sprite.width,
+                'count': prev_count
+            }
+            resp_data['animations'][sprite.direction] = {
+                'frames': list(range(prev_count - sprite.count, prev_count)),
+                'speed': sprite.speed
+            }
+        return resp_data
 
 
 class UserModel(dict):
@@ -22,27 +74,47 @@ class UserModel(dict):
         self.speed = 5
         self.image_name = 'warrior.png'
         self.image_url = os.path.join(settings.MEDIA_URL, self.image_name)
-        try:
-            width, height = await_greenlet(self.get_image_size,
-                                           self.image_name)
-            self.width = width
-            self.height = height
-        except IOError:
-            self.width = 20
-            self.height = 20
+        self.sprite = AnimatedSprite.get_js_data([
+            {
+                'direction': 'left',
+                'image_name': 'enclave_power_armor_left.jpg',
+                'count': 8,
+                'speed': 0.5
+            },
+            {
+                'direction': 'right',
+                'image_name': 'enclave_power_armor_right.jpg',
+                'count': 8,
+                'speed': 0.5
+            },
+            {
+                'direction': 'top',
+                'image_name': 'enclave_power_armor_top.jpg',
+                'count': 8,
+                'speed': 0.5
+            },
+            {
+                'direction': 'bottom',
+                'image_name': 'enclave_power_armor_bottom.jpg',
+                'count': 8,
+                'speed': 0.5
+            },
+            {
+                'direction': 'wait',
+                'image_name': 'enclave_power_armor_top.jpg',
+                'count': 8,
+                'speed': 0.5
+            }
+        ])
+        self.width = self.sprite['frames']['width']
+        self.height = self.sprite['frames']['height']
 
-        self.x = random.randint(0, DB['map']['width'] - self.width)
-        self.y = random.randint(0, DB['map']['height'] - self.height)
+        self.x = random.randint(0, DB['map']['width'] - int(self.width))
+        self.y = random.randint(0, DB['map']['height'] - int(self.height))
 
         self.username = '<username>'
 
         self.update(self.__dict__)
-
-    @staticmethod
-    def get_image_size(image_name):
-        image = Image.open(os.path.join(settings.MEDIA_PATH, image_name))
-        image.close()
-        return image.size
 
     @classmethod
     def register_user(cls, socket):
@@ -93,22 +165,22 @@ class UserModel(dict):
                 return True
         return False
 
-    def move(self, direction):
-        logging.info('Current direction: %s', direction)
+    def move(self, action):
+        logging.info('Current action: %s', action)
         logging.info('Current coords: %s', self.coords)
 
         x, y = self.coords
 
-        if direction == 'top':
+        if action == 'top':
             self.y -= self.speed
 
-        elif direction == 'bottom':
+        elif action == 'bottom':
             self.y += self.speed
 
-        elif direction == 'right':
+        elif action == 'right':
             self.x += self.speed
 
-        elif direction == 'left':
+        elif action == 'left':
             self.x -= self.speed
 
         if self.is_collide:

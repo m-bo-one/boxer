@@ -1,40 +1,30 @@
-window.onload = function() {
+$(function() {
     var canvas = document.getElementById("myCanvas"),
         ctx = canvas.getContext("2d");
 
     window.keys = {};
     window.users = {};
     window.user = null;
+    window.stage = new createjs.Stage(canvas);
+    window.ws = new WebSocket("ws://" + window.location.hostname + ":" + 9999 + "/");
 
-    function sprite(options) {
-                    
-        var that = {};
-                        
-        that.context = options.context;
-        that.x = options.x;
-        that.y = options.y;
-        that.width = options.width;
-        that.height = options.height;
-        that.image = options.image;
-        that.label = options.label;
+    createjs.Ticker.useRAF = true;
+    createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
+    createjs.Ticker.setFPS(30);
+    createjs.Ticker.addEventListener("tick", gameLoop);
 
-        that.render = function () {
+    function createAnimatedSprite(data, currentAction) {
 
-            that.context.textAlign = "center"; 
-            that.context.fillText(
-                that.label,
-                (2 * that.x + that.width) / 2,
-                that.y - 2
-            );
-            that.context.drawImage(
-               that.image,
-               that.x,
-               that.y,
-               that.width,
-               that.height);
-        };
+        var sh = new createjs.SpriteSheet(data.sprite);
+        character = new createjs.Sprite(sh);
+        character.x = data.x;
+        character.y = data.y;
+        character.width = data.sprite.frames.width;
+        character.height = data.sprite.frames.height;
+        character.gotoAndPlay(currentAction);
+        stage.addChild(character);
 
-        return that;
+        return character;
     }
 
     function UserModel(userData) {
@@ -42,73 +32,60 @@ window.onload = function() {
         this.speed = userData.speed;
         this.username = userData.username;
 
-        baseImage = new Image();
-        baseImage.src = userData.image_url;
-
-        this.sprite = sprite({
-            context: ctx,
-            x: userData.x,
-            y: userData.y,
-            label: userData.username,
-            width: userData.width,
-            height: userData.height,
-            image: baseImage
-        });
-
-
-        this.direction;
+        this.action = "wait";
+        this.sprite = createAnimatedSprite(userData, this.action);
         
         users[this.id] = this;
     }
-    UserModel.prototype.redraw = function() {
-        ctx.beginPath();
-        this.sprite.render();
-        ctx.fill();
-    };
+    // UserModel.prototype.redraw = function() {
+    //     ctx.beginPath();
+    //     this.sprite.render();
+    //     ctx.fill();
+    // };
     UserModel.prototype.update = function(userData) {
         this.sprite.x = userData.x;
         this.sprite.y = userData.y;
     };
-    UserModel.prototype.move = function(direction) {
-        this.direction = direction;
+    UserModel.prototype.move = function(action) {
+        this.action = action;
 
         var data = JSON.stringify({
             msg_type: 'player_move',
             data: {
                 'id': this.id,
-                'direction': direction
+                'action': action
             }
         })
         ws.send(data);
     };
 
-    function gameLoop() {
-
-        requestAnimationFrame(gameLoop);
+    function gameLoop(event) {
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        for (var user_id in users) {
-            users[user_id].redraw();
-        }
+        stage.update();
+
+        // for (var user_id in users) {
+        //     users[user_id].redraw();
+        // }
 
         if (user === null) return;
+
+        if (keys[38] && keys[87] || keys[40] && keys[83] || keys[39] && keys[68] || keys[37] && keys[65]) return;
 
         if (keys[38] || keys[87]) {
             user.move('top');
         }
-        if (keys[40] || keys[83]) {
+        else if (keys[40] || keys[83]) {
             user.move('bottom');
         }
-        if (keys[39] || keys[68]) {
+        else if (keys[39] || keys[68]) {
             user.move('right');
         }
-        if (keys[37] || keys[65]) {
+        else if (keys[37] || keys[65]) {
             user.move('left');
         }
         
     }
-
-    gameLoop();
 
     document.body.addEventListener("keydown", function (e) {
         keys[e.keyCode] = true;
@@ -116,9 +93,6 @@ window.onload = function() {
     document.body.addEventListener("keyup", function (e) {
         keys[e.keyCode] = false;
     });
-
-    // Open up a connection to our server
-    var ws = new WebSocket("ws://" + window.location.hostname + ":" + 9999 + "/");
 
     window.onbeforeunload = function() {
         var data = JSON.stringify({
@@ -172,4 +146,4 @@ window.onload = function() {
     ws.onclose = function(evt) {
         $('#conn_status').html('<b>WS Closed</b>');
     }
-};
+});

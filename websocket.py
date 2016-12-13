@@ -40,10 +40,7 @@ class EchoApplication(WebSocketApplication):
 
     def on_close(self, reason):
         logging.info(reason)
-        try:
-            self.unregister_user()
-        except WebSocketError as e:
-            logging.error(e.message)
+        self.unregister_user()
 
     def render_map(self):
         self.broadcast('render_map', DB['map'])
@@ -65,7 +62,7 @@ class EchoApplication(WebSocketApplication):
 
     def move_user(self, message):
         user = DB['users'][message['data']['id']]
-        user.move(message['data']['direction'])
+        user.move(message['data']['action'])
         self.broadcast('player_move', user)
 
 
