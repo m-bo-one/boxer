@@ -13,6 +13,7 @@ class AnimatedSprite(object):
         [
             {
                 'direction': 'rigth',
+                'action': 'walk',
                 'image_path': '../qwertyko.png',
                 'count': 4,
                 'speed': 0.5
@@ -22,8 +23,9 @@ class AnimatedSprite(object):
         ]
     """
 
-    def __init__(self, image_name, direction, count, speed):
+    def __init__(self, image_name, action, direction, count, speed):
         self.image_name = image_name
+        self.action = action
         self.direction = direction
         self.count = count
         self.speed = speed
@@ -35,8 +37,12 @@ class AnimatedSprite(object):
         self.width = self.image.width / float(count)
         self.size = (self.width, self.height)
 
+    @property
+    def way(self):
+        return "_".join([self.action, self.direction])
+
     @classmethod
-    def get_js_data(cls, images_info):
+    def prepare_easeljs_data(cls, images_info):
         prev_count = 0
         resp_data = {}
 
@@ -53,7 +59,7 @@ class AnimatedSprite(object):
                 'width': sprite.width,
                 'count': prev_count
             }
-            resp_data['animations'][sprite.direction] = {
+            resp_data['animations'][sprite.way] = {
                 'frames': list(range(prev_count - sprite.count, prev_count)),
                 'speed': sprite.speed
             }
@@ -74,40 +80,41 @@ class UserModel(dict):
         self.speed = 5
         self.image_name = 'warrior.png'
         self.image_url = os.path.join(settings.MEDIA_URL, self.image_name)
-        self.sprite = AnimatedSprite.get_js_data([
+        self.sprite = AnimatedSprite.prepare_easeljs_data([
             {
-                'direction': 'walk_left',
+                'direction': 'left',
+                'action': 'walk',
                 'image_name': 'enclave_power_armor_left.jpg',
                 'count': 8,
-                'speed': 0.5
+                'speed': 0.3
             },
             {
-                'direction': 'walk_right',
+                'direction': 'right',
+                'action': 'walk',
                 'image_name': 'enclave_power_armor_right.jpg',
                 'count': 8,
-                'speed': 0.5
+                'speed': 0.3
             },
             {
-                'direction': 'walk_top',
+                'direction': 'top',
+                'action': 'walk',
                 'image_name': 'enclave_power_armor_top.jpg',
                 'count': 8,
-                'speed': 0.5
+                'speed': 0.3
             },
             {
-                'direction': 'walk_bottom',
+                'direction': 'bottom',
+                'action': 'walk',
                 'image_name': 'enclave_power_armor_bottom.jpg',
                 'count': 8,
-                'speed': 0.5
-            },
-            {
-                'direction': 'wait',
-                'image_name': 'enclave_power_armor_top.jpg',
-                'count': 8,
-                'speed': 0.5
+                'speed': 0.3
             }
         ])
         self.width = self.sprite['frames']['width']
         self.height = self.sprite['frames']['height']
+
+        self.action = 'wait'
+        self.direction = 'left'
 
         self.x = random.randint(0, DB['map']['width'] - int(self.width))
         self.y = random.randint(0, DB['map']['height'] - int(self.height))
@@ -165,22 +172,26 @@ class UserModel(dict):
                 return True
         return False
 
-    def move(self, action):
-        logging.info('Current action: %s', action)
+    def move(self, action, direction):
+        way = '_'.join([action, direction])
+        logging.info('Current way: %s', way)
         logging.info('Current coords: %s', self.coords)
 
         x, y = self.coords
 
-        if action == 'walk_top':
+        self.action = action
+        self.direction = direction
+
+        if way == 'walk_top':
             self.y -= self.speed
 
-        elif action == 'walk_bottom':
+        elif way == 'walk_bottom':
             self.y += self.speed
 
-        elif action == 'walk_right':
+        elif way == 'walk_right':
             self.x += self.speed
 
-        elif action == 'walk_left':
+        elif way == 'walk_left':
             self.x -= self.speed
 
         if self.is_collide:

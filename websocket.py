@@ -7,7 +7,7 @@ from collections import OrderedDict
 
 from gevent import monkey; monkey.patch_all()  # noqa
 from geventwebsocket import (
-    WebSocketServer, WebSocketApplication, Resource, WebSocketError)
+    WebSocketServer, WebSocketApplication, Resource)
 
 from conf import settings
 from utils import setup_logging
@@ -62,7 +62,8 @@ class EchoApplication(WebSocketApplication):
 
     def move_user(self, message):
         user = DB['users'][message['data']['id']]
-        user.move(message['data']['action'])
+        user.move(message['data']['action'], message['data']['direction'])
+        self.broadcast('player_move', user)
 
 
 if __name__ == '__main__':
