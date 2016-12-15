@@ -76,25 +76,25 @@ class UserModel(dict):
         self.image_url = os.path.join(settings.MEDIA_URL, self.image_name)
         self.sprite = AnimatedSprite.get_js_data([
             {
-                'direction': 'left',
+                'direction': 'walk_left',
                 'image_name': 'enclave_power_armor_left.jpg',
                 'count': 8,
                 'speed': 0.5
             },
             {
-                'direction': 'right',
+                'direction': 'walk_right',
                 'image_name': 'enclave_power_armor_right.jpg',
                 'count': 8,
                 'speed': 0.5
             },
             {
-                'direction': 'top',
+                'direction': 'walk_top',
                 'image_name': 'enclave_power_armor_top.jpg',
                 'count': 8,
                 'speed': 0.5
             },
             {
-                'direction': 'bottom',
+                'direction': 'walk_bottom',
                 'image_name': 'enclave_power_armor_bottom.jpg',
                 'count': 8,
                 'speed': 0.5
@@ -171,16 +171,16 @@ class UserModel(dict):
 
         x, y = self.coords
 
-        if action == 'top':
+        if action == 'walk_top':
             self.y -= self.speed
 
-        elif action == 'bottom':
+        elif action == 'walk_bottom':
             self.y += self.speed
 
-        elif action == 'right':
+        elif action == 'walk_right':
             self.x += self.speed
 
-        elif action == 'left':
+        elif action == 'walk_left':
             self.x -= self.speed
 
         if self.is_collide:

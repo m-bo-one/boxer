@@ -10,7 +10,7 @@ $(function() {
 
     createjs.Ticker.useRAF = true;
     createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
-    createjs.Ticker.setFPS(30);
+    createjs.Ticker.setFPS(60);
     createjs.Ticker.addEventListener("tick", gameLoop);
 
     function createAnimatedSprite(data, currentAction) {
@@ -21,7 +21,7 @@ $(function() {
         character.y = data.y;
         character.width = data.sprite.frames.width;
         character.height = data.sprite.frames.height;
-        character.gotoAndPlay(currentAction);
+        character.gotoAndStop(currentAction);
         stage.addChild(character);
 
         return character;
@@ -47,7 +47,10 @@ $(function() {
         this.sprite.y = userData.y;
     };
     UserModel.prototype.move = function(action) {
-        this.action = action;
+        if (this.sprite.currentAnimation != action) {
+            this.action = action;
+            this.sprite.gotoAndPlay(action);
+        }
 
         var data = JSON.stringify({
             msg_type: 'player_move',
@@ -58,10 +61,14 @@ $(function() {
         })
         ws.send(data);
     };
+    UserModel.prototype.stop = function() {
+        this.action = 'wait';
+        this.sprite.gotoAndStop('wait');
+    };
 
     function gameLoop(event) {
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // ctx.clearRect(0, 0, canvas.width, canvas.height);
         stage.update();
 
         // for (var user_id in users) {
@@ -73,24 +80,28 @@ $(function() {
         if (keys[38] && keys[87] || keys[40] && keys[83] || keys[39] && keys[68] || keys[37] && keys[65]) return;
 
         if (keys[38] || keys[87]) {
-            user.move('top');
+            user.move('walk_top');
         }
         else if (keys[40] || keys[83]) {
-            user.move('bottom');
+            user.move('walk_bottom');
         }
         else if (keys[39] || keys[68]) {
-            user.move('right');
+            user.move('walk_right');
         }
         else if (keys[37] || keys[65]) {
-            user.move('left');
+            user.move('walk_left');
+        }
+
+        if (!keys[38] && !keys[87] && !keys[40] && !keys[83] && !keys[39] && !keys[68] && !keys[37] && !keys[65]) {
+            user.stop();
         }
         
     }
 
-    document.body.addEventListener("keydown", function (e) {
+    window.addEventListener("keydown", function (e) {
         keys[e.keyCode] = true;
     });
-    document.body.addEventListener("keyup", function (e) {
+    window.addEventListener("keyup", function (e) {
         keys[e.keyCode] = false;
     });
 
