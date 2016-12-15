@@ -40,7 +40,6 @@ class EchoApplication(WebSocketApplication):
 
     def on_close(self, reason):
         logging.info(reason)
-        self.unregister_user()
 
     def render_map(self):
         self.broadcast('render_map', DB['map'])
@@ -48,6 +47,7 @@ class EchoApplication(WebSocketApplication):
     def register_user(self):
         user = UserModel.register_user(self.ws)
         self.broadcast('register_user', user)
+        self.broadcast_all('users_map', DB['users'])
 
     def unregister_user(self):
         user_id = UserModel.unregister_user(self.ws)
@@ -63,7 +63,6 @@ class EchoApplication(WebSocketApplication):
     def move_user(self, message):
         user = DB['users'][message['data']['id']]
         user.move(message['data']['action'])
-        self.broadcast('player_move', user)
 
 
 if __name__ == '__main__':

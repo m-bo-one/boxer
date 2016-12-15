@@ -45,6 +45,10 @@ $(function() {
     UserModel.prototype.update = function(userData) {
         this.sprite.x = userData.x;
         this.sprite.y = userData.y;
+        // if (this.sprite.currentAnimation != userData.action) {
+        //     this.action = userData.action;
+        //     this.sprite.gotoAndPlay(userData.action);
+        // }
     };
     UserModel.prototype.move = function(action) {
         if (this.sprite.currentAnimation != action) {
@@ -64,6 +68,10 @@ $(function() {
     UserModel.prototype.stop = function() {
         this.action = 'wait';
         this.sprite.gotoAndStop('wait');
+    };
+    UserModel.prototype.drop = function() {
+        stage.removeChild(this.sprite);
+        delete this;
     };
 
     function gameLoop(event) {
@@ -125,22 +133,18 @@ $(function() {
                 user = new UserModel(userData);
                 break;
             case 'unregister_user':
-                delete users[userData.id];
-                break;
-            case 'player_move':
-                user = users[userData.id];
-                user.update(userData);
+                users[userData.id].drop();
                 break;
             case 'users_map':
                 for (var user_id in userData) {
                     user_id = parseInt(user_id);
-                    if (user.id !== user_id) {
-                        if (users.hasOwnProperty(user_id)) {
-                            users[user_id].update(userData[user_id]);
-                        } else {
-                            users[user_id] = new UserModel(userData[user_id]);   
-                        }
+                    // if (user.id !== user_id) {
+                    if (users.hasOwnProperty(user_id)) {
+                        users[user_id].update(userData[user_id]);
+                    } else {
+                        users[user_id] = new UserModel(userData[user_id]);   
                     }
+                    // }
                 }
                 break;
         }
@@ -148,8 +152,6 @@ $(function() {
     // Just update our conn_status field with the connection status
     ws.onopen = function(evt) {
         $('#conn_status').html('<b>WS Connected</b>');
-        var data = JSON.stringify({msg_type: 'register_user'})
-        ws.send(data);
     }
     ws.onerror = function(evt) {
         $('#conn_status').html('<b>WS Error</b>');
