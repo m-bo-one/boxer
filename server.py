@@ -4,14 +4,13 @@ from __future__ import print_function, unicode_literals
 from gevent import monkey; monkey.patch_all()  # noqa
 
 import logging
-import signal
 
 import gevent
 import gevent.pool
 
 import bottle
 
-from utils import setup_logging, PY2
+from utils import setup_logging
 from conf import settings
 
 
@@ -30,11 +29,6 @@ class BaseHttpRunner(object):
         self._debug = settings.DEBUG
 
         self._register_routes()
-
-        # register signal for killing mongoclient at ctrl+c
-        if PY2:
-            signal.signal(signal.SIGHUP,
-                          lambda signum, traceback: self.client.close())
 
     def template_with_context(self, template_name, **extra):
         context = {

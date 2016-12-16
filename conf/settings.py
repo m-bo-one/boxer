@@ -14,3 +14,12 @@ STATIC_PATH = os.path.join(PROJECT_PATH, 'static')
 STATIC_URL = '/static/'
 
 TEMPLATES_PATH = os.path.join(PROJECT_PATH, 'templates')
+
+DATABASES = {
+    'default': {
+        'DB': 'boxer',
+        'HOST': '',
+        'PORT': 27017,
+        'POOL_MAX_SIZE': 100
+    }
+}

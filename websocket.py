@@ -15,7 +15,11 @@ from db import DB
 from models import UserModel
 
 
-class EchoApplication(WebSocketApplication):
+class GameApplication(WebSocketApplication):
+
+    def __init__(self, *args, **kwargs):
+        super(GameApplication, self).__init__(*args, **kwargs)
+        self.verbose_debug = settings.DEBUG
 
     def on_open(self):
         logging.info("Connection opened")
@@ -23,8 +27,9 @@ class EchoApplication(WebSocketApplication):
         self.register_user()
 
     def on_message(self, message):
-        logging.info('Current clients: %s',
-                     self.ws.handler.server.clients.keys())
+        if self.verbose_debug:
+            logging.info('Current clients: %s',
+                         self.ws.handler.server.clients.keys())
         if message is None:
             return
 
@@ -35,11 +40,13 @@ class EchoApplication(WebSocketApplication):
         if message['msg_type'] == 'unregister_user':
             self.unregister_user()
 
-        logging.info('Updating map...')
+        if self.verbose_debug:
+            logging.info('Updating map...')
         self.broadcast_all('users_map', DB['users'])
 
     def on_close(self, reason):
-        logging.info(reason)
+        if self.verbose_debug:
+            logging.info(reason)
 
     def render_map(self):
         self.broadcast('render_map', DB['map'])
@@ -70,8 +77,10 @@ if __name__ == '__main__':
     try:
         setup_logging()
         logging.info('Starting server...\n')
-        server = WebSocketServer(settings.WEBSOCKET_ADDRESS,
-                                 Resource(OrderedDict({'/': EchoApplication})))
+        server = WebSocketServer(
+            settings.WEBSOCKET_ADDRESS, Resource(OrderedDict({
+                '/game': GameApplication
+            })))
         server.serve_forever()
     except KeyboardInterrupt:
         logging.info('Killing server...\n')

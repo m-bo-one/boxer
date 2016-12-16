@@ -6,7 +6,7 @@ $(function() {
     window.users = {};
     window.user = null;
     window.stage = new createjs.Stage(canvas);
-    window.ws = new WebSocket("ws://" + window.location.hostname + ":" + 9999 + "/");
+    window.ws = new WebSocket("ws://" + window.location.hostname + ":" + 9999 + "/game");
     window.addEventListener("keydown", function (e) {
         keys[e.keyCode] = true;
     });
