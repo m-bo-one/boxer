@@ -3,58 +3,7 @@ var app = app || {};
 $(function () {
     'use strict';
 
-    var Socket = {
-        ws: null,
-
-        init: function () {
-            ws = new WebSocket("ws://" + window.location.hostname + ":" + 9999 + "/game");
-
-            ws.onmessage = function(evt) {
-                var answer = JSON.parse(evt.data);
-                var userData = answer.data;
-                switch (answer.msg_type) {
-                    case 'render_map':
-                        canvas.width = userData.width;
-                        canvas.height = userData.height;
-                        break;
-                    case 'register_user':
-                        user = new app.UserModel(userData);
-                        break;
-                    case 'unregister_user':
-                        users[userData.id].drop();
-                        break;
-                    case 'player_move':
-                        user.update(userData);
-                        break;
-                    case 'users_map':
-                        for (var user_id in userData) {
-                            user_id = parseInt(user_id);
-                            if (user.id !== user_id) {
-                                if (users.hasOwnProperty(user_id)) {
-                                    users[user_id].update(userData[user_id]);
-                                } else {
-                                    users[user_id] = new app.UserModel(userData[user_id]);   
-                                }
-                            }
-                        }
-                        break;
-                }
-            };
-            ws.onopen = function(evt) {
-                $('#conn_status').html('<b>WS Connected</b>');
-            };
-            ws.onerror = function(evt) {
-                $('#conn_status').html('<b>WS Error</b>');
-            };
-            ws.onclose = function(evt) {
-                $('#conn_status').html('<b>WS Closed</b>');
-            };
-
-            this.ws = ws;
-        }
-    };
-
-    function gameLoop(event) {
+    var gameLoop = function(event) {
 
         app.stage.update();
         console.log('Current FPS: ' + createjs.Ticker.getMeasuredFPS());
@@ -76,13 +25,66 @@ $(function () {
             app.user.move('walk', 'left');
         }
 
-        if (!app.keys[38] && !app.keys[87] && !app.keys[40] && !app.keys[83] && !app.keys[39] && !app.keys[68] && !app.keys[37] && !app.keys[65]) {
+        if (!app.keys[38] && !app.keys[87] && !app.keys[40] && !app.keys[83] &&
+            !app.keys[39] && !app.keys[68] && !app.keys[37] && !app.keys[65]) {
             app.user.stop();
         }
         
-    }
+    };
 
-    app.canvas = document.getElementById("myCanvas"),
+    var Socket = {
+        ws: null,
+
+        init: function () {
+            var ws = new WebSocket("ws://" + window.location.hostname + ":" + 9999 + "/game");
+
+            ws.onmessage = function(evt) {
+                var answer = JSON.parse(evt.data);
+                var parsedData = answer.data;
+                switch (answer.msg_type) {
+                    case 'render_map':
+                        app.canvas.width = parsedData.width;
+                        app.canvas.height = parsedData.height;
+                        break;
+                    case 'register_user':
+                        app.user = new app.UserModel(parsedData);
+                        break;
+                    case 'unregister_user':
+                        app.users[parsedData.id].destroy();
+                        break;
+                    case 'player_move':
+                        app.user.update(parsedData);
+                        break;
+                    case 'users_map':
+                        for (var user_id in parsedData) {
+                            user_id = parseInt(user_id);
+                            if (app.user && app.user.id !== user_id) {
+                                if (app.users.hasOwnProperty(user_id)) {
+                                    app.users[user_id].update(parsedData[user_id]);
+                                } else {
+                                    app.users[user_id] = new app.UserModel(parsedData[user_id]);   
+                                }
+                            }
+                        }
+                        break;
+                }
+            };
+            ws.onopen = function(evt) {
+                $('#conn_status').html('<b>WS Connected</b>');
+            };
+            ws.onerror = function(evt) {
+                $('#conn_status').html('<b>WS Error</b>');
+            };
+            ws.onclose = function(evt) {
+                $('#conn_status').html('<b>WS Closed</b>');
+            };
+
+            this.ws = ws;
+        }
+    };
+
+
+    app.canvas = document.getElementById("gameBoard"),
     app.ctx = app.canvas.getContext("2d");
     app.keys = {};
     app.users = {};
@@ -92,11 +94,14 @@ $(function () {
     Socket.init();
     app.ws = Socket.ws;
 
+    createjs.Ticker.setFPS(60);
+    createjs.Ticker.addEventListener("tick", gameLoop);
+
     window.addEventListener("keydown", function (e) {
-        keys[e.keyCode] = true;
+        app.keys[e.keyCode] = true;
     });
     window.addEventListener("keyup", function (e) {
-        keys[e.keyCode] = false;
+        app.keys[e.keyCode] = false;
     });
     window.onbeforeunload = function() {
         var data = JSON.stringify({

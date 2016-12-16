@@ -20,18 +20,18 @@ var app = app || {};
 
             this.action = options.action;
             this.direction = options.direction;
-            this.sprite = createAnimatedSprite(options);
+            this.sprite = createAnimatedSprite(app.stage, options);
 
-            users[this.id] = this;
+            app.users[this.id] = this;
         },
         update: function(options) {
-            this.sprite.x = userData.x;
-            this.sprite.y = userData.y;
+            this.sprite.x = options.x;
+            this.sprite.y = options.y;
 
-            var way = getWay(userData.action, userData.direction);
+            var way = getWay(options.action, options.direction);
             if (this.sprite.currentAnimation != way) {
-                this.action = userData.action;
-                this.direction = userData.direction;
+                this.action = options.action;
+                this.direction = options.direction;
                 this.sprite.gotoAndPlay(way);
             }            
         },

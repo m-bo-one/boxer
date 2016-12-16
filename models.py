@@ -73,59 +73,68 @@ class UserModel(dict):
         # 'user_collision',
     )
 
-    def __init__(self):
-        self.id = DB['id_counter']
-        DB['id_counter'] += 1
+    def __init__(self, speed, action='wait', direction='left', **extra):
+        self.id = None
+        self.speed = speed
 
-        self.speed = 5
-        self.image_name = 'warrior.png'
-        self.image_url = os.path.join(settings.MEDIA_URL, self.image_name)
-        self.sprite = AnimatedSprite.prepare_easeljs_data([
-            {
-                'direction': 'left',
-                'action': 'walk',
-                'image_name': 'enclave_power_armor_left.jpg',
-                'count': 8,
-                'speed': 0.3
-            },
-            {
-                'direction': 'right',
-                'action': 'walk',
-                'image_name': 'enclave_power_armor_right.jpg',
-                'count': 8,
-                'speed': 0.3
-            },
-            {
-                'direction': 'top',
-                'action': 'walk',
-                'image_name': 'enclave_power_armor_top.jpg',
-                'count': 8,
-                'speed': 0.3
-            },
-            {
-                'direction': 'bottom',
-                'action': 'walk',
-                'image_name': 'enclave_power_armor_bottom.jpg',
-                'count': 8,
-                'speed': 0.3
-            }
-        ])
+        _easeljs_data = extra.get('easeljs_data')
+        if _easeljs_data is None:
+            _easeljs_data = []
+
+        self.sprite = AnimatedSprite.prepare_easeljs_data(_easeljs_data)
         self.width = self.sprite['frames']['width']
         self.height = self.sprite['frames']['height']
 
-        self.action = 'wait'
-        self.direction = 'left'
+        self.action = action
+        self.direction = direction
 
         self.x = random.randint(0, DB['map']['width'] - int(self.width))
         self.y = random.randint(0, DB['map']['height'] - int(self.height))
 
-        self.username = '<username>'
-
-        self.update(self.__dict__)
+    def __setattr__(self, name, value):
+        super(UserModel, self).__setattr__(name, value)
+        self[name] = value
 
     @classmethod
-    def register_user(cls, socket):
-        user = cls()
+    def register_user(cls, socket, **kwargs):
+        data = {
+            'speed': 5,
+            'action': 'wait',
+            'direction': 'left',
+            'easeljs_data': [
+                {
+                    'direction': 'left',
+                    'action': 'walk',
+                    'image_name': 'enclave_power_armor_left.jpg',
+                    'count': 8,
+                    'speed': 0.3
+                },
+                {
+                    'direction': 'right',
+                    'action': 'walk',
+                    'image_name': 'enclave_power_armor_right.jpg',
+                    'count': 8,
+                    'speed': 0.3
+                },
+                {
+                    'direction': 'top',
+                    'action': 'walk',
+                    'image_name': 'enclave_power_armor_top.jpg',
+                    'count': 8,
+                    'speed': 0.3
+                },
+                {
+                    'direction': 'bottom',
+                    'action': 'walk',
+                    'image_name': 'enclave_power_armor_bottom.jpg',
+                    'count': 8,
+                    'speed': 0.3
+                }
+            ]
+        }
+        user = cls(**data)
+        user.id = DB['id_counter']
+        DB['id_counter'] += 1
         DB['users'][user.id] = user
         DB['sockets'][socket] = user.id
         return user
@@ -197,5 +206,3 @@ class UserModel(dict):
         if self.is_collide:
             self.x = x
             self.y = y
-
-        self.update(self.__dict__)

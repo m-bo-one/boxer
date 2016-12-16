@@ -17,19 +17,14 @@ from models import UserModel
 
 class GameApplication(WebSocketApplication):
 
-    def __init__(self, *args, **kwargs):
-        super(GameApplication, self).__init__(*args, **kwargs)
-        self.verbose_debug = settings.DEBUG
-
     def on_open(self):
         logging.info("Connection opened")
         self.render_map()
         self.register_user()
 
     def on_message(self, message):
-        if self.verbose_debug:
-            logging.info('Current clients: %s',
-                         self.ws.handler.server.clients.keys())
+        logging.info('Current clients: %s',
+                     self.ws.handler.server.clients.keys())
         if message is None:
             return
 
@@ -40,13 +35,11 @@ class GameApplication(WebSocketApplication):
         if message['msg_type'] == 'unregister_user':
             self.unregister_user()
 
-        if self.verbose_debug:
-            logging.info('Updating map...')
+        logging.info('Updating map...')
         self.broadcast_all('users_map', DB['users'])
 
     def on_close(self, reason):
-        if self.verbose_debug:
-            logging.info(reason)
+        logging.info(reason)
 
     def render_map(self):
         self.broadcast('render_map', DB['map'])
