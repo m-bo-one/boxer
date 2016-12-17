@@ -105,28 +105,28 @@ class UserModel(dict):
                 {
                     'direction': 'left',
                     'action': 'walk',
-                    'image_name': 'enclave_power_armor_left.jpg',
+                    'image_name': 'armor/enclave_power_armor/walk/flame/left.jpg',
                     'count': 8,
                     'speed': 0.3
                 },
                 {
                     'direction': 'right',
                     'action': 'walk',
-                    'image_name': 'enclave_power_armor_right.jpg',
+                    'image_name': 'armor/enclave_power_armor/walk/flame/right.jpg',
                     'count': 8,
                     'speed': 0.3
                 },
                 {
                     'direction': 'top',
                     'action': 'walk',
-                    'image_name': 'enclave_power_armor_top.jpg',
+                    'image_name': 'armor/enclave_power_armor/walk/flame/top.jpg',
                     'count': 8,
                     'speed': 0.3
                 },
                 {
                     'direction': 'bottom',
                     'action': 'walk',
-                    'image_name': 'enclave_power_armor_bottom.jpg',
+                    'image_name': 'armor/enclave_power_armor/walk/flame/bottom.jpg',
                     'count': 8,
                     'speed': 0.3
                 }
