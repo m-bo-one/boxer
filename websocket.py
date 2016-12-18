@@ -17,29 +17,42 @@ from models import UserModel
 
 class GameApplication(WebSocketApplication):
 
+    def get_user_from_ws(self):
+        return DB['users'][DB['sockets'][self.ws]]
+
     def on_open(self):
         logging.info("Connection opened")
         self.render_map()
         self.register_user()
 
     def on_message(self, message):
-        logging.info('Current clients: %s',
-                     self.ws.handler.server.clients.keys())
-        if message is None:
-            return
+        try:
+            logging.info('Current clients: %s',
+                         self.ws.handler.server.clients.keys())
+            if message is None:
+                return
 
-        message = json.loads(message)
-        logging.info('Evaluate msg %s' % message['msg_type'])
-        if message['msg_type'] == 'player_move':
-            self.move_user(message)
-        if message['msg_type'] == 'unregister_user':
-            self.unregister_user()
+            message = json.loads(message)
+            logging.info('Evaluate msg %s' % message['msg_type'])
+            if message['msg_type'] == 'player_move':
+                self.move_user(message)
+            if message['msg_type'] == 'player_equip':
+                self.equip_user(message)
+            if message['msg_type'] == 'unregister_user':
+                self.unregister_user()
 
-        logging.info('Updating map...')
-        self.broadcast_all('users_map', DB['users'])
+            logging.info('Updating map...')
+            self.broadcast_all('users_map', DB['users'])
+        except Exception:
+            UserModel.unregister_user(self.ws)
 
     def on_close(self, reason):
         logging.info(reason)
+
+    def equip_user(self, message):
+        user = self.get_user_from_ws()
+        user.equip(message['data']['equipment'])
+        self.broadcast('player_update', user)
 
     def render_map(self):
         self.broadcast('render_map', DB['map'])
@@ -61,9 +74,9 @@ class GameApplication(WebSocketApplication):
             client.ws.send(json.dumps({'msg_type': msg_type, 'data': data}))
 
     def move_user(self, message):
-        user = DB['users'][message['data']['id']]
+        user = self.get_user_from_ws()
         user.move(message['data']['action'], message['data']['direction'])
-        self.broadcast('player_move', user)
+        self.broadcast('player_update', user)
 
 
 if __name__ == '__main__':

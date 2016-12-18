@@ -7,6 +7,9 @@ from conf import settings
 from utils import await_greenlet, get_image
 
 
+sp_key_builder = lambda armor, weapon, action: "%s:%s:%s" % (armor, weapon, action)
+
+
 class SpritePrototype(object):
 
     def __init__(self):
@@ -14,15 +17,15 @@ class SpritePrototype(object):
 
     def register_object(self, name, obj):
         """Register an object"""
-        self._objects[name] = obj
+        self._objects[sp_key_builder(*name)] = obj
 
     def unregister_object(self, name):
         """Unregister an object"""
-        del self._objects[name]
+        del self._objects[sp_key_builder(*name)]
 
     def clone(self, name, **attr):
         """Clone a registered object and update inner attributes dictionary"""
-        obj = copy.deepcopy(self._objects[name])
+        obj = copy.deepcopy(self._objects[sp_key_builder(*name)])
         obj.update(attr)
         return obj
 

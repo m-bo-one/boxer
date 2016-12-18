@@ -4,6 +4,17 @@ $(function () {
     'use strict';
 
     var gameLoop = function(event) {
+        /** Keys notation
+        * 49 - '1'
+        * 38 - 'w'
+        * 40 - 's'
+        * 39 - 'd'
+        * 37 - 'a'
+        * 87 - key up
+        * 83 - key down
+        * 68 - key right
+        * 65 - key left
+        **/
 
         app.stage.update();
         // console.log('Current FPS: ' + createjs.Ticker.getMeasuredFPS());
@@ -51,7 +62,7 @@ $(function () {
                     case 'unregister_user':
                         app.users[parsedData.id].destroy();
                         break;
-                    case 'player_move':
+                    case 'player_update':
                         app.user.update(parsedData);
                         break;
                     case 'users_map':
@@ -111,6 +122,12 @@ $(function () {
 
     window.addEventListener("keydown", function (e) {
         app.keys[e.keyCode] = true;
+
+        // button '1'
+        if (app.keys[49]) {
+            app.user.equipWeapon();
+        }
+
     });
     window.addEventListener("keyup", function (e) {
         app.keys[e.keyCode] = false;

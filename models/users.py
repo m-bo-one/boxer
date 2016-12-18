@@ -2,7 +2,7 @@ import logging
 import random
 
 from db import DB
-from .sprite import sprite_proto
+from .sprite import sprite_proto, sp_key_builder
 
 
 class UserModel(dict):
@@ -13,21 +13,25 @@ class UserModel(dict):
     )
 
     def __init__(self, speed=5, action='idle', direction='left',
-                 armor='enclave_power_armor', weapon='flamer'):
+                 armor='enclave_power_armor', weapon='no_weapon'):
         self.id = None
         self.speed = speed
         self.action = action
         self.direction = direction
-        self.armor = armor
-        self.weapon = weapon
+        self.current_armor = armor
+        self.current_weapon = weapon
+        self.weapons = ['no_weapon', 'flamer']
+        self.armors = ['enclave_power_armor']
         self.load_sprites()
 
-        # self.sprite = sprite_proto.clone((armor, weapon, action))
-        self.width = self.sprite['frames']['width']
-        self.height = self.sprite['frames']['height']
+        self.current_sprite = sp_key_builder(self.current_armor,
+                                             self.current_weapon, 'walk')
 
-        self.x = random.randint(0, DB['map']['width'] - int(self.width))
-        self.y = random.randint(0, DB['map']['height'] - int(self.height))
+        # self.width = self.sprite['frames']['width']
+        # self.height = self.sprite['frames']['height']
+
+        self.x = random.randint(0, DB['map']['width'] - 100)
+        self.y = random.randint(0, DB['map']['height'] - 100)
 
     def __setattr__(self, name, value):
         super(UserModel, self).__setattr__(name, value)
@@ -35,9 +39,10 @@ class UserModel(dict):
 
     def load_sprites(self):
         self.sprites = {
-            (self.armor, self.weapon, action): sprite_proto.clone(
-                (self.armor, self.weapon, action))
-            for action in ['idle', 'walk']}
+            sp_key_builder(
+                self.current_armor, weapon, 'walk'): sprite_proto.clone(
+                    (self.current_armor, weapon, 'walk'))
+            for weapon in self.weapons}
 
     @classmethod
     def register_user(cls, socket, **kwargs):
@@ -76,12 +81,13 @@ class UserModel(dict):
         return result
 
     def map_collision(self):
-        if (self.x > DB['map']['width'] - self.width or self.x < 0 or
-           self.y > DB['map']['height'] - self.height or self.y < 0):
+        if (self.x > DB['map']['width'] - 100 or self.x < 0 or
+           self.y > DB['map']['height'] - 100 or self.y < 0):
             return True
         return False
 
     def user_collision(self):
+        # TODO: Fix widht and height
         for other in DB['users'].values():
             if (self != other and self.x < other.x + other.width and
                self.x + self.width > other.x and
@@ -89,6 +95,27 @@ class UserModel(dict):
                self.height + self.y > other.y):
                 return True
         return False
+
+    @property
+    def weapon_in_hands(self):
+        return bool(self.current_weapon != 'no_weapon')
+
+    def equip(self, type):
+        # FIXME: Hardcoded, need to fix in future
+        logging.info('Current weapon: %s', self.current_weapon)
+        logging.info('Weapon in hands - %s', self.weapon_in_hands)
+
+        if type == 'weapon' and self.weapon_in_hands:
+            self.current_weapon = 'no_weapon'
+        elif type == 'weapon':
+            self.current_weapon = self.weapons[1]
+
+        if type == 'armor':
+            self.current_armor = self.armors[0]
+
+        self.current_sprite = sp_key_builder(self.current_armor,
+                                             self.current_weapon,
+                                             'walk')
 
     def move(self, action, direction):
         way = '_'.join([action, direction])

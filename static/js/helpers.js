@@ -1,13 +1,12 @@
-function createAnimatedSprite(stage, data) {
+function createAnimatedSprite(data, animKey) {
 
-    var sh = new createjs.SpriteSheet(data.sprite);
+    var sh = new createjs.SpriteSheet(data.sprites[animKey]);
     character = new createjs.Sprite(sh);
     character.x = data.x;
     character.y = data.y;
-    character.width = data.sprite.frames.width;
-    character.height = data.sprite.frames.height;
+    character.width = data.sprites[animKey].frames.width;
+    character.height = data.sprites[animKey].frames.height;
     character.gotoAndStop(getWay(data.action, data.direction));
-    stage.addChild(character);
 
     return character;
 }
