@@ -20,9 +20,21 @@ var app = app || {};
 
             this.action = options.action;
             this.direction = options.direction;
-            this.sprite = createAnimatedSprite(app.stage, options);
+            this.loadSprites();
 
             app.users[this.id] = this;
+        },
+        loadSprites: function(sprites) {
+            this.sprites = {}
+            for (var compound_key in sprites) {
+                var data = {}
+                data.sprite = sprites[compound_key];
+                data.x = this.x;
+                data.y = this.y;
+                data.action = this.action;
+                data.direction = this.direction;
+                this.sprites[compound_key] = createAnimatedSprite(app.stage, sprites[compound_key]);
+            }
         },
         update: function(options) {
             this.sprite.x = options.x;
@@ -47,7 +59,7 @@ var app = app || {};
             app.ws.send(data);            
         },
         stop: function() {
-            this.move("wait", this.direction);
+            this.move("idle", this.direction);
         },
         destroy: function() {
             app.stage.removeChild(this.sprite);

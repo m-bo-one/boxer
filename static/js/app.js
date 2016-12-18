@@ -6,11 +6,12 @@ $(function () {
     var gameLoop = function(event) {
 
         app.stage.update();
-        console.log('Current FPS: ' + createjs.Ticker.getMeasuredFPS());
+        // console.log('Current FPS: ' + createjs.Ticker.getMeasuredFPS());
 
         if (app.user === null) return;
 
-        if (app.keys[38] && app.keys[87] || app.keys[40] && app.keys[83] || app.keys[39] && app.keys[68] || app.keys[37] && app.keys[65]) return;
+        if (app.keys[38] && app.keys[87] || app.keys[40] && app.keys[83] ||
+            app.keys[39] && app.keys[68] || app.keys[37] && app.keys[65]) return;
 
         if (app.keys[38] || app.keys[87]) {
             app.user.move('walk', 'top');
@@ -26,9 +27,7 @@ $(function () {
         }
 
         if (!app.keys[38] && !app.keys[87] && !app.keys[40] && !app.keys[83] &&
-            !app.keys[39] && !app.keys[68] && !app.keys[37] && !app.keys[65]) {
-            app.user.stop();
-        }
+            !app.keys[39] && !app.keys[68] && !app.keys[37] && !app.keys[65]) app.user.stop();
         
     };
 

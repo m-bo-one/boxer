@@ -14,6 +14,20 @@ PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] == 3
 
 
+def enum_convert(enum_type, search_type):
+    if isinstance(search_type, int):
+        return search_type
+    enums = (prop for prop in dir(enum_type)
+             if not prop.startswith('_') and not
+             prop.startswith('__'))
+
+    for cls_enum in enums:
+        if cls_enum.name == search_type:
+            return cls_enum
+    else:
+        return 0
+
+
 def setup_logging(default_path='conf/logging.yaml', default_level=logging.INFO,
                   env_key='LOG_CFG'):
     """Setup logging configuration
