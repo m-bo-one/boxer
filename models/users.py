@@ -127,6 +127,8 @@ class UserModel(dict):
         self.action = action
         self.direction = direction
 
+        logging.info('Direction %s, action %s', direction, action)
+
         if way == 'walk_top':
             self.y -= self.speed
 

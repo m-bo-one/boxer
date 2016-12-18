@@ -45,7 +45,6 @@ var app = app || {};
                 data: {'equipment': 'weapon'}
             })
             app.ws.send(data);
-            this._weaponEquiped = true;
         },
         update: function(options) {
             this.currentSprite.x = options.x;
@@ -54,16 +53,17 @@ var app = app || {};
             this.direction = options.direction;
 
             var way = getWay(options.action, options.direction);
-            if (this.currentSprite.currentAnimation != way) {
-                this.currentSprite.gotoAndPlay(way);
-            }
+            // console.log(this.currentSprite.currentAnimation);
             if (this._currentSpriteKey != options.current_sprite) {
-                this.currentSprite.stop();
                 app.stage.removeChild(this.currentSprite);
                 this.switchToSprite(options.current_sprite);
                 this.currentSprite.x = options.x;
                 this.currentSprite.y = options.y;
+                // FIXME: In future fix walk when we have idle sprites
+                this.currentSprite.gotoAndPlay(getWay('walk', options.direction));
+
                 app.stage.addChild(this.currentSprite);
+            } else if (this.currentSprite.currentAnimation != way) {
                 this.currentSprite.gotoAndPlay(way);
             }
         },
