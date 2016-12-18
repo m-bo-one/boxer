@@ -47,7 +47,7 @@ class AnimatedSprite(object):
         ]
     """
 
-    image_pattern = 'equipment/{armor}/{weapon}/{action}/{direction}.jpg'
+    image_pattern = 'equipment/{armor}/{weapon}/{action}/{direction}.png'
 
     def __init__(self, action, direction, armor, weapon, count, speed):
         self.image_name = self.image_pattern.format(
@@ -130,6 +130,41 @@ sprite_proto.register_object(('enclave_power_armor', 'no_weapon', 'walk'), Anima
     }
 ]))
 
+sprite_proto.register_object(('enclave_power_armor', 'no_weapon', 'idle'), AnimatedSprite.prepare_easeljs_data([
+    {
+        'direction': 'left',
+        'action': 'idle',
+        'armor': 'enclave_power_armor',
+        'weapon': 'no_weapon',
+        'count': 12,
+        'speed': 0.3
+    },
+    {
+        'direction': 'right',
+        'action': 'idle',
+        'armor': 'enclave_power_armor',
+        'weapon': 'no_weapon',
+        'count': 12,
+        'speed': 0.3
+    },
+    {
+        'direction': 'top',
+        'action': 'idle',
+        'armor': 'enclave_power_armor',
+        'weapon': 'no_weapon',
+        'count': 12,
+        'speed': 0.3
+    },
+    {
+        'direction': 'bottom',
+        'action': 'idle',
+        'armor': 'enclave_power_armor',
+        'weapon': 'no_weapon',
+        'count': 12,
+        'speed': 0.3
+    }
+]))
+
 sprite_proto.register_object(('enclave_power_armor', 'flamer', 'walk'), AnimatedSprite.prepare_easeljs_data([
     {
         'direction': 'left',
@@ -165,37 +200,37 @@ sprite_proto.register_object(('enclave_power_armor', 'flamer', 'walk'), Animated
     }
 ]))
 
-# sprite_proto.register_object(('enclave_power_armor', 'flamer', 'fire'), AnimatedSprite.prepare_easeljs_data([
-#     {
-#         'direction': 'left',
-#         'action': 'fire',
-#         'armor': 'enclave_power_armor',
-#         'weapon': 'flamer',
-#         'count': 8,
-#         'speed': 0.3
-#     },
-#     {
-#         'direction': 'right',
-#         'action': 'fire',
-#         'armor': 'enclave_power_armor',
-#         'weapon': 'flamer',
-#         'count': 8,
-#         'speed': 0.3
-#     },
-#     {
-#         'direction': 'top',
-#         'action': 'fire',
-#         'armor': 'enclave_power_armor',
-#         'weapon': 'flamer',
-#         'count': 8,
-#         'speed': 0.3
-#     },
-#     {
-#         'direction': 'bottom',
-#         'action': 'fire',
-#         'armor': 'enclave_power_armor',
-#         'weapon': 'flamer',
-#         'count': 8,
-#         'speed': 0.3
-#     }
-# ]))
+sprite_proto.register_object(('enclave_power_armor', 'flamer', 'idle'), AnimatedSprite.prepare_easeljs_data([
+    {
+        'direction': 'left',
+        'action': 'idle',
+        'armor': 'enclave_power_armor',
+        'weapon': 'no_weapon',
+        'count': 12,
+        'speed': 0.3
+    },
+    {
+        'direction': 'right',
+        'action': 'idle',
+        'armor': 'enclave_power_armor',
+        'weapon': 'no_weapon',
+        'count': 12,
+        'speed': 0.3
+    },
+    {
+        'direction': 'top',
+        'action': 'idle',
+        'armor': 'enclave_power_armor',
+        'weapon': 'no_weapon',
+        'count': 12,
+        'speed': 0.3
+    },
+    {
+        'direction': 'bottom',
+        'action': 'idle',
+        'armor': 'enclave_power_armor',
+        'weapon': 'no_weapon',
+        'count': 12,
+        'speed': 0.3
+    }
+]))

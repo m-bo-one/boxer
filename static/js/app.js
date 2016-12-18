@@ -19,9 +19,7 @@ $(function () {
         app.stage.update();
         // console.log('Current FPS: ' + createjs.Ticker.getMeasuredFPS());
 
-        if (app.user === null) return;
-
-        if (app.keys[38] && app.keys[87] || app.keys[40] && app.keys[83] ||
+        if (app.user === null || app.keys[38] && app.keys[87] || app.keys[40] && app.keys[83] ||
             app.keys[39] && app.keys[68] || app.keys[37] && app.keys[65]) return;
 
         if (app.keys[38] || app.keys[87]) {
@@ -109,6 +107,10 @@ $(function () {
 
     window.addEventListener("keydown", function (e) {
         app.keys[e.keyCode] = true;
+        // button '1'
+        if (app.keys[49]) {
+            app.user.equipWeapon();
+        }
     });
     window.addEventListener("keyup", function (e) {
         app.keys[e.keyCode] = false;
@@ -119,17 +121,4 @@ $(function () {
         })
         app.ws.send(data);
     };
-
-    window.addEventListener("keydown", function (e) {
-        app.keys[e.keyCode] = true;
-
-        // button '1'
-        if (app.keys[49]) {
-            app.user.equipWeapon();
-        }
-
-    });
-    window.addEventListener("keyup", function (e) {
-        app.keys[e.keyCode] = false;
-    });
 });

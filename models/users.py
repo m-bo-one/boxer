@@ -25,7 +25,8 @@ class UserModel(dict):
         self.load_sprites()
 
         self.current_sprite = sp_key_builder(self.current_armor,
-                                             self.current_weapon, 'walk')
+                                             self.current_weapon,
+                                             'walk')
 
         # self.width = self.sprite['frames']['width']
         # self.height = self.sprite['frames']['height']
@@ -40,9 +41,11 @@ class UserModel(dict):
     def load_sprites(self):
         self.sprites = {
             sp_key_builder(
-                self.current_armor, weapon, 'walk'): sprite_proto.clone(
-                    (self.current_armor, weapon, 'walk'))
-            for weapon in self.weapons}
+                armor, weapon, action): (sprite_proto
+                                         .clone((armor, weapon, action)))
+            for armor in self.armors
+            for weapon in self.weapons
+            for action in ['walk']}
 
     @classmethod
     def register_user(cls, socket, **kwargs):
@@ -127,7 +130,7 @@ class UserModel(dict):
         self.action = action
         self.direction = direction
 
-        logging.info('Direction %s, action %s', direction, action)
+        logging.error('Direction %s, action %s', direction, action)
 
         if way == 'walk_top':
             self.y -= self.speed

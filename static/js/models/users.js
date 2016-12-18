@@ -53,8 +53,12 @@ var app = app || {};
             this.direction = options.direction;
 
             var way = getWay(options.action, options.direction);
-            // console.log(this.currentSprite.currentAnimation);
-            if (this._currentSpriteKey != options.current_sprite) {
+            console.log(this.currentSprite.currentAnimation);
+            console.log(this._currentSpriteKey);
+            // if (this.currentSprite.currentAnimation != way) {
+            //     this.currentSprite.gotoAndPlay(way);
+            // }
+            if (this.currentSprite.currentAnimation != way || this._currentSpriteKey != options.current_sprite) {
                 app.stage.removeChild(this.currentSprite);
                 this.switchToSprite(options.current_sprite);
                 this.currentSprite.x = options.x;
@@ -63,8 +67,6 @@ var app = app || {};
                 this.currentSprite.gotoAndPlay(getWay('walk', options.direction));
 
                 app.stage.addChild(this.currentSprite);
-            } else if (this.currentSprite.currentAnimation != way) {
-                this.currentSprite.gotoAndPlay(way);
             }
         },
         move: function(action, direction) {
