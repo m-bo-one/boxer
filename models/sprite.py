@@ -234,3 +234,23 @@ sprite_proto.register_object(('enclave_power_armor', 'flamer', 'idle'), Animated
         'speed': 0.3
     }
 ]))
+
+
+sprite_proto.register_object(('enclave_power_armor', 'flamer', 'fire'), AnimatedSprite.prepare_easeljs_data([
+    {
+        'direction': 'left',
+        'action': 'fire',
+        'armor': 'enclave_power_armor',
+        'weapon': 'flamer',
+        'count': 3,
+        'speed': 1
+    },
+    {
+        'direction': 'right',
+        'action': 'fire',
+        'armor': 'enclave_power_armor',
+        'weapon': 'flamer',
+        'count': 3,
+        'speed': 1
+    }
+]))

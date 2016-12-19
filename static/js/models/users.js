@@ -1,4 +1,5 @@
-var app = app || {};
+var app = app || {},
+    utils = utils || {};
 
 (function () {
     'use strict';
@@ -29,7 +30,7 @@ var app = app || {};
         loadSprites: function(options) {
             this._sprites = {}
             for (var compoundKey in options.sprites) {
-                this._sprites[compoundKey] = createAnimatedSprite(options, compoundKey);
+                this._sprites[compoundKey] = utils.createAnimatedSprite(options, compoundKey);
             }
             this.changeSprite();
             app.stage.addChild(this.currentSprite);
@@ -47,11 +48,11 @@ var app = app || {};
             app.ws.send(data);
         },
         refreshData: function(options) {
-            app._LOG('Receive update: direction - ' + options.direction + '; action - ' + options.action);
+            utils._LOG('Receive update: direction - ' + options.direction + '; action - ' + options.action);
             this.currentSprite.x = options.x;
             this.currentSprite.y = options.y;
 
-            var way = getSpriteWay(options.action, options.direction);
+            var way = utils.getSpriteWay(options.action, options.direction);
 
             if (this.currentSprite.currentAnimation != way) {
                 app.stage.removeChild(this.currentSprite);
@@ -66,14 +67,14 @@ var app = app || {};
                 this.currentSprite.x = options.x;
                 this.currentSprite.y = options.y;
 
-                app._LOG('Start playing animation: ' + way);
+                utils._LOG('Start playing animation: ' + way);
                 this.currentSprite.gotoAndPlay(way);
 
                 app.stage.addChild(this.currentSprite);
             }
         },
         move: function(action, direction) {
-            app._LOG('Send move: direction - ' + direction + '; action - ' + action);
+            utils._LOG('Send move: direction - ' + direction + '; action - ' + action);
             var data = JSON.stringify({
                 msg_type: 'player_move',
                 data: {

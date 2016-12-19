@@ -43,6 +43,8 @@ class UserModel(dict):
             for weapon in self.weapons
             for action in ['idle', 'walk']}
 
+        self.sprites[sp_key_builder(self.armor, 'flamer', 'fire')] = sprite_proto.clone((self.armor, 'flamer', 'fire'))
+
     @classmethod
     def register_user(cls, socket, **kwargs):
         user = cls()
