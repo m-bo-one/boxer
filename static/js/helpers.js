@@ -6,11 +6,11 @@ function createAnimatedSprite(data, animKey) {
     character.y = data.y;
     character.width = data.sprites[animKey].frames.width;
     character.height = data.sprites[animKey].frames.height;
-    character.gotoAndStop(getWay(data.action, data.direction));
+    character.gotoAndPlay(getSpriteWay(data.action, data.direction));
 
     return character;
 }
 
-function getWay(action, direction) {
+function getSpriteWay(action, direction) {
     return action + "_" + direction;
 }

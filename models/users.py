@@ -18,15 +18,11 @@ class UserModel(dict):
         self.speed = speed
         self.action = action
         self.direction = direction
-        self.current_armor = armor
-        self.current_weapon = weapon
+        self.armor = armor
+        self.weapon = weapon
         self.weapons = ['no_weapon', 'flamer']
         self.armors = ['enclave_power_armor']
         self.load_sprites()
-
-        self.current_sprite = sp_key_builder(self.current_armor,
-                                             self.current_weapon,
-                                             'walk')
 
         # self.width = self.sprite['frames']['width']
         # self.height = self.sprite['frames']['height']
@@ -45,7 +41,7 @@ class UserModel(dict):
                                          .clone((armor, weapon, action)))
             for armor in self.armors
             for weapon in self.weapons
-            for action in ['walk']}
+            for action in ['idle', 'walk']}
 
     @classmethod
     def register_user(cls, socket, **kwargs):
@@ -101,24 +97,20 @@ class UserModel(dict):
 
     @property
     def weapon_in_hands(self):
-        return bool(self.current_weapon != 'no_weapon')
+        return bool(self.weapon != 'no_weapon')
 
     def equip(self, type):
         # FIXME: Hardcoded, need to fix in future
-        logging.info('Current weapon: %s', self.current_weapon)
+        logging.info('Current weapon: %s', self.weapon)
         logging.info('Weapon in hands - %s', self.weapon_in_hands)
 
         if type == 'weapon' and self.weapon_in_hands:
-            self.current_weapon = 'no_weapon'
+            self.weapon = 'no_weapon'
         elif type == 'weapon':
-            self.current_weapon = self.weapons[1]
+            self.weapon = self.weapons[1]
 
         if type == 'armor':
-            self.current_armor = self.armors[0]
-
-        self.current_sprite = sp_key_builder(self.current_armor,
-                                             self.current_weapon,
-                                             'walk')
+            self.armor = self.armors[0]
 
     def move(self, action, direction):
         way = '_'.join([action, direction])
@@ -130,7 +122,8 @@ class UserModel(dict):
         self.action = action
         self.direction = direction
 
-        logging.error('Direction %s, action %s', direction, action)
+        logging.info('Direction %s, action %s, weapon %s',
+                     self.direction, self.action, self.weapon)
 
         if way == 'walk_top':
             self.y -= self.speed

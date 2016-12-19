@@ -19,8 +19,8 @@ var app = app || {};
             this.username = options.username;
             this.action = options.action;
             this.direction = options.direction;
-            this.currentArmor = options.current_armor;
-            this.currentWeapon = options.current_weapon;
+            this.armor = options.armor;
+            this.weapon = options.weapon;
 
             this.loadSprites(options);
 
@@ -31,45 +31,49 @@ var app = app || {};
             for (var compoundKey in options.sprites) {
                 this._sprites[compoundKey] = createAnimatedSprite(options, compoundKey);
             }
-            this.switchToSprite(options.current_sprite);
+            this.changeSprite();
             app.stage.addChild(this.currentSprite);
         },
-        switchToSprite: function(compoundKey) {
-            this._currentSpriteKey = compoundKey;
+        changeSprite: function(compoundKey) {
+            compoundKey = compoundKey || [this.armor, this.weapon, this.action].join(':');;
             this.currentSprite = this._sprites[compoundKey];
         },
         equipWeapon: function(weaponName) {
-            var weaponName = weaponName || this.currentWeapon;
+            var weaponName = weaponName || this.weapon;
             var data = JSON.stringify({
                 msg_type: 'player_equip',
                 data: {'equipment': 'weapon'}
             })
             app.ws.send(data);
         },
-        update: function(options) {
+        refreshData: function(options) {
+            app._LOG('Receive update: direction - ' + options.direction + '; action - ' + options.action);
             this.currentSprite.x = options.x;
             this.currentSprite.y = options.y;
-            this.action = options.action;
-            this.direction = options.direction;
 
-            var way = getWay(options.action, options.direction);
-            console.log(this.currentSprite.currentAnimation);
-            console.log(this._currentSpriteKey);
-            // if (this.currentSprite.currentAnimation != way) {
-            //     this.currentSprite.gotoAndPlay(way);
-            // }
-            if (this.currentSprite.currentAnimation != way || this._currentSpriteKey != options.current_sprite) {
+            var way = getSpriteWay(options.action, options.direction);
+
+            if (this.currentSprite.currentAnimation != way) {
                 app.stage.removeChild(this.currentSprite);
-                this.switchToSprite(options.current_sprite);
+
+                this.action = options.action;
+                this.direction = options.direction;
+                this.weapon = options.weapon;
+                this.armor = options.armor;
+
+                this.changeSprite();
+
                 this.currentSprite.x = options.x;
                 this.currentSprite.y = options.y;
-                // FIXME: In future fix walk when we have idle sprites
-                this.currentSprite.gotoAndPlay(getWay('walk', options.direction));
+
+                app._LOG('Start playing animation: ' + way);
+                this.currentSprite.gotoAndPlay(way);
 
                 app.stage.addChild(this.currentSprite);
             }
         },
         move: function(action, direction) {
+            app._LOG('Send move: direction - ' + direction + '; action - ' + action);
             var data = JSON.stringify({
                 msg_type: 'player_move',
                 data: {
@@ -77,7 +81,7 @@ var app = app || {};
                     'direction': direction
                 }
             })
-            app.ws.send(data);            
+            app.ws.send(data);
         },
         stop: function() {
             this.move("idle", this.direction);
