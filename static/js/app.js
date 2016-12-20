@@ -35,7 +35,6 @@ $(function () {
         else if (app.keys[37] || app.keys[65]) {
             app.user.move('walk', 'left');
         }
-        
     };
 
     var Socket = {
@@ -49,6 +48,13 @@ $(function () {
                     case 'render_map':
                         app.canvas.width = parsedData.width;
                         app.canvas.height = parsedData.height;
+                        var text = new createjs.Text();
+                        text.text = "HP: 100"
+                        text.font = "40px Arial";
+                        text.color = "#ff7700";
+                        text.x = app.canvas.width - 145;
+                        text.y -= 5;
+                        app.stage.addChild(text);
                         break;
                     case 'register_user':
                         app.user = new app.UserModel(parsedData);

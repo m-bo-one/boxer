@@ -17,9 +17,6 @@ from utils import setup_logging
 from conf import settings
 
 
-bottle.TEMPLATE_PATH.insert(0, settings.TEMPLATES_PATH)
-
-
 class BaseHttpRunner(object):
 
     MAX_WORKERS = 20
@@ -31,13 +28,15 @@ class BaseHttpRunner(object):
         self._port = address[1]
         self._debug = settings.DEBUG
 
+        bottle.TEMPLATE_PATH.insert(0, settings.TEMPLATES_PATH)
         self._register_routes()
 
     def template_with_context(self, template_name, **extra):
         context = {
             'STATIC_URL': settings.STATIC_URL,
             'MEDIA_URL': settings.MEDIA_URL,
-            'FILE_VERSION': hashlib.md5(str(time.time())).hexdigest(),
+            'FILE_VERSION': (hashlib.md5(str(time.time())).hexdigest()
+                             if not self._debug else ''),
             'APP_SETTINGS': json.dumps(self.app_settings)
         }
         if isinstance(extra, dict):
