@@ -39,10 +39,8 @@ $(function () {
     };
 
     var Socket = {
-        ws: null,
-
-        init: function () {
-            var ws = new WebSocket("ws://" + window.location.hostname + ":" + 9999 + "/game");
+        init: function (app) {
+            var ws = new WebSocket("ws://" + app.config.WEBSOCKET_ADDRESS + "/game");
 
             ws.onmessage = function(evt) {
                 var answer = JSON.parse(evt.data);
@@ -85,7 +83,7 @@ $(function () {
                 $('#conn_status').html('<b>WS Closed</b>');
             };
 
-            this.ws = ws;
+            app.ws = ws;
         }
     };
 
@@ -95,12 +93,8 @@ $(function () {
     app.users = {};
     app.user = null;
     app.stage = new createjs.Stage(app.canvas);
-    app.config = {
-        DEBUG: false
-    };
 
-    Socket.init();
-    app.ws = Socket.ws;
+    Socket.init(app);
 
     createjs.Ticker.setFPS(60);
     createjs.Ticker.addEventListener("tick", gameLoop);

@@ -4,6 +4,9 @@ from __future__ import print_function, unicode_literals
 from gevent import monkey; monkey.patch_all()  # noqa
 
 import logging
+import time
+import hashlib
+import json
 
 import gevent
 import gevent.pool
@@ -34,11 +37,20 @@ class BaseHttpRunner(object):
         context = {
             'STATIC_URL': settings.STATIC_URL,
             'MEDIA_URL': settings.MEDIA_URL,
+            'FILE_VERSION': hashlib.md5(str(time.time())).hexdigest(),
+            'APP_SETTINGS': json.dumps(self.app_settings)
         }
         if isinstance(extra, dict):
             context.update(**extra)
 
         return bottle.template(template_name, **context)
+
+    @property
+    def app_settings(self):
+        return {
+            'WEBSOCKET_ADDRESS': "%s:%s" % settings.WEBSOCKET_ADDRESS,
+            'DEBUG': settings.TEMPLATE_DEBUG
+        }
 
     @property
     def request(self):
