@@ -19,7 +19,7 @@ class GameApplication(WebSocketApplication):
 
     def get_user_from_ws(self):
         user_data = DB['users'][DB['sockets'][self.ws]]
-        return UserModel.from_dict(user_data)
+        return UserModel(**user_data)
 
     def on_open(self):
         logging.info("Connection opened")
@@ -77,7 +77,7 @@ class GameApplication(WebSocketApplication):
     def move_user(self, message):
         user = self.get_user_from_ws()
         user.move(message['data']['action'], message['data']['direction'])
-        self.broadcast('player_update', user)
+        self.broadcast('player_update', user.to_dict())
 
 
 if __name__ == '__main__':

@@ -6,34 +6,41 @@ from db import DB
 from .sprite import sprite_proto, sp_key_builder
 
 
-class UserModel(dict):
+class UserModel(object):
 
     collision_pipeline = (
         'map_collision',
         # 'user_collision',
     )
 
-    def __init__(self, speed=5, action='idle', direction='left',
-                 armor='enclave_power_armor', weapon='no_weapon'):
-        self.id = None
+    def __init__(self,
+                 id=None,
+                 x=random.randint(0, DB['map']['width'] - 100),
+                 y=random.randint(0, DB['map']['height'] - 100),
+                 speed=5,
+                 action='idle',
+                 direction='left',
+                 armor='enclave_power_armor',
+                 weapon='no_weapon',
+                 armors=None,
+                 weapons=None,
+                 sprites=None):
+
+        self.id = id
+        self.x = x
+        self.y = y
         self.speed = speed
         self.action = action
         self.direction = direction
         self.armor = armor
         self.weapon = weapon
-        self.weapons = ['no_weapon', 'flamer']
-        self.armors = ['enclave_power_armor']
-        self.load_sprites()
+        self.armors = ['enclave_power_armor'] if not armors else armors
+        self.weapons = ['no_weapon', 'flamer'] if not weapons else weapons
 
-        # self.width = self.sprite['frames']['width']
-        # self.height = self.sprite['frames']['height']
-
-        self.x = random.randint(0, DB['map']['width'] - 100)
-        self.y = random.randint(0, DB['map']['height'] - 100)
-
-    def __setattr__(self, name, value):
-        super(UserModel, self).__setattr__(name, value)
-        self[name] = value
+        if not sprites:
+            self.load_sprites()
+        else:
+            self.sprites = sprites
 
     def to_dict(self):
         return {
@@ -50,13 +57,6 @@ class UserModel(dict):
             'sprites': self.sprites
         }
 
-    @classmethod
-    def from_dict(cls, data):
-        user = cls()
-        for k, v in data.items():
-            setattr(user, k, v)
-        return user
-
     def to_json(self):
         return json.dumps(self.to_dict())
 
@@ -71,8 +71,7 @@ class UserModel(dict):
 
     @classmethod
     def register_user(cls, socket, **kwargs):
-        user = cls()
-        user.id = DB['id_counter']
+        user = cls(id=DB['id_counter'])
         DB['id_counter'] += 1
         DB['users'][user.id] = user.to_dict()
         DB['sockets'][socket] = user.id
@@ -131,7 +130,7 @@ class UserModel(dict):
     @autosave
     def equip(self, type):
         # FIXME: Hardcoded, need to fix in future
-        logging.error('Current weapon: %s', self.weapon)
+        logging.info('Current weapon: %s', self.weapon)
 
         if type == 'weapon' and self.weapon != 'no_weapon':
             self.weapon = 'no_weapon'
