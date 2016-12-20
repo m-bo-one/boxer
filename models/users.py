@@ -1,5 +1,6 @@
 import logging
 import random
+import json
 
 from db import DB
 from .sprite import sprite_proto, sp_key_builder
@@ -34,6 +35,31 @@ class UserModel(dict):
         super(UserModel, self).__setattr__(name, value)
         self[name] = value
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'x': self.x,
+            'y': self.y,
+            'speed': self.speed,
+            'action': self.action,
+            'direction': self.direction,
+            'armor': str(self.armor),
+            'weapon': str(self.weapon),
+            'weapons': [str(weapon) for weapon in self.weapons],
+            'armors': [str(armor) for armor in self.armors],
+            'sprites': self.sprites
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        user = cls()
+        for k, v in data.items():
+            setattr(user, k, v)
+        return user
+
+    def to_json(self):
+        return json.dumps(self.to_dict())
+
     def load_sprites(self):
         self.sprites = {
             sp_key_builder(
@@ -43,14 +69,12 @@ class UserModel(dict):
             for weapon in self.weapons
             for action in ['idle', 'walk']}
 
-        self.sprites[sp_key_builder(self.armor, 'flamer', 'fire')] = sprite_proto.clone((self.armor, 'flamer', 'fire'))
-
     @classmethod
     def register_user(cls, socket, **kwargs):
         user = cls()
         user.id = DB['id_counter']
         DB['id_counter'] += 1
-        DB['users'][user.id] = user
+        DB['users'][user.id] = user.to_dict()
         DB['sockets'][socket] = user.id
         return user
 
@@ -97,16 +121,19 @@ class UserModel(dict):
                 return True
         return False
 
-    @property
-    def weapon_in_hands(self):
-        return bool(self.weapon != 'no_weapon')
+    def autosave(func):
+        def wrapper(self, *args, **kwargs):
+            result = func(self, *args, **kwargs)
+            DB['users'][self.id] = self.to_dict()
+            return result
+        return wrapper
 
+    @autosave
     def equip(self, type):
         # FIXME: Hardcoded, need to fix in future
-        logging.info('Current weapon: %s', self.weapon)
-        logging.info('Weapon in hands - %s', self.weapon_in_hands)
+        logging.error('Current weapon: %s', self.weapon)
 
-        if type == 'weapon' and self.weapon_in_hands:
+        if type == 'weapon' and self.weapon != 'no_weapon':
             self.weapon = 'no_weapon'
         elif type == 'weapon':
             self.weapon = self.weapons[1]
@@ -114,6 +141,7 @@ class UserModel(dict):
         if type == 'armor':
             self.armor = self.armors[0]
 
+    @autosave
     def move(self, action, direction):
         way = '_'.join([action, direction])
         logging.info('Current way: %s', way)

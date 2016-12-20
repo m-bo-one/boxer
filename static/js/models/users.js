@@ -84,6 +84,9 @@ var app = app || {},
             })
             app.ws.send(data);
         },
+        shoot: function () {
+            // TODO: Fire shoot event
+        },
         stop: function() {
             this.move("idle", this.direction);
         },

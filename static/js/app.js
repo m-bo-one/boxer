@@ -111,6 +111,10 @@ $(function () {
         if (app.keys[49]) {
             app.user.equipWeapon();
         }
+        // button 'space'
+        if (app.keys[8]) {
+            app.user.shoot();
+        }
     });
     window.addEventListener("keyup", function (e) {
         app.keys[e.keyCode] = false;

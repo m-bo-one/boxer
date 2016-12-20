@@ -18,7 +18,8 @@ from models import UserModel
 class GameApplication(WebSocketApplication):
 
     def get_user_from_ws(self):
-        return DB['users'][DB['sockets'][self.ws]]
+        user_data = DB['users'][DB['sockets'][self.ws]]
+        return UserModel.from_dict(user_data)
 
     def on_open(self):
         logging.info("Connection opened")
@@ -52,14 +53,14 @@ class GameApplication(WebSocketApplication):
     def equip_user(self, message):
         user = self.get_user_from_ws()
         user.equip(message['data']['equipment'])
-        self.broadcast('player_update', user)
+        self.broadcast('player_update', user.to_dict())
 
     def render_map(self):
         self.broadcast('render_map', DB['map'])
 
     def register_user(self):
         user = UserModel.register_user(self.ws)
-        self.broadcast('register_user', user)
+        self.broadcast('register_user', user.to_dict())
         self.broadcast_all('users_map', DB['users'])
 
     def unregister_user(self):
