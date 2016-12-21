@@ -5,6 +5,7 @@ import os
 import copy
 from conf import settings
 from utils import await_greenlet, get_image
+from constants import ActionType, DirectionType, WeaponType, ArmorType
 
 
 sp_key_builder = lambda armor, weapon, action: "%s:%s:%s" % (armor, weapon, action)
@@ -95,162 +96,182 @@ class AnimatedSprite(object):
 
 sprite_proto = SpritePrototype()
 
-sprite_proto.register_object(('enclave_power_armor', 'no_weapon', 'walk'), AnimatedSprite.prepare_easeljs_data([
-    {
-        'direction': 'left',
-        'action': 'walk',
-        'armor': 'enclave_power_armor',
-        'weapon': 'no_weapon',
-        'count': 8,
-        'speed': 0.3
-    },
-    {
-        'direction': 'right',
-        'action': 'walk',
-        'armor': 'enclave_power_armor',
-        'weapon': 'no_weapon',
-        'count': 8,
-        'speed': 0.3
-    },
-    {
-        'direction': 'top',
-        'action': 'walk',
-        'armor': 'enclave_power_armor',
-        'weapon': 'no_weapon',
-        'count': 8,
-        'speed': 0.3
-    },
-    {
-        'direction': 'bottom',
-        'action': 'walk',
-        'armor': 'enclave_power_armor',
-        'weapon': 'no_weapon',
-        'count': 8,
-        'speed': 0.3
-    }
-]))
+sprite_proto.register_object(
 
-sprite_proto.register_object(('enclave_power_armor', 'no_weapon', 'idle'), AnimatedSprite.prepare_easeljs_data([
-    {
-        'direction': 'left',
-        'action': 'idle',
-        'armor': 'enclave_power_armor',
-        'weapon': 'no_weapon',
-        'count': 12,
-        'speed': 0.3
-    },
-    {
-        'direction': 'right',
-        'action': 'idle',
-        'armor': 'enclave_power_armor',
-        'weapon': 'no_weapon',
-        'count': 12,
-        'speed': 0.3
-    },
-    {
-        'direction': 'top',
-        'action': 'idle',
-        'armor': 'enclave_power_armor',
-        'weapon': 'no_weapon',
-        'count': 12,
-        'speed': 0.3
-    },
-    {
-        'direction': 'bottom',
-        'action': 'idle',
-        'armor': 'enclave_power_armor',
-        'weapon': 'no_weapon',
-        'count': 12,
-        'speed': 0.3
-    }
-]))
+    (ArmorType.ENCLAVE_POWER_ARMOR, WeaponType.NO_WEAPON, ActionType.WALK),
 
-sprite_proto.register_object(('enclave_power_armor', 'flamer', 'walk'), AnimatedSprite.prepare_easeljs_data([
-    {
-        'direction': 'left',
-        'action': 'walk',
-        'armor': 'enclave_power_armor',
-        'weapon': 'flamer',
-        'count': 8,
-        'speed': 0.3
-    },
-    {
-        'direction': 'right',
-        'action': 'walk',
-        'armor': 'enclave_power_armor',
-        'weapon': 'flamer',
-        'count': 8,
-        'speed': 0.3
-    },
-    {
-        'direction': 'top',
-        'action': 'walk',
-        'armor': 'enclave_power_armor',
-        'weapon': 'flamer',
-        'count': 8,
-        'speed': 0.3
-    },
-    {
-        'direction': 'bottom',
-        'action': 'walk',
-        'armor': 'enclave_power_armor',
-        'weapon': 'flamer',
-        'count': 8,
-        'speed': 0.3
-    }
-]))
+    AnimatedSprite.prepare_easeljs_data([
+        {
+            'direction': DirectionType.LEFT,
+            'action': ActionType.WALK,
+            'armor': ArmorType.ENCLAVE_POWER_ARMOR,
+            'weapon': WeaponType.NO_WEAPON,
+            'count': 8,
+            'speed': 0.3
+        },
+        {
+            'direction': DirectionType.RIGHT,
+            'action': ActionType.WALK,
+            'armor': ArmorType.ENCLAVE_POWER_ARMOR,
+            'weapon': WeaponType.NO_WEAPON,
+            'count': 8,
+            'speed': 0.3
+        },
+        {
+            'direction': DirectionType.TOP,
+            'action': ActionType.WALK,
+            'armor': ArmorType.ENCLAVE_POWER_ARMOR,
+            'weapon': WeaponType.NO_WEAPON,
+            'count': 8,
+            'speed': 0.3
+        },
+        {
+            'direction': DirectionType.BOTTOM,
+            'action': ActionType.WALK,
+            'armor': ArmorType.ENCLAVE_POWER_ARMOR,
+            'weapon': WeaponType.NO_WEAPON,
+            'count': 8,
+            'speed': 0.3
+        }
 
-sprite_proto.register_object(('enclave_power_armor', 'flamer', 'idle'), AnimatedSprite.prepare_easeljs_data([
-    {
-        'direction': 'left',
-        'action': 'idle',
-        'armor': 'enclave_power_armor',
-        'weapon': 'no_weapon',
-        'count': 12,
-        'speed': 0.3
-    },
-    {
-        'direction': 'right',
-        'action': 'idle',
-        'armor': 'enclave_power_armor',
-        'weapon': 'no_weapon',
-        'count': 12,
-        'speed': 0.3
-    },
-    {
-        'direction': 'top',
-        'action': 'idle',
-        'armor': 'enclave_power_armor',
-        'weapon': 'no_weapon',
-        'count': 12,
-        'speed': 0.3
-    },
-    {
-        'direction': 'bottom',
-        'action': 'idle',
-        'armor': 'enclave_power_armor',
-        'weapon': 'no_weapon',
-        'count': 12,
-        'speed': 0.3
-    }
-]))
+    ]))
+
+sprite_proto.register_object(
+
+    (ArmorType.ENCLAVE_POWER_ARMOR, WeaponType.NO_WEAPON, ActionType.IDLE),
+
+    AnimatedSprite.prepare_easeljs_data([
+        {
+            'direction': DirectionType.LEFT,
+            'action': ActionType.IDLE,
+            'armor': ArmorType.ENCLAVE_POWER_ARMOR,
+            'weapon': WeaponType.NO_WEAPON,
+            'count': 12,
+            'speed': 0.3
+        },
+        {
+            'direction': DirectionType.RIGHT,
+            'action': ActionType.IDLE,
+            'armor': ArmorType.ENCLAVE_POWER_ARMOR,
+            'weapon': WeaponType.NO_WEAPON,
+            'count': 12,
+            'speed': 0.3
+        },
+        {
+            'direction': DirectionType.TOP,
+            'action': ActionType.IDLE,
+            'armor': ArmorType.ENCLAVE_POWER_ARMOR,
+            'weapon': WeaponType.NO_WEAPON,
+            'count': 12,
+            'speed': 0.3
+        },
+        {
+            'direction': DirectionType.BOTTOM,
+            'action': ActionType.IDLE,
+            'armor': ArmorType.ENCLAVE_POWER_ARMOR,
+            'weapon': WeaponType.NO_WEAPON,
+            'count': 12,
+            'speed': 0.3
+        }
+
+    ]))
+
+sprite_proto.register_object(
+
+    (ArmorType.ENCLAVE_POWER_ARMOR, WeaponType.FLAMETHROWER, ActionType.WALK),
+
+    AnimatedSprite.prepare_easeljs_data([
+        {
+            'direction': DirectionType.LEFT,
+            'action': ActionType.WALK,
+            'armor': ArmorType.ENCLAVE_POWER_ARMOR,
+            'weapon': WeaponType.FLAMETHROWER,
+            'count': 8,
+            'speed': 0.3
+        },
+        {
+            'direction': DirectionType.RIGHT,
+            'action': ActionType.WALK,
+            'armor': ArmorType.ENCLAVE_POWER_ARMOR,
+            'weapon': WeaponType.FLAMETHROWER,
+            'count': 8,
+            'speed': 0.3
+        },
+        {
+            'direction': DirectionType.TOP,
+            'action': ActionType.WALK,
+            'armor': ArmorType.ENCLAVE_POWER_ARMOR,
+            'weapon': WeaponType.FLAMETHROWER,
+            'count': 8,
+            'speed': 0.3
+        },
+        {
+            'direction': DirectionType.BOTTOM,
+            'action': ActionType.WALK,
+            'armor': ArmorType.ENCLAVE_POWER_ARMOR,
+            'weapon': WeaponType.FLAMETHROWER,
+            'count': 8,
+            'speed': 0.3
+        }
+
+    ]))
+
+sprite_proto.register_object(
+
+    (ArmorType.ENCLAVE_POWER_ARMOR, WeaponType.FLAMETHROWER, ActionType.IDLE),
+
+    AnimatedSprite.prepare_easeljs_data([
+        {
+            'direction': DirectionType.LEFT,
+            'action': ActionType.IDLE,
+            'armor': ArmorType.ENCLAVE_POWER_ARMOR,
+            'weapon': WeaponType.NO_WEAPON,
+            'count': 12,
+            'speed': 0.3
+        },
+        {
+            'direction': DirectionType.RIGHT,
+            'action': ActionType.IDLE,
+            'armor': ArmorType.ENCLAVE_POWER_ARMOR,
+            'weapon': WeaponType.NO_WEAPON,
+            'count': 12,
+            'speed': 0.3
+        },
+        {
+            'direction': DirectionType.TOP,
+            'action': ActionType.IDLE,
+            'armor': ArmorType.ENCLAVE_POWER_ARMOR,
+            'weapon': WeaponType.NO_WEAPON,
+            'count': 12,
+            'speed': 0.3
+        },
+        {
+            'direction': DirectionType.BOTTOM,
+            'action': ActionType.IDLE,
+            'armor': ArmorType.ENCLAVE_POWER_ARMOR,
+            'weapon': WeaponType.NO_WEAPON,
+            'count': 12,
+            'speed': 0.3
+        }
+
+    ]))
 
 
-sprite_proto.register_object(('enclave_power_armor', 'flamer', 'fire'), AnimatedSprite.prepare_easeljs_data([
-    {
-        'direction': 'left',
-        'action': 'fire',
-        'armor': 'enclave_power_armor',
-        'weapon': 'flamer',
-        'count': 3,
-        'speed': 1
-    },
-    {
-        'direction': 'right',
-        'action': 'fire',
-        'armor': 'enclave_power_armor',
-        'weapon': 'flamer',
-        'count': 3,
-        'speed': 1
-    }
-]))
+# sprite_proto.register_object(('enclave_power_armor', 'flamer', 'fire'), AnimatedSprite.prepare_easeljs_data([
+#     {
+#         'direction': 'left',
+#         'action': 'fire',
+#         'armor': 'enclave_power_armor',
+#         'weapon': 'flamer',
+#         'count': 3,
+#         'speed': 1
+#     },
+#     {
+#         'direction': 'right',
+#         'action': 'fire',
+#         'armor': 'enclave_power_armor',
+#         'weapon': 'flamer',
+#         'count': 3,
+#         'speed': 1
+#     }
+# ]))

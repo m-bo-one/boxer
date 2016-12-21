@@ -11,8 +11,11 @@ from geventwebsocket import (
 
 from conf import settings
 from utils import setup_logging
-from db import DB
+from db import DB, DBClient
 from models import UserModel
+
+
+db = DBClient().connect('redis')
 
 
 class GameApplication(WebSocketApplication):

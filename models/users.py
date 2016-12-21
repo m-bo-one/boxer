@@ -5,19 +5,12 @@ import hashlib
 import time
 import uuid
 
-import gevent
-import redis
-import redis.connection
-
-from db import DB
-from utils import await_greenlet
+from db import DB, DBClient
+from constants import ActionType, DirectionType, WeaponType, ArmorType
 from .sprite import sprite_proto, sp_key_builder
 
 
-redis.connection.socket = gevent.socket
-pool = redis.ConnectionPool(max_connections=20)
-db = redis.Redis(connection_pool=pool)
-p = db.connection_pool
+db = DBClient().connect('redis')
 
 
 class UserModel(object):
@@ -32,15 +25,15 @@ class UserModel(object):
                  x=random.randint(0, DB['map']['width'] - 100),
                  y=random.randint(0, DB['map']['height'] - 100),
                  speed=5,
-                 action='idle',
-                 direction='left',
-                 armor='enclave_power_armor',
-                 weapon='no_weapon',
+                 action=ActionType.IDLE,
+                 direction=DirectionType.LEFT,
+                 armor=ArmorType.ENCLAVE_POWER_ARMOR,
+                 weapon=WeaponType.NO_WEAPON,
                  armors=None,
                  weapons=None,
                  sprites=None):
 
-        self.id = id
+        self.id = id or self.generate_id()
         self.x = x
         self.y = y
         self.speed = speed
@@ -48,8 +41,9 @@ class UserModel(object):
         self.direction = direction
         self.armor = armor
         self.weapon = weapon
-        self.armors = ['enclave_power_armor'] if not armors else armors
-        self.weapons = ['no_weapon', 'flamer'] if not weapons else weapons
+        self.armors = [ArmorType.ENCLAVE_POWER_ARMOR] if not armors else armors
+        self.weapons = [WeaponType.NO_WEAPON, WeaponType.FLAMETHROWER] \
+            if not weapons else weapons
 
         if not sprites:
             self.load_sprites()
@@ -57,26 +51,26 @@ class UserModel(object):
             self.sprites = sprites
 
     def save(self):
-        return await_greenlet(db.hset, 'users', self.id, self.to_json())
+        return db.hset('users', self.id, self.to_json())
 
     @classmethod
     def get(cls, id):
-        return cls(**json.loads(await_greenlet(db.hget, 'users', id)))
+        return cls(**json.loads(db.hget('users', id)))
 
     @classmethod
     def delete(cls, id=None):
         if not id:
-            return await_greenlet(db.delete, 'users')
-        return await_greenlet(db.hdel, 'users', id)
+            return db.delete('users')
+        return db.hdel('users', id)
 
     @classmethod
     def all(cls):
-        users = await_greenlet(db.hgetall, 'users')
+        users = db.hgetall('users')
         return [cls(**json.loads(user)) for user in users.values()]
 
     @classmethod
     def get_users_map(cls):
-        return await_greenlet(db.hgetall, 'users')
+        return db.hgetall('users')
 
     def to_dict(self):
         return {
@@ -86,10 +80,10 @@ class UserModel(object):
             'speed': self.speed,
             'action': self.action,
             'direction': self.direction,
-            'armor': str(self.armor),
-            'weapon': str(self.weapon),
-            'weapons': [str(weapon) for weapon in self.weapons],
-            'armors': [str(armor) for armor in self.armors],
+            'armor': self.armor,
+            'weapon': self.weapon,
+            'weapons': self.weapons,
+            'armors': self.armors,
             'sprites': self.sprites
         }
 
@@ -103,7 +97,7 @@ class UserModel(object):
                                          .clone((armor, weapon, action)))
             for armor in self.armors
             for weapon in self.weapons
-            for action in ['idle', 'walk']}
+            for action in [ActionType.IDLE, ActionType.WALK]}
 
     @staticmethod
     def generate_id():
@@ -112,7 +106,7 @@ class UserModel(object):
 
     @classmethod
     def register_user(cls, socket, **kwargs):
-        user = cls(id=cls.generate_id())
+        user = cls()
         user.save()
         DB['sockets'][socket] = user.id
         return user
@@ -172,8 +166,8 @@ class UserModel(object):
         # FIXME: Hardcoded, need to fix in future
         logging.info('Current weapon: %s', self.weapon)
 
-        if type == 'weapon' and self.weapon != 'no_weapon':
-            self.weapon = 'no_weapon'
+        if type == 'weapon' and self.weapon != WeaponType.NO_WEAPON:
+            self.weapon = WeaponType.NO_WEAPON
         elif type == 'weapon':
             self.weapon = self.weapons[1]
 

@@ -1,23 +1,23 @@
 import enum
 
 
-class ActionType(enum.IntEnum):
-    IDLE = 0
-    WALK = 1
+class ActionType(dict):
+    IDLE = 'idle'
+    WALK = 'walk'
 
 
-class DirectionType(enum.IntEnum):
-    LEFT = 0
-    RIGHT = 1
-    TOP = 2
-    BOTTOM = 3
+class DirectionType(dict):
+    LEFT = 'left'
+    RIGHT = 'right'
+    TOP = 'top'
+    BOTTOM = 'bottom'
 
 
-class WeaponType(enum.IntEnum):
-    NO_WEAPON = 0
-    FLAMETHROWER = 1
+class WeaponType(dict):
+    NO_WEAPON = 'no_weapon'
+    FLAMETHROWER = 'flamethrower'
 
 
-class ArmorType(enum.IntEnum):
-    NO_ARMOR = 0
-    ENCLAVE_POWER_ARMOR = 1
+class ArmorType(dict):
+    NO_ARMOR = 'no_armor'
+    ENCLAVE_POWER_ARMOR = 'enclave_power_armor'
