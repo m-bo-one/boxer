@@ -1,9 +1,22 @@
 import logging
 import random
 import json
+import hashlib
+import time
+import uuid
+
+import gevent
+import redis
+import redis.connection
 
 from db import DB
+from utils import await_greenlet
 from .sprite import sprite_proto, sp_key_builder
+
+
+redis.connection.socket = gevent.socket
+pool = redis.ConnectionPool(max_connections=20)
+db = redis.Redis(connection_pool=pool)
 
 
 class UserModel(object):
@@ -42,6 +55,26 @@ class UserModel(object):
         else:
             self.sprites = sprites
 
+    def save(self):
+        return await_greenlet(db.hset, 'users', self.id, self.to_json())
+
+    @classmethod
+    def get(cls, id):
+        return cls(**json.loads(await_greenlet(db.hget, 'users', id)))
+
+    @classmethod
+    def delete(cls, id):
+        return await_greenlet(db.hdel, 'users', id)
+
+    @classmethod
+    def all(cls):
+        users = await_greenlet(db.hgetall, 'users')
+        return [cls(**json.loads(user)) for user in users.values()]
+
+    @classmethod
+    def get_users_map(cls):
+        return await_greenlet(db.hgetall, 'users')
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -69,11 +102,15 @@ class UserModel(object):
             for weapon in self.weapons
             for action in ['idle', 'walk']}
 
+    @staticmethod
+    def generate_id():
+        return hashlib.md5("%s:%s" % (time.time(), uuid.uuid4().hex)) \
+            .hexdigest()
+
     @classmethod
     def register_user(cls, socket, **kwargs):
-        user = cls(id=DB['id_counter'])
-        DB['id_counter'] += 1
-        DB['users'][user.id] = user.to_dict()
+        user = cls(id=cls.generate_id())
+        user.save()
         DB['sockets'][socket] = user.id
         return user
 
@@ -82,7 +119,7 @@ class UserModel(object):
         try:
             user_id = DB['sockets'][socket]
             del DB['sockets'][socket]
-            del DB['users'][user_id]
+            cls.delete(user_id)
         except KeyError:
             user_id = None
 
@@ -123,7 +160,7 @@ class UserModel(object):
     def autosave(func):
         def wrapper(self, *args, **kwargs):
             result = func(self, *args, **kwargs)
-            DB['users'][self.id] = self.to_dict()
+            self.save()
             return result
         return wrapper
 

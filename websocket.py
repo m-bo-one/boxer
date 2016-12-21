@@ -18,8 +18,7 @@ from models import UserModel
 class GameApplication(WebSocketApplication):
 
     def get_user_from_ws(self):
-        user_data = DB['users'][DB['sockets'][self.ws]]
-        return UserModel(**user_data)
+        return UserModel.get(DB['sockets'][self.ws])
 
     def on_open(self):
         logging.info("Connection opened")
@@ -61,7 +60,7 @@ class GameApplication(WebSocketApplication):
     def register_user(self):
         user = UserModel.register_user(self.ws)
         self.broadcast('register_user', user.to_dict())
-        self.broadcast_all('users_map', DB['users'])
+        self.broadcast_all('users_map', UserModel.get_users_map())
 
     def unregister_user(self):
         user_id = UserModel.unregister_user(self.ws)
