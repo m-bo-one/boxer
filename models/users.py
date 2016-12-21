@@ -17,6 +17,7 @@ from .sprite import sprite_proto, sp_key_builder
 redis.connection.socket = gevent.socket
 pool = redis.ConnectionPool(max_connections=20)
 db = redis.Redis(connection_pool=pool)
+p = db.connection_pool
 
 
 class UserModel(object):
@@ -63,7 +64,9 @@ class UserModel(object):
         return cls(**json.loads(await_greenlet(db.hget, 'users', id)))
 
     @classmethod
-    def delete(cls, id):
+    def delete(cls, id=None):
+        if not id:
+            return await_greenlet(db.delete, 'users')
         return await_greenlet(db.hdel, 'users', id)
 
     @classmethod

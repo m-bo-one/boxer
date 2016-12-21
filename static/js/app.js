@@ -78,12 +78,13 @@ $(function () {
             });
             ws.on('users_map', function(data) {
                 for (var user_id in data) {
-                    user_id = parseInt(user_id);
                     if (app.user && app.user.id !== user_id) {
+                        var otherUser = data[user_id];
+                        otherUser = (typeof otherUser === 'string') ? JSON.parse(otherUser) : otherUser;
                         if (app.users.hasOwnProperty(user_id)) {
-                            app.users[user_id].refreshData(data[user_id]);
+                            app.users[user_id].refreshData(otherUser);
                         } else {
-                            app.users[user_id] = new app.UserModel(data[user_id]);   
+                            app.users[user_id] = new app.UserModel(otherUser);   
                         }
                     }
                 }

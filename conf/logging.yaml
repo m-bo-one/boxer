@@ -30,5 +30,5 @@ loggers:
         handlers: [console]
 
 root:
-    level: DEBUG
+    level: INFO
     handlers: [console]
