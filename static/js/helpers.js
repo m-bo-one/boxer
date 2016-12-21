@@ -1,4 +1,5 @@
 var app = app || {};
+
 var utils = (function() {
 
     'use strict';

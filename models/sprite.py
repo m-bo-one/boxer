@@ -40,7 +40,7 @@ class AnimatedSprite(object):
                 'armor': 'power_armor',
                 'weapon': 'knife',
                 'count': 4,
-                'speed': 0.5
+                'speed': 0.3
             },
 
             ...
@@ -102,7 +102,7 @@ sprite_proto.register_object(('enclave_power_armor', 'no_weapon', 'walk'), Anima
         'armor': 'enclave_power_armor',
         'weapon': 'no_weapon',
         'count': 8,
-        'speed': 0.5
+        'speed': 0.3
     },
     {
         'direction': 'right',
@@ -110,7 +110,7 @@ sprite_proto.register_object(('enclave_power_armor', 'no_weapon', 'walk'), Anima
         'armor': 'enclave_power_armor',
         'weapon': 'no_weapon',
         'count': 8,
-        'speed': 0.5
+        'speed': 0.3
     },
     {
         'direction': 'top',
@@ -118,7 +118,7 @@ sprite_proto.register_object(('enclave_power_armor', 'no_weapon', 'walk'), Anima
         'armor': 'enclave_power_armor',
         'weapon': 'no_weapon',
         'count': 8,
-        'speed': 0.5
+        'speed': 0.3
     },
     {
         'direction': 'bottom',
@@ -126,7 +126,7 @@ sprite_proto.register_object(('enclave_power_armor', 'no_weapon', 'walk'), Anima
         'armor': 'enclave_power_armor',
         'weapon': 'no_weapon',
         'count': 8,
-        'speed': 0.5
+        'speed': 0.3
     }
 ]))
 
@@ -137,7 +137,7 @@ sprite_proto.register_object(('enclave_power_armor', 'no_weapon', 'idle'), Anima
         'armor': 'enclave_power_armor',
         'weapon': 'no_weapon',
         'count': 12,
-        'speed': 0.5
+        'speed': 0.3
     },
     {
         'direction': 'right',
@@ -145,7 +145,7 @@ sprite_proto.register_object(('enclave_power_armor', 'no_weapon', 'idle'), Anima
         'armor': 'enclave_power_armor',
         'weapon': 'no_weapon',
         'count': 12,
-        'speed': 0.5
+        'speed': 0.3
     },
     {
         'direction': 'top',
@@ -153,7 +153,7 @@ sprite_proto.register_object(('enclave_power_armor', 'no_weapon', 'idle'), Anima
         'armor': 'enclave_power_armor',
         'weapon': 'no_weapon',
         'count': 12,
-        'speed': 0.5
+        'speed': 0.3
     },
     {
         'direction': 'bottom',
@@ -161,7 +161,7 @@ sprite_proto.register_object(('enclave_power_armor', 'no_weapon', 'idle'), Anima
         'armor': 'enclave_power_armor',
         'weapon': 'no_weapon',
         'count': 12,
-        'speed': 0.5
+        'speed': 0.3
     }
 ]))
 
@@ -172,7 +172,7 @@ sprite_proto.register_object(('enclave_power_armor', 'flamer', 'walk'), Animated
         'armor': 'enclave_power_armor',
         'weapon': 'flamer',
         'count': 8,
-        'speed': 0.5
+        'speed': 0.3
     },
     {
         'direction': 'right',
@@ -180,7 +180,7 @@ sprite_proto.register_object(('enclave_power_armor', 'flamer', 'walk'), Animated
         'armor': 'enclave_power_armor',
         'weapon': 'flamer',
         'count': 8,
-        'speed': 0.5
+        'speed': 0.3
     },
     {
         'direction': 'top',
@@ -188,7 +188,7 @@ sprite_proto.register_object(('enclave_power_armor', 'flamer', 'walk'), Animated
         'armor': 'enclave_power_armor',
         'weapon': 'flamer',
         'count': 8,
-        'speed': 0.5
+        'speed': 0.3
     },
     {
         'direction': 'bottom',
@@ -196,7 +196,7 @@ sprite_proto.register_object(('enclave_power_armor', 'flamer', 'walk'), Animated
         'armor': 'enclave_power_armor',
         'weapon': 'flamer',
         'count': 8,
-        'speed': 0.5
+        'speed': 0.3
     }
 ]))
 
@@ -207,7 +207,7 @@ sprite_proto.register_object(('enclave_power_armor', 'flamer', 'idle'), Animated
         'armor': 'enclave_power_armor',
         'weapon': 'no_weapon',
         'count': 12,
-        'speed': 0.5
+        'speed': 0.3
     },
     {
         'direction': 'right',
@@ -215,7 +215,7 @@ sprite_proto.register_object(('enclave_power_armor', 'flamer', 'idle'), Animated
         'armor': 'enclave_power_armor',
         'weapon': 'no_weapon',
         'count': 12,
-        'speed': 0.5
+        'speed': 0.3
     },
     {
         'direction': 'top',
@@ -223,7 +223,7 @@ sprite_proto.register_object(('enclave_power_armor', 'flamer', 'idle'), Animated
         'armor': 'enclave_power_armor',
         'weapon': 'no_weapon',
         'count': 12,
-        'speed': 0.5
+        'speed': 0.3
     },
     {
         'direction': 'bottom',
@@ -231,7 +231,7 @@ sprite_proto.register_object(('enclave_power_armor', 'flamer', 'idle'), Animated
         'armor': 'enclave_power_armor',
         'weapon': 'no_weapon',
         'count': 12,
-        'speed': 0.5
+        'speed': 0.3
     }
 ]))
 

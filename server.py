@@ -48,7 +48,8 @@ class BaseHttpRunner(object):
     def app_settings(self):
         return {
             'WEBSOCKET_ADDRESS': "%s:%s" % settings.WEBSOCKET_ADDRESS,
-            'DEBUG': settings.TEMPLATE_DEBUG
+            'DEBUG': settings.TEMPLATE_DEBUG,
+            'FPS': settings.FPS
         }
 
     @property

@@ -37,47 +37,15 @@ $(function () {
         }
     };
 
-    var Socket = {
+    var Stream = {
         init: function (app) {
             var ws = new WebSocket("ws://" + app.config.WEBSOCKET_ADDRESS + "/game");
+            _.extend(ws, Backbone.Events)
 
             ws.onmessage = function(evt) {
                 var answer = JSON.parse(evt.data);
                 var parsedData = answer.data;
-                switch (answer.msg_type) {
-                    case 'render_map':
-                        app.canvas.width = parsedData.width;
-                        app.canvas.height = parsedData.height;
-                        var text = new createjs.Text();
-                        text.text = "HP: 100"
-                        text.font = "40px Arial";
-                        text.color = "#ff7700";
-                        text.x = app.canvas.width - 145;
-                        text.y -= 5;
-                        app.stage.addChild(text);
-                        break;
-                    case 'register_user':
-                        app.user = new app.UserModel(parsedData);
-                        break;
-                    case 'unregister_user':
-                        app.users[parsedData.id].destroy();
-                        break;
-                    case 'player_update':
-                        app.user.refreshData(parsedData);
-                        break;
-                    case 'users_map':
-                        for (var user_id in parsedData) {
-                            user_id = parseInt(user_id);
-                            if (app.user && app.user.id !== user_id) {
-                                if (app.users.hasOwnProperty(user_id)) {
-                                    app.users[user_id].refreshData(parsedData[user_id]);
-                                } else {
-                                    app.users[user_id] = new app.UserModel(parsedData[user_id]);   
-                                }
-                            }
-                        }
-                        break;
-                }
+                ws.trigger(answer.msg_type, parsedData);
             };
             ws.onopen = function(evt) {
                 $('#conn_status').html('<b>WS Connected</b>');
@@ -88,6 +56,38 @@ $(function () {
             ws.onclose = function(evt) {
                 $('#conn_status').html('<b>WS Closed</b>');
             };
+            ws.on('render_map', function(data) {
+                app.canvas.width = data.width;
+                app.canvas.height = data.height;
+                var text = new createjs.Text();
+                text.text = "HP: 100"
+                text.font = "40px Arial";
+                text.color = "#ff7700";
+                text.x = app.canvas.width - 145;
+                text.y -= 5;
+                app.stage.addChild(text);
+            });
+            ws.on('register_user', function(data) {
+                app.user = new app.UserModel(data);   
+            });
+            ws.on('unregister_user', function(data) {
+                app.users[data.id].destroy();  
+            });
+            ws.on('player_update', function(data) {
+                app.user.refreshData(data);
+            });
+            ws.on('users_map', function(data) {
+                for (var user_id in data) {
+                    user_id = parseInt(user_id);
+                    if (app.user && app.user.id !== user_id) {
+                        if (app.users.hasOwnProperty(user_id)) {
+                            app.users[user_id].refreshData(data[user_id]);
+                        } else {
+                            app.users[user_id] = new app.UserModel(data[user_id]);   
+                        }
+                    }
+                }
+            });
 
             app.ws = ws;
         }
@@ -100,9 +100,9 @@ $(function () {
     app.user = null;
     app.stage = new createjs.Stage(app.canvas);
 
-    Socket.init(app);
+    Stream.init(app);
 
-    createjs.Ticker.setFPS(60);
+    createjs.Ticker.setFPS(app.config.FPS);
     createjs.Ticker.addEventListener("tick", gameLoop);
 
     window.addEventListener("keydown", function (e) {

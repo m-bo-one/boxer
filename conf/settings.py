@@ -16,6 +16,8 @@ STATIC_URL = '/static/'
 
 TEMPLATES_PATH = os.path.join(PROJECT_PATH, 'templates')
 
+FPS = 60
+
 DATABASES = {
     'default': {
         'DB': 'boxer',
