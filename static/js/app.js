@@ -59,22 +59,23 @@ $(function () {
             ws.on('render_map', function(data) {
                 app.canvas.width = data.width;
                 app.canvas.height = data.height;
-                var text = new createjs.Text();
-                text.text = "HP: 100"
-                text.font = "40px Arial";
-                text.color = "#ff7700";
-                text.x = app.canvas.width - 145;
-                text.y -= 5;
-                app.stage.addChild(text);
-            });
             ws.on('register_user', function(data) {
-                app.user = new app.UserModel(data);   
+                app.user = new app.UserModel(data);
+                app._text = new createjs.Text();
+                app._text.text = "HP: " + app.user.health;
+                app._text.font = "40px Arial";
+                app._text.color = "#ff7700";
+                app._text.x = app.canvas.width - 145;
+                app._text.y -= 5;
+                app.stage.addChild(app._text);
+            });   
             });
             ws.on('unregister_user', function(data) {
-                app.users[data.id].destroy();  
+                app.users[data.id].destroy();
             });
             ws.on('player_update', function(data) {
                 app.user.refreshData(data);
+                app._text.text = "HP: " + app.user.health;
             });
             ws.on('users_map', function(data) {
                 for (var user_id in data) {
@@ -113,7 +114,7 @@ $(function () {
             app.user.equipWeapon();
         }
         // button 'space'
-        if (app.keys[8]) {
+        if (app.keys[32]) {
             app.user.shoot();
         }
     });

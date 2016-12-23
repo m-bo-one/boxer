@@ -31,6 +31,7 @@ class UserModel(object):
                  weapon=WeaponType.NO_WEAPON,
                  armors=None,
                  weapons=None,
+                 health=100,
                  sprites=None):
 
         self.id = id or self.generate_id()
@@ -41,6 +42,7 @@ class UserModel(object):
         self.direction = direction
         self.armor = armor
         self.weapon = weapon
+        self.health = health
         self.armors = [ArmorType.ENCLAVE_POWER_ARMOR] if not armors else armors
         self.weapons = [WeaponType.NO_WEAPON, WeaponType.FLAMETHROWER] \
             if not weapons else weapons
@@ -82,6 +84,7 @@ class UserModel(object):
             'direction': self.direction,
             'armor': self.armor,
             'weapon': self.weapon,
+            'health': self.health,
             'weapons': self.weapons,
             'armors': self.armors,
             'sprites': self.sprites
@@ -99,6 +102,10 @@ class UserModel(object):
             for weapon in self.weapons
             for action in [ActionType.IDLE, ActionType.WALK]}
 
+    @property
+    def is_dead(self):
+        return bool(self.health <= 0)
+
     @staticmethod
     def generate_id():
         return hashlib.md5("%s:%s" % (time.time(), uuid.uuid4().hex)) \
@@ -109,6 +116,7 @@ class UserModel(object):
         user = cls()
         user.save()
         DB['sockets'][socket] = user.id
+        DB['users'][user.id] = socket
         return user
 
     @classmethod
@@ -116,6 +124,7 @@ class UserModel(object):
         try:
             user_id = DB['sockets'][socket]
             del DB['sockets'][socket]
+            del DB['users'][user_id]
             cls.delete(user_id)
         except KeyError:
             user_id = None
@@ -160,6 +169,11 @@ class UserModel(object):
             self.save()
             return result
         return wrapper
+
+    @autosave
+    def shoot(self):
+        self.health -= 1
+        return self
 
     @autosave
     def equip(self, type):

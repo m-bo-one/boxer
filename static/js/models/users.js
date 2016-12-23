@@ -22,6 +22,7 @@ var app = app || {},
             this.direction = options.direction;
             this.armor = options.armor;
             this.weapon = options.weapon;
+            this.health = options.health;
 
             this.loadSprites(options);
 
@@ -51,8 +52,14 @@ var app = app || {},
             utils._LOG('Receive update: direction - ' + options.direction + '; action - ' + options.action);
             this.currentSprite.x = options.x;
             this.currentSprite.y = options.y;
+            this.health = options.health;
 
             var way = utils.getSpriteWay(options.action, options.direction);
+
+            if (this.health <= 0) {
+                console.log('Game over!');
+                return;
+            }
 
             if (this.currentSprite.currentAnimation != way) {
                 app.stage.removeChild(this.currentSprite);
@@ -85,7 +92,11 @@ var app = app || {},
             app.ws.send(data);
         },
         shoot: function () {
-            // TODO: Fire shoot event
+            var data = JSON.stringify({
+                msg_type: 'player_shoot',
+                data: {}
+            })
+            app.ws.send(data);
         },
         stop: function() {
             this.move("idle", this.direction);
