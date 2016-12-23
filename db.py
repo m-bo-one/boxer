@@ -4,16 +4,6 @@ import gevent
 import redis
 import redis.connection
 
-DB = {
-    'map': {
-        'width': 1080,
-        'height': 640
-    },
-    'users': {},
-    'sockets': {},
-    'id_counter': 0,
-}
-
 
 class DBClient(object):
 
@@ -34,7 +24,13 @@ class DBClient(object):
                     url='redis://127.0.0.1:6379?db=0',
                     max_connections=self.max_connections)
                 self.shared_state[name] = redis.Redis(connection_pool=pool)
+            elif name == 'local':
+                self.shared_state[name] = {}
             else:
                 raise Exception('Connector not found.')
 
             return self.shared_state[name]
+
+
+redis_db = DBClient().connect('redis')
+local_db = DBClient().connect('local')

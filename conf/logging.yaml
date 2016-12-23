@@ -14,7 +14,7 @@ formatters:
 handlers:
     console:
         class: logging.StreamHandler
-        level: ERROR
+        level: INFO
         formatter: colored
         stream: ext://sys.stdout
 

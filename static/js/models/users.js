@@ -26,6 +26,9 @@ var app = app || {},
 
             this.loadSprites(options);
 
+            this.width = options.width;
+            this.height = options.height;
+
             app.users[this.id] = this;
         },
         loadSprites: function(options) {
@@ -53,8 +56,8 @@ var app = app || {},
             this.currentSprite.x = options.x;
             this.currentSprite.y = options.y;
             this.health = options.health;
-
-            this.hud.update();
+            this.width = options.width;
+            this.height = options.height;
 
             var way = utils.getSpriteWay(options.action, options.direction);
 

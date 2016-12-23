@@ -40,7 +40,7 @@ $(function () {
     var Stream = {
         init: function (app) {
             var ws = new WebSocket("ws://" + app.config.WEBSOCKET_ADDRESS + "/game");
-            _.extend(ws, Backbone.Events)
+            _.extend(ws, Backbone.Events);
 
             ws.onmessage = function(evt) {
                 var answer = JSON.parse(evt.data);
@@ -59,17 +59,17 @@ $(function () {
             ws.on('render_map', function(data) {
                 app.canvas.width = data.width;
                 app.canvas.height = data.height;
+            });
             ws.on('register_user', function(data) {
                 app.user = new app.UserModel(data);
-                app.user.hud = new app.HudView();
-                app.user.hud.render();
-            });   
+                app.hud = new app.HudView();
             });
             ws.on('unregister_user', function(data) {
                 app.users[data.id].destroy();
             });
             ws.on('player_update', function(data) {
                 app.user.refreshData(data);
+                app.hud.update();
             });
             ws.on('users_map', function(data) {
                 for (var user_id in data) {

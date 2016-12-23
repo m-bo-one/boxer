@@ -5,6 +5,7 @@ import logging
 import json
 from collections import OrderedDict
 
+import gevent
 from gevent import monkey; monkey.patch_all()  # noqa
 from geventwebsocket import (
     WebSocketServer, WebSocketApplication, Resource, WebSocketError)
@@ -12,11 +13,16 @@ from eventemitter import EventEmitter
 
 from conf import settings
 from utils import setup_logging
-from db import DB, DBClient
+from db import local_db
 from models import UserModel
 
 
-db = DBClient().connect('redis')
+local_db['socket2uid'] = {}
+local_db['uid2socket'] = {}
+local_db['map_size'] = {
+    'width': 1080,
+    'height': 640
+}
 
 
 class GameApplication(WebSocketApplication, EventEmitter):
@@ -27,6 +33,14 @@ class GameApplication(WebSocketApplication, EventEmitter):
         self.on('player_equip', self.player_equip)
         self.on('player_shoot', self.player_shoot)
         self.on('unregister_user', self.unregister_user)
+
+        gevent.spawn(self.run_ticker)
+
+    def run_ticker(self):
+        while True:
+            gevent.sleep(0.1)
+            logging.info('Updating map...')
+            self.broadcast_all('users_map', UserModel.get_users_map())
 
     def broadcast(self, msg_type, data, ws=None):
         try:
@@ -41,17 +55,13 @@ class GameApplication(WebSocketApplication, EventEmitter):
 
     def get_user_from_ws(self, ws=None):
         ws = self.ws if not ws else ws
-        return UserModel.get(DB['sockets'][ws])
+        return UserModel.get(local_db['socket2uid'][ws])
 
     def on_open(self):
         logging.info("Connection opened")
         user = UserModel.register_user(self.ws)
-        self.broadcast('render_map', {
-            'width': 1080,
-            'height': 640
-        })
+        self.broadcast('render_map', local_db['map_size'])
         self.broadcast('register_user', user.to_dict())
-        self.broadcast_all('users_map', UserModel.get_users_map())
 
     def on_message(self, message):
         logging.info('Current clients: %s',
@@ -65,10 +75,6 @@ class GameApplication(WebSocketApplication, EventEmitter):
         logging.info('Evaluate msg %s' % message['msg_type'])
 
         self.emit(message['msg_type'], message)
-
-        logging.info('Updating map...')
-
-        self.broadcast_all('users_map', UserModel.get_users_map())
 
     def player_equip(self, message):
         user = self.get_user_from_ws()
@@ -95,7 +101,7 @@ class GameApplication(WebSocketApplication, EventEmitter):
         hitted_player = user.shoot()
         if hitted_player:
             self.broadcast('player_update', hitted_player.to_dict(),
-                           DB['users'][hitted_player.id])
+                           local_db['uid2socket'][hitted_player.id])
 
 
 if __name__ == '__main__':

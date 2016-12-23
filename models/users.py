@@ -1,16 +1,10 @@
 import logging
 import random
 import json
-import hashlib
-import time
-import uuid
 
-from db import DB, DBClient
+from db import redis_db, local_db
 from constants import ActionType, DirectionType, WeaponType, ArmorType
 from .sprite import sprite_proto, sp_key_builder
-
-
-db = DBClient().connect('redis')
 
 
 class UserModel(object):
@@ -22,8 +16,8 @@ class UserModel(object):
 
     def __init__(self,
                  id=None,
-                 x=random.randint(0, DB['map']['width'] - 100),
-                 y=random.randint(0, DB['map']['height'] - 100),
+                 x=0,
+                 y=0,
                  speed=5,
                  action=ActionType.IDLE,
                  direction=DirectionType.LEFT,
@@ -32,7 +26,8 @@ class UserModel(object):
                  armors=None,
                  weapons=None,
                  health=100,
-                 sprites=None):
+                 sprites=None,
+                 *args, **kwargs):
 
         self.id = id or self.generate_id()
         self.x = x
@@ -52,33 +47,41 @@ class UserModel(object):
         else:
             self.sprites = sprites
 
+        self._current_sprite = self.sprites[sp_key_builder(self.armor,
+                                                           self.weapon,
+                                                           self.action)]
+        self.width = self._current_sprite['frames']['width']
+        self.height = self._current_sprite['frames']['height']
+
     def save(self):
-        return db.hset('users', self.id, self.to_json())
+        return redis_db.hset('users', self.id, self.to_json())
 
     @classmethod
     def get(cls, id):
-        return cls(**json.loads(db.hget('users', id)))
+        return cls(**json.loads(redis_db.hget('users', id)))
 
     @classmethod
     def delete(cls, id=None):
         if not id:
-            return db.delete('users')
-        return db.hdel('users', id)
+            return redis_db.delete('users')
+        return redis_db.hdel('users', id)
 
     @classmethod
     def all(cls):
-        users = db.hgetall('users')
+        users = redis_db.hgetall('users')
         return [cls(**json.loads(user)) for user in users.values()]
 
     @classmethod
     def get_users_map(cls):
-        return db.hgetall('users')
+        return redis_db.hgetall('users')
 
     def to_dict(self):
         return {
             'id': self.id,
             'x': self.x,
             'y': self.y,
+            'width': self.width,
+            'height': self.height,
             'speed': self.speed,
             'action': self.action,
             'direction': self.direction,
@@ -108,23 +111,25 @@ class UserModel(object):
 
     @staticmethod
     def generate_id():
-        return hashlib.md5("%s:%s" % (time.time(), uuid.uuid4().hex)) \
-            .hexdigest()
+        return redis_db.incr('users:uids')
 
     @classmethod
     def register_user(cls, socket, **kwargs):
-        user = cls()
+        user = cls(
+            x=random.randint(0, local_db['map_size']['width'] - 100),
+            y=random.randint(0, local_db['map_size']['height'] - 100),
+        )
         user.save()
-        DB['sockets'][socket] = user.id
-        DB['users'][user.id] = socket
+        local_db['socket2uid'][socket] = user.id
+        local_db['uid2socket'][user.id] = socket
         return user
 
     @classmethod
     def unregister_user(cls, socket):
         try:
-            user_id = DB['sockets'][socket]
-            del DB['sockets'][socket]
-            del DB['users'][user_id]
+            user_id = local_db['socket2uid'][socket]
+            del local_db['socket2uid'][socket]
+            del local_db['uid2socket'][user_id]
             cls.delete(user_id)
         except KeyError:
             user_id = None
@@ -148,19 +153,19 @@ class UserModel(object):
         return result
 
     def map_collision(self):
-        if (self.x > DB['map']['width'] - 100 or self.x < 0 or
-           self.y > DB['map']['height'] - 100 or self.y < 0):
+        if (self.x > local_db['map_size']['width'] - 100 or self.x < 0 or
+           self.y > local_db['map_size']['height'] - 100 or self.y < 0):
             return True
         return False
 
     def user_collision(self):
         # TODO: Fix widht and height
-        for other in DB['users'].values():
-            if (self != other and self.x < other.x + other.width and
-               self.x + self.width > other.x and
-               self.y < other.y + other.height and
-               self.height + self.y > other.y):
-                return True
+        # for other in DB['users'].values():
+        #     if (self != other and self.x < other.x + other.width and
+        #        self.x + self.width > other.x and
+        #        self.y < other.y + other.height and
+        #        self.height + self.y > other.y):
+        #         return True
         return False
 
     def autosave(func):
