@@ -61,13 +61,8 @@ $(function () {
                 app.canvas.height = data.height;
             ws.on('register_user', function(data) {
                 app.user = new app.UserModel(data);
-                app._text = new createjs.Text();
-                app._text.text = "HP: " + app.user.health;
-                app._text.font = "40px Arial";
-                app._text.color = "#ff7700";
-                app._text.x = app.canvas.width - 145;
-                app._text.y -= 5;
-                app.stage.addChild(app._text);
+                app.user.hud = new app.HudView();
+                app.user.hud.render();
             });   
             });
             ws.on('unregister_user', function(data) {
@@ -75,7 +70,6 @@ $(function () {
             });
             ws.on('player_update', function(data) {
                 app.user.refreshData(data);
-                app._text.text = "HP: " + app.user.health;
             });
             ws.on('users_map', function(data) {
                 for (var user_id in data) {

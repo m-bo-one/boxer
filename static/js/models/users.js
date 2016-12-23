@@ -54,6 +54,8 @@ var app = app || {},
             this.currentSprite.y = options.y;
             this.health = options.health;
 
+            this.hud.update();
+
             var way = utils.getSpriteWay(options.action, options.direction);
 
             if (this.health <= 0) {
