@@ -65,16 +65,14 @@ $(function () {
             });
             ws.on('register_user', function(data) {
                 app.user = new app.UserModel(data);
-                app.hud = new app.HudView();
-                app.weaponVision = new app.WeaponVisionView(data);
+                app.user.addView(new app.HudView(data));
+                app.user.addView(new app.WeaponVisionView(data));
             });
             ws.on('unregister_user', function(data) {
                 app.users[data.id].destroy();
             });
             ws.on('player_update', function(data) {
                 app.user.refreshData(data);
-                app.hud.update();
-                app.weaponVision.update(data);
             });
             ws.on('users_map', function(data) {
                 for (var user_id in data) {

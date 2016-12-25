@@ -21,7 +21,24 @@ var app = app || {},
             this.width = options.width;
             this.height = options.height;
 
+            this._views = [];
+
             app.users[this.id] = this;
+        },
+        addView: function(view) {
+            this._views.push(view);
+        },
+        removeView: function(view) {
+            var index = fruits.indexOf(view);
+            if (index > -1) {
+                this._views.splice(index, 1);
+            }
+        },
+        refreshViews: function(options) {
+            for (var i = 0; i < this._views.length; i++) {
+                var view = this._views[i];
+                view.update(options);
+            }
         },
         loadSprites: function(options) {
             this._sprites = {}
@@ -87,6 +104,8 @@ var app = app || {},
 
                 app.stage.addChild(this.currentSprite);
             }
+
+            this.refreshViews(options);
         },
         move: function(action, direction) {
             utils._LOG('Send move: direction - ' + direction + '; action - ' + action);
