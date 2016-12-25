@@ -75,15 +75,6 @@ var app = app || {},
 
             utils._LOG('Receive update: direction - ' + options.direction + '; action - ' + options.action);
 
-            // FIXME: Need to change this on something normal
-            var prevWeapon = this.weapon;
-
-            this.weapon = options.weapon;
-            this.armor = options.armor;
-
-            this.width = options.width;
-            this.height = options.height;
-
             var way = utils.getSpriteWay(options.action, options.direction);
 
             if (this.health <= 0) {
@@ -91,8 +82,13 @@ var app = app || {},
                 return;
             }
 
-            if (prevWeapon != this.weapon || this.currentSprite.currentAnimation != way) {
+            if (this.weapon != options.weapon || this.currentSprite.currentAnimation != way) {
                 app.stage.removeChild(this.currentSprite);
+
+                this.weapon = options.weapon;
+                this.armor = options.armor;
+                this.width = options.width;
+                this.height = options.height;
 
                 this.changeSprite();
 
