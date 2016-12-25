@@ -24,6 +24,9 @@ var utils = (function() {
             if (app.config.DEBUG) {
                 console.log(msg);
             }
+        },
+        toRadians(deg) {
+            return deg * Math.PI / 180;
         }
     };
 })();

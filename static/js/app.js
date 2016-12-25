@@ -20,7 +20,7 @@ $(function () {
         app.stage.update();
         utils._LOG('Current FPS: ' + createjs.Ticker.getMeasuredFPS());
 
-        if (app.user === null || app.keys[38] && app.keys[87] || app.keys[40] && app.keys[83] ||
+        if (app.user === null || app.commandsBlocked || app.keys[38] && app.keys[87] || app.keys[40] && app.keys[83] ||
           app.keys[39] && app.keys[68] || app.keys[37] && app.keys[65]) return;
 
         if (app.keys[38] || app.keys[87]) {
@@ -35,6 +35,7 @@ $(function () {
         else if (app.keys[37] || app.keys[65]) {
             app.user.move('walk', 'left');
         }
+
     };
 
     var Stream = {
@@ -63,6 +64,7 @@ $(function () {
             ws.on('register_user', function(data) {
                 app.user = new app.UserModel(data);
                 app.hud = new app.HudView();
+                app.weaponVision = new app.WeaponVisionView(data);
             });
             ws.on('unregister_user', function(data) {
                 app.users[data.id].destroy();
@@ -70,6 +72,7 @@ $(function () {
             ws.on('player_update', function(data) {
                 app.user.refreshData(data);
                 app.hud.update();
+                app.weaponVision.update(data);
             });
             ws.on('users_map', function(data) {
                 for (var user_id in data) {
@@ -94,6 +97,7 @@ $(function () {
     app.keys = {};
     app.users = {};
     app.user = null;
+    app.commandsBlocked = false;
     app.stage = new createjs.Stage(app.canvas);
 
     Stream.init(app);
@@ -110,6 +114,10 @@ $(function () {
         // button 'space'
         if (app.keys[32]) {
             app.user.shoot();
+            app.commandsBlocked = true;
+            setTimeout(function() {
+                app.commandsBlocked = false;
+            }, 1000);
         }
     });
     window.addEventListener("keyup", function (e) {

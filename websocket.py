@@ -34,7 +34,7 @@ class GameApplication(WebSocketApplication, EventEmitter):
         self.on('player_shoot', self.player_shoot)
         self.on('unregister_user', self.unregister_user)
 
-        gevent.spawn(self.run_ticker)
+        # gevent.spawn(self.run_ticker)
 
     def run_ticker(self):
         while True:

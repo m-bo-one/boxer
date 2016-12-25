@@ -6,14 +6,6 @@ var app = app || {},
 
     app.UserModel = Backbone.Model.extend({
 
-        defaults: {
-            id: null,
-            speed: null,
-            username: null,
-            action: null,
-            direction: null,
-            sprites: null
-        },
         initialize: function(options) {
             this.id = options.id;
             this.speed = options.speed;
@@ -58,6 +50,7 @@ var app = app || {},
             this.health = options.health;
             this.width = options.width;
             this.height = options.height;
+            this.sector = options.sector;
 
             var way = utils.getSpriteWay(options.action, options.direction);
 

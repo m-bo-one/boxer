@@ -7,6 +7,52 @@ from constants import ActionType, DirectionType, WeaponType, ArmorType
 from .sprite import sprite_proto, sp_key_builder
 
 
+class WeaponVision(object):
+
+    def __init__(self, wp_name, x, y, R, alpha):
+        self.wp_name = wp_name
+        self.x = x
+        self.y = y
+        self.R = R
+        self.alpha = alpha
+
+    def to_dict(self):
+        return {
+            'alpha': self.alpha,
+            'R': self.R
+        }
+
+    @property
+    def init_point(self):
+        result = ((self.x + self.width) / 2, (self.y + self.height) / 2)
+        logging.info('Sector start coords: (%s, %s)' % result)
+        return result
+
+    @property
+    def end_point(self):
+        import math
+        alpha = 30  # grad
+        R = 10  # radius
+        # segment height
+        h = R * (1 - math.cos(math.radians(alpha)))
+        # from circle center to start point of segment
+        ir = R * math.sin(math.radians(180 - alpha))
+        total = h + ir
+        if self.direction == 'left':
+            return (self.init_point[0] - total, self.init_point[1])
+        elif self.direction == 'right':
+            return (self.init_point[0] + total, self.init_point[1])
+        elif self.direction == 'top':
+            return (self.init_point[0], self.init_point[1] - total)
+        elif self.direction == 'bottom':
+            return (self.init_point[0], self.init_point[1] + total)
+
+    @classmethod
+    def from_data(cls, wp_name, x, y):
+        if wp_name == WeaponType.FLAMETHROWER:
+            return cls(wp_name, x, y, 200, 25)
+
+
 class UserModel(object):
 
     collision_pipeline = (
@@ -53,6 +99,9 @@ class UserModel(object):
         self.width = self._current_sprite['frames']['width']
         self.height = self._current_sprite['frames']['height']
 
+        self._vision = WeaponVision.from_data(WeaponType.FLAMETHROWER,
+                                              self.x, self.y)
+
     def save(self):
         return redis_db.hset('users', self.id, self.to_json())
 
@@ -90,7 +139,8 @@ class UserModel(object):
             'health': self.health,
             'weapons': self.weapons,
             'armors': self.armors,
-            'sprites': self.sprites
+            'sprites': self.sprites,
+            'vision': self._vision.to_dict()
         }
 
     def to_json(self):

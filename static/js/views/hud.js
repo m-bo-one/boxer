@@ -15,7 +15,7 @@ var app = app || {},
             this._text.text = 'HP: ' + app.user.health;
             this._text.x = app.canvas.width - 145;
             this._text.y -= 5;
-            return this.render();
+            this.render();
         },
 
         render: function() {
