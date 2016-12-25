@@ -82,7 +82,7 @@ class UserModel(object):
         self.weapon = weapon
         self.health = health
         self.armors = [ArmorType.ENCLAVE_POWER_ARMOR] if not armors else armors
-        self.weapons = [WeaponType.NO_WEAPON, WeaponType.FLAMETHROWER] \
+        self.weapons = [WeaponType.NO_WEAPON, WeaponType.M60] \
             if not weapons else weapons
 
         if not sprites:

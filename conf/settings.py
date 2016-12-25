@@ -1,7 +1,7 @@
 import os
 
 DEBUG = False
-TEMPLATE_DEBUG = False
+TEMPLATE_DEBUG = True
 
 SITE_ADDRESS = ('127.0.0.1', 8080)
 WEBSOCKET_ADDRESS = ('127.0.0.1', 9999)

@@ -178,14 +178,14 @@ sprite_proto.register_object(
 
 sprite_proto.register_object(
 
-    (ArmorType.ENCLAVE_POWER_ARMOR, WeaponType.FLAMETHROWER, ActionType.WALK),
+    (ArmorType.ENCLAVE_POWER_ARMOR, WeaponType.M60, ActionType.WALK),
 
     AnimatedSprite.prepare_easeljs_data([
         {
             'direction': DirectionType.LEFT,
             'action': ActionType.WALK,
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
-            'weapon': WeaponType.FLAMETHROWER,
+            'weapon': WeaponType.M60,
             'count': 8,
             'speed': 0.5
         },
@@ -193,7 +193,7 @@ sprite_proto.register_object(
             'direction': DirectionType.RIGHT,
             'action': ActionType.WALK,
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
-            'weapon': WeaponType.FLAMETHROWER,
+            'weapon': WeaponType.M60,
             'count': 8,
             'speed': 0.5
         },
@@ -201,7 +201,7 @@ sprite_proto.register_object(
             'direction': DirectionType.TOP,
             'action': ActionType.WALK,
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
-            'weapon': WeaponType.FLAMETHROWER,
+            'weapon': WeaponType.M60,
             'count': 8,
             'speed': 0.5
         },
@@ -209,7 +209,7 @@ sprite_proto.register_object(
             'direction': DirectionType.BOTTOM,
             'action': ActionType.WALK,
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
-            'weapon': WeaponType.FLAMETHROWER,
+            'weapon': WeaponType.M60,
             'count': 8,
             'speed': 0.5
         }
@@ -218,14 +218,14 @@ sprite_proto.register_object(
 
 sprite_proto.register_object(
 
-    (ArmorType.ENCLAVE_POWER_ARMOR, WeaponType.FLAMETHROWER, ActionType.IDLE),
+    (ArmorType.ENCLAVE_POWER_ARMOR, WeaponType.M60, ActionType.IDLE),
 
     AnimatedSprite.prepare_easeljs_data([
         {
             'direction': DirectionType.LEFT,
             'action': ActionType.IDLE,
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
-            'weapon': WeaponType.FLAMETHROWER,
+            'weapon': WeaponType.M60,
             'count': 10,
             'speed': 0.5
         },
@@ -233,7 +233,7 @@ sprite_proto.register_object(
             'direction': DirectionType.RIGHT,
             'action': ActionType.IDLE,
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
-            'weapon': WeaponType.FLAMETHROWER,
+            'weapon': WeaponType.M60,
             'count': 10,
             'speed': 0.5
         },
@@ -241,7 +241,7 @@ sprite_proto.register_object(
             'direction': DirectionType.TOP,
             'action': ActionType.IDLE,
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
-            'weapon': WeaponType.FLAMETHROWER,
+            'weapon': WeaponType.M60,
             'count': 10,
             'speed': 0.5
         },
@@ -249,7 +249,7 @@ sprite_proto.register_object(
             'direction': DirectionType.BOTTOM,
             'action': ActionType.IDLE,
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
-            'weapon': WeaponType.FLAMETHROWER,
+            'weapon': WeaponType.M60,
             'count': 10,
             'speed': 0.5
         }

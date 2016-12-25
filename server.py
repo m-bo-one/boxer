@@ -36,7 +36,7 @@ class BaseHttpRunner(object):
             'STATIC_URL': settings.STATIC_URL,
             'MEDIA_URL': settings.MEDIA_URL,
             'FILE_VERSION': (hashlib.md5(str(time.time())).hexdigest()
-                             if not self._debug else ''),
+                             if not settings.TEMPLATE_DEBUG else ''),
             'APP_SETTINGS': json.dumps(self.app_settings)
         }
         if isinstance(extra, dict):
@@ -64,8 +64,14 @@ class BaseHttpRunner(object):
         self._app.route('/', method="GET", callback=self.handler_index)
         self._app.route('/media/<filename:re:.*\.(jpg|png|gif|ico|svg)>',
                         callback=self.handler_image)
+        self._app.route('/media/<filename:re:.*\.(ogg|mp3)>',
+                        callback=self.handler_music)
         self._app.route('/static/<filename:path>',
                         callback=self.handler_static)
+
+    def handler_music(self, filename):
+        return bottle.static_file(filename,
+                                  root=settings.MEDIA_PATH)
 
     def handler_image(self, filename):
         return bottle.static_file(filename,

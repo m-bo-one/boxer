@@ -103,6 +103,25 @@ $(function () {
 
     Stream.init(app);
 
+    // HARDCODED
+    // var audioPath = "media/sounds/weapons/m60/";
+    // var sounds = [
+    //     {id: "m60-fire", src: "fire.ogg"},
+    // ];
+ 
+    //  _.extend(createjs.Sound, Backbone.Events);
+    // createjs.Sound.alternateExtensions = ["mp3"];
+    // createjs.Sound.on("fire", handleFire);
+    // createjs.Sound.registerSounds(sounds, audioPath);
+
+    // function handleFire(soundId) {
+    //     if (createjs.Sound.isReady() && !app.commandsBlocked) {
+    //         createjs.Sound.play(soundId);
+    //     }
+    // }
+
+    // END HARDCODED
+
     createjs.Ticker.setFPS(app.config.FPS);
     createjs.Ticker.addEventListener("tick", gameLoop);
 
@@ -114,11 +133,14 @@ $(function () {
         }
         // button 'space'
         if (app.keys[32]) {
+            if (app.commandsBlocked) return;
             app.user.shoot();
+            // FIRE effect
+            // createjs.Sound.trigger('fire', 'm60-fire');
             app.commandsBlocked = true;
             setTimeout(function() {
                 app.commandsBlocked = false;
-            }, 1000);
+            }, 2000);
         }
     });
     window.addEventListener("keyup", function (e) {

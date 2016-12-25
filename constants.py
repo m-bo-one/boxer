@@ -15,7 +15,7 @@ class DirectionType(dict):
 
 class WeaponType(dict):
     NO_WEAPON = 'no_weapon'
-    FLAMETHROWER = 'flamethrower'
+    M60 = 'm60'
 
 
 class ArmorType(dict):
