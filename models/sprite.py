@@ -225,32 +225,32 @@ sprite_proto.register_object(
             'direction': DirectionType.LEFT,
             'action': ActionType.IDLE,
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
-            'weapon': WeaponType.NO_WEAPON,
-            'count': 12,
+            'weapon': WeaponType.FLAMETHROWER,
+            'count': 10,
             'speed': 0.5
         },
         {
             'direction': DirectionType.RIGHT,
             'action': ActionType.IDLE,
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
-            'weapon': WeaponType.NO_WEAPON,
-            'count': 12,
+            'weapon': WeaponType.FLAMETHROWER,
+            'count': 10,
             'speed': 0.5
         },
         {
             'direction': DirectionType.TOP,
             'action': ActionType.IDLE,
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
-            'weapon': WeaponType.NO_WEAPON,
-            'count': 12,
+            'weapon': WeaponType.FLAMETHROWER,
+            'count': 10,
             'speed': 0.5
         },
         {
             'direction': DirectionType.BOTTOM,
             'action': ActionType.IDLE,
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
-            'weapon': WeaponType.NO_WEAPON,
-            'count': 12,
+            'weapon': WeaponType.FLAMETHROWER,
+            'count': 10,
             'speed': 0.5
         }
 
