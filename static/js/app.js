@@ -76,6 +76,7 @@ $(function () {
             });
             ws.on('users_map', function(data) {
                 for (var user_id in data) {
+                    user_id = parseInt(user_id, 0);
                     if (app.user && app.user.id !== user_id) {
                         var otherUser = data[user_id];
                         otherUser = (typeof otherUser === 'string') ? JSON.parse(otherUser) : otherUser;

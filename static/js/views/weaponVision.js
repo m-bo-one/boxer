@@ -34,7 +34,9 @@ var app = app || {},
             cy = options.height / 2;
 
             this.sshape.graphics.clear();
-            this.sshape.graphics.s("#f00").ss(1);
+            this.sshape.graphics.s("#f00")
+            this.sshape.graphics.ss(0.75);
+            this.sshape.graphics.setStrokeDash([5, 5]);
 
             switch (options.direction) {
                 case 'left':
@@ -56,7 +58,7 @@ var app = app || {},
 
             this.sshape.graphics.moveTo(cx, cy);
             this.sshape.graphics.arc(cx, cy, R, utils.toRadians(alphas), utils.toRadians(alphae));
-            this.sshape.graphics.lt(cx, cy)            
+            this.sshape.graphics.lt(cx, cy);
         },
 
         update: function(options) {

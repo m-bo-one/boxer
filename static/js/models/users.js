@@ -44,18 +44,28 @@ var app = app || {},
             app.ws.send(data);
         },
         refreshData: function(options) {
-            utils._LOG('Receive update: direction - ' + options.direction + '; action - ' + options.action);
+            this.health = options.health;
+            if (this.health <= 0) {
+                console.log('Game over!');
+                return;
+            }
 
             this.currentSprite.x = options.x;
             this.currentSprite.y = options.y;
-            this.health = options.health;
-            this.width = options.width;
-            this.height = options.height;
-            this.sector = options.sector;
+
             this.action = options.action;
             this.direction = options.direction;
+
+            utils._LOG('Receive update: direction - ' + options.direction + '; action - ' + options.action);
+
+            // FIXME: Need to change this on something normal
+            var prevWeapon = this.weapon;
+
             this.weapon = options.weapon;
             this.armor = options.armor;
+
+            this.width = options.width;
+            this.height = options.height;
 
             var way = utils.getSpriteWay(options.action, options.direction);
 
@@ -64,7 +74,7 @@ var app = app || {},
                 return;
             }
 
-            if (this.currentSprite.currentAnimation != way) {
+            if (prevWeapon != this.weapon || this.currentSprite.currentAnimation != way) {
                 app.stage.removeChild(this.currentSprite);
 
                 this.changeSprite();
@@ -86,14 +96,14 @@ var app = app || {},
                     'action': action,
                     'direction': direction
                 }
-            })
+            });
             app.ws.send(data);
         },
         shoot: function () {
             var data = JSON.stringify({
                 msg_type: 'player_shoot',
                 data: {}
-            })
+            });
             app.ws.send(data);
         },
         stop: function() {

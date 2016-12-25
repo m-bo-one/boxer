@@ -9,10 +9,8 @@ from .sprite import sprite_proto, sp_key_builder
 
 class WeaponVision(object):
 
-    def __init__(self, wp_name, x, y, R, alpha):
-        self.wp_name = wp_name
-        self.x = x
-        self.y = y
+    def __init__(self, user, R=200, alpha=25):
+        self.user = user
         self.R = R
         self.alpha = alpha
 
@@ -48,9 +46,8 @@ class WeaponVision(object):
             return (self.init_point[0], self.init_point[1] + total)
 
     @classmethod
-    def from_data(cls, wp_name, x, y):
-        if wp_name == WeaponType.FLAMETHROWER:
-            return cls(wp_name, x, y, 200, 25)
+    def patch_user(cls, user):
+        user._vision = cls(user)
 
 
 class UserModel(object):
@@ -99,8 +96,7 @@ class UserModel(object):
         self.width = self._current_sprite['frames']['width']
         self.height = self._current_sprite['frames']['height']
 
-        self._vision = WeaponVision.from_data(WeaponType.FLAMETHROWER,
-                                              self.x, self.y)
+        WeaponVision.patch_user(self)
 
     def save(self):
         return redis_db.hset('users', self.id, self.to_json())
