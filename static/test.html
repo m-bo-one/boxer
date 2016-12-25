@@ -30,16 +30,16 @@
         var stage = new createjs.Stage("demoCanvas");
         var data = new createjs.SpriteSheet({
             "images": [
-                "../media/equipment/enclave_power_armor/flamethrower/walk/right.png",
-                '../media/equipment/enclave_power_armor/flamethrower/walk/left.png',
-                '../media/equipment/enclave_power_armor/flamethrower/walk/bottom.png',
-                '../media/equipment/enclave_power_armor/flamethrower/walk/top.png',
+                "../media/equipment/enclave_power_armor/no_weapon/walk/right.png",
+                '../media/equipment/enclave_power_armor/no_weapon/walk/left.png',
+                '../media/equipment/enclave_power_armor/no_weapon/walk/bottom.png',
+                '../media/equipment/enclave_power_armor/no_weapon/walk/top.png',
             ],
             "frames": {
                 // 429 x 77
-                "height": 87,
+                "height": 77,
                 "count": 32,
-                "width": 61.75,
+                "width": 53.625,
             },
             "animations": {
                 "right": {
@@ -62,7 +62,7 @@
         });
         window.character = new createjs.Sprite(data);
         // character.direction = 90;
-        character.gotoAndPlay("left");
+        character.gotoAndPlay("bottom");
         stage.addChild(character);
         createjs.Ticker.useRAF = true;
         createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
