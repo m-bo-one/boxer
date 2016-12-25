@@ -47,6 +47,7 @@ def setup_logging(default_path='conf/logging.yaml', default_level=logging.INFO,
         with open(path, 'rt') as f:
             config = yaml.safe_load(f.read())
         logging.config.dictConfig(config)
+        logging.getLogger().setLevel(default_level)
     else:
         logging.basicConfig(level=default_level)
 

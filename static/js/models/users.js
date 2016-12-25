@@ -45,12 +45,17 @@ var app = app || {},
         },
         refreshData: function(options) {
             utils._LOG('Receive update: direction - ' + options.direction + '; action - ' + options.action);
+
             this.currentSprite.x = options.x;
             this.currentSprite.y = options.y;
             this.health = options.health;
             this.width = options.width;
             this.height = options.height;
             this.sector = options.sector;
+            this.action = options.action;
+            this.direction = options.direction;
+            this.weapon = options.weapon;
+            this.armor = options.armor;
 
             var way = utils.getSpriteWay(options.action, options.direction);
 
@@ -61,11 +66,6 @@ var app = app || {},
 
             if (this.currentSprite.currentAnimation != way) {
                 app.stage.removeChild(this.currentSprite);
-
-                this.action = options.action;
-                this.direction = options.direction;
-                this.weapon = options.weapon;
-                this.armor = options.armor;
 
                 this.changeSprite();
 

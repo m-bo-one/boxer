@@ -57,7 +57,7 @@ class UserModel(object):
 
     collision_pipeline = (
         'map_collision',
-        # 'user_collision',
+        'user_collision',
     )
 
     def __init__(self,
@@ -116,13 +116,15 @@ class UserModel(object):
         return redis_db.hdel('users', id)
 
     @classmethod
-    def all(cls):
+    def all(cls, to_obj=True):
         users = redis_db.hgetall('users')
-        return [cls(**json.loads(user)) for user in users.values()]
+        if to_obj:
+            return (cls(**json.loads(user)) for user in users.itervalues())
+        return users
 
     @classmethod
     def get_users_map(cls):
-        return redis_db.hgetall('users')
+        return cls.all(False)
 
     def to_dict(self):
         return {
@@ -209,13 +211,12 @@ class UserModel(object):
         return False
 
     def user_collision(self):
-        # TODO: Fix widht and height
-        # for other in DB['users'].values():
-        #     if (self != other and self.x < other.x + other.width and
-        #        self.x + self.width > other.x and
-        #        self.y < other.y + other.height and
-        #        self.height + self.y > other.y):
-        #         return True
+        for other in self.__class__.all():
+            if (self.id != other.id and self.x < other.x + other.width and
+               self.x + self.width > other.x and
+               self.y < other.y + other.height and
+               self.height + self.y > other.y):
+                return True
         return False
 
     def autosave(func):

@@ -1,8 +1,24 @@
 import logging
+import copy
 
 import gevent
 import redis
 import redis.connection
+
+__all__ = [
+    'redis_db',
+    'local_db',
+]
+
+
+_LOCAL_DB = {
+    'socket2uid': {},
+    'uid2socket': {},
+    'map_size': {
+        'width': 1080,
+        'height': 640
+    }
+}
 
 
 class DBClient(object):
@@ -25,7 +41,7 @@ class DBClient(object):
                     max_connections=self.max_connections)
                 self.shared_state[name] = redis.Redis(connection_pool=pool)
             elif name == 'local':
-                self.shared_state[name] = {}
+                self.shared_state[name] = copy.deepcopy(_LOCAL_DB)
             else:
                 raise Exception('Connector not found.')
 

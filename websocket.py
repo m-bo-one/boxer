@@ -17,14 +17,6 @@ from db import local_db
 from models import UserModel
 
 
-local_db['socket2uid'] = {}
-local_db['uid2socket'] = {}
-local_db['map_size'] = {
-    'width': 1080,
-    'height': 640
-}
-
-
 class GameApplication(WebSocketApplication, EventEmitter):
 
     def __init__(self, *args, **kwargs):
@@ -34,7 +26,7 @@ class GameApplication(WebSocketApplication, EventEmitter):
         self.on('player_shoot', self.player_shoot)
         self.on('unregister_user', self.unregister_user)
 
-        # gevent.spawn(self.run_ticker)
+        gevent.spawn(self.run_ticker)
 
     def run_ticker(self):
         while True:
@@ -106,7 +98,8 @@ class GameApplication(WebSocketApplication, EventEmitter):
 
 if __name__ == '__main__':
     try:
-        setup_logging()
+        loglevel = logging.ERROR if not settings.DEBUG else logging.INFO
+        setup_logging(default_level=loglevel)
         logging.info('Starting server...\n')
         server = WebSocketServer(
             settings.WEBSOCKET_ADDRESS, Resource(OrderedDict({

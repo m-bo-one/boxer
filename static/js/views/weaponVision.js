@@ -13,7 +13,8 @@ var app = app || {},
         initialize: function(options) {
             this.sshape = new createjs.Shape().set({
                 x: options.x,
-                y: options.y
+                y: options.y,
+                visible: false
             });
             this.render(options);
         },
@@ -63,6 +64,8 @@ var app = app || {},
             this.sshape.y = options.y;
 
             this._drawByDirection(options);
+
+            this.sshape.visible = (options.weapon === 'no_weapon') ? false : true;
         },
     });
 })();
