@@ -18,6 +18,8 @@ $(function () {
         **/
 
         app.stage.update();
+        // FOR FUTURE GRID SYSTEM
+        // utils.drawBoard();
         utils._LOG('Current FPS: ' + createjs.Ticker.getMeasuredFPS());
 
         if (app.user === null || app.commandsBlocked || app.keys[38] && app.keys[87] || app.keys[40] && app.keys[83] ||

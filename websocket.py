@@ -17,20 +17,27 @@ from db import local_db
 from models import UserModel
 
 
-class GameApplication(WebSocketApplication, EventEmitter):
+ws_event = EventEmitter()
+
+
+class GameApplication(WebSocketApplication):
+
+    _packager_initialized = False
+    _packager_max_workers = 1
 
     def __init__(self, *args, **kwargs):
         super(GameApplication, self).__init__(*args, **kwargs)
-        self.on('player_move', self.player_move)
-        self.on('player_equip', self.player_equip)
-        self.on('player_shoot', self.player_shoot)
-        self.on('unregister_user', self.unregister_user)
 
-        gevent.spawn(self.run_ticker)
+        if not GameApplication._packager_initialized:
+            [gevent.spawn(self.run_ticker)
+             for _ in xrange(self._packager_max_workers)]
+            GameApplication._packager_initialized = True
 
     def run_ticker(self):
         while True:
-            gevent.sleep(0.1)
+            gevent.sleep(0.01)
+            logging.info('Current clients: %s',
+                         self.ws.handler.server.clients.keys())
             logging.info('Updating map...')
             self.broadcast_all('users_map', UserModel.get_users_map())
 
@@ -56,18 +63,12 @@ class GameApplication(WebSocketApplication, EventEmitter):
         self.broadcast('register_user', user.to_dict())
 
     def on_message(self, message):
-        logging.info('Current clients: %s',
-                     self.ws.handler.server.clients.keys())
+        if message:
+            message = json.loads(message)
+            logging.info('Evaluate msg %s' % message['msg_type'])
+            ws_event.emit(message['msg_type'], self, message)
 
-        if message is None:
-            return
-
-        message = json.loads(message)
-
-        logging.info('Evaluate msg %s' % message['msg_type'])
-
-        self.emit(message['msg_type'], message)
-
+    @ws_event.on('player_equip')
     def player_equip(self, message):
         user = self.get_user_from_ws()
         if user.is_dead:
@@ -75,10 +76,12 @@ class GameApplication(WebSocketApplication, EventEmitter):
         user.equip(message['data']['equipment'])
         self.broadcast('player_update', user.to_dict())
 
+    @ws_event.on('unregister_user')
     def unregister_user(self, message):
         user_id = UserModel.unregister_user(self.ws)
         self.broadcast_all('unregister_user', {'id': user_id})
 
+    @ws_event.on('player_move')
     def player_move(self, message):
         user = self.get_user_from_ws()
         if user.is_dead:
@@ -86,6 +89,7 @@ class GameApplication(WebSocketApplication, EventEmitter):
         user.move(message['data']['action'], message['data']['direction'])
         self.broadcast('player_update', user.to_dict())
 
+    @ws_event.on('player_shoot')
     def player_shoot(self, message):
         user = self.get_user_from_ws()
         if user.is_dead:
