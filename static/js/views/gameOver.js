@@ -4,20 +4,30 @@ var app = app || {},
 (function() {
     'use strict';
 
-    app.HudView = Backbone.View.extend({
+    app.GameOverView = Backbone.View.extend({
 
         initialize: function() {
             this._text = new createjs.Text();
+            this._text.visible = false;
             this._text.font = '40px Arial';
             this._text.color = '#ff7700';
-            this._text.text = 'HP: ' + this.model.health;
-            this._text.x = app.canvas.width - 145;
-            this._text.y -= 5;
+            this._text.text = 'GAME OVER!';
+            this._text.x = (app.canvas.width / 2) - 100;
+            this._text.y = app.canvas.height / 2;
             app.stage.addChildAt(this._text, 0);
             this.model.on("change", this.render, this);
         },
         render: function() {
-            this._text.text = 'HP: ' + this.model.health;
+            if (this.model.health > 0) {
+                this._text.visible = false;
+                return;
+            }
+            console.log('Game over!');
+            var data = JSON.stringify({
+                msg_type: 'unregister_user'
+            });
+            app.ws.send(data);
+            this._text.visible = true;
             return this;
         },
         destroy: function() {

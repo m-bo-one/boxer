@@ -36,14 +36,13 @@ var app = app || {},
             app.ws.send(data);
         },
         refreshData: function(options) {
+            if (this.health <= 0) {
+                return;
+            }
             this._options = options;
             this.detected = options.detected;
 
             this.health = options.health;
-            if (this.health <= 0) {
-                console.log('Game over!');
-                return;
-            }
             this.action = options.action;
             this.direction = options.direction;
 
@@ -81,6 +80,7 @@ var app = app || {},
         },
         destroy: function() {
             app.stage.removeChild(this.currentSprite);
+            delete app.users[this.id];
             delete this;
         }
     });

@@ -58,9 +58,8 @@ class GameApplication(WebSocketApplication):
 
     def on_open(self):
         logging.info("Connection opened")
-        user = UserModel.register_user(self.ws)
         self.broadcast('render_map', local_db['map_size'])
-        self.broadcast('register_user', user.to_dict())
+        ws_event.emit('register_user', self, {})
 
     def on_message(self, message):
         if message:
@@ -75,6 +74,12 @@ class GameApplication(WebSocketApplication):
             return
         user.equip(message['data']['equipment'])
         self.broadcast('player_update', user.to_dict())
+
+    @ws_event.on('register_user')
+    def register_user(self, message):
+        user = UserModel.register_user(self.ws)
+        self.broadcast('render_map', local_db['map_size'])
+        self.broadcast('register_user', user.to_dict())
 
     @ws_event.on('unregister_user')
     def unregister_user(self, message):

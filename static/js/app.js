@@ -68,10 +68,27 @@ $(function () {
                 app.sprites[app.user.id] = new app.SpriteView({ model: app.user });
                 app.hud = new app.HudView({ model: app.user });
                 app.weaponVision = new app.WeaponVisionView({ model: app.user });
+                if (app.gameOver) {
+                    app.gameOver.destroy();
+                }
+                app.gameOver = new app.GameOverView({ model: app.user });
             });
             ws.on('unregister_user', function(data) {
-                app.users[data.id].destroy();
-                app.sprites[data.id].destroy();
+                try {
+                    app.sprites[data.id].destroy();
+                    app.users[data.id].destroy();
+                    if (app.user.id === data.id) {
+                        app.hud.destroy();
+                        app.weaponVision.destroy();
+                        app.user.destroy();
+
+                        delete app.hud;
+                        delete app.weaponVision;
+                        app.user = {};                 
+                    }
+                } catch(e) {
+                    // pass
+                }
             });
             ws.on('player_update', function(data) {
                 app.user.refreshData(data);
@@ -79,15 +96,16 @@ $(function () {
             ws.on('users_map', function(data) {
                 for (var user_id in data) {
                     user_id = parseInt(user_id, 0);
-                    if (app.user && app.user.id !== user_id) {
-                        var otherUser = data[user_id];
-                        otherUser = (typeof otherUser === 'string') ? JSON.parse(otherUser) : otherUser;
-                        if (app.users.hasOwnProperty(user_id)) {
-                            app.users[user_id].refreshData(otherUser);
-                        } else {
-                            app.users[user_id] = new app.UserModel(otherUser);
-                            app.sprites[user_id] = new app.SpriteView({ model: app.users[user_id] });  
-                        }
+
+                    if (app.user.id === user_id) continue;
+
+                    var otherUser = data[user_id];
+                    otherUser = (typeof otherUser === 'string') ? JSON.parse(otherUser) : otherUser;
+                    if (app.users.hasOwnProperty(user_id)) {
+                        app.users[user_id].refreshData(otherUser);
+                    } else {
+                        app.users[user_id] = new app.UserModel(otherUser);
+                        app.sprites[user_id] = new app.SpriteView({ model: app.users[user_id] });  
                     }
                 }
             });
@@ -100,7 +118,7 @@ $(function () {
     app.ctx = app.canvas.getContext("2d");
     app.keys = {};
     app.users = {};
-    app.user = null;
+    app.user = {};
     app.sprites = {};
     app.commandsBlocked = false;
     app.stage = new createjs.Stage(app.canvas);
@@ -137,14 +155,14 @@ $(function () {
         }
         // button 'space'
         if (app.keys[32]) {
-            if (app.commandsBlocked) return;
+            // if (app.commandsBlocked) return;
             app.user.shoot();
             // FIRE effect
             // createjs.Sound.trigger('fire', 'm60-fire');
-            app.commandsBlocked = true;
-            setTimeout(function() {
-                app.commandsBlocked = false;
-            }, 2000);
+            // app.commandsBlocked = true;
+            // setTimeout(function() {
+            //     app.commandsBlocked = false;
+            // }, 500);
         }
     });
     window.addEventListener("keyup", function (e) {

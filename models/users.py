@@ -32,24 +32,46 @@ class WeaponVision(object):
             )
             return bool(-point1[0] * point2[1] + point1[1] * point2[0] > 0)
 
-        point = other._vision._sector_center
+        points = [
+            other._vision._sector_center,
+            # other.coords,
+            (other.x + (other.width / 2), other.y),
+            # (other.x + other.width, other.y),
+            # (other.x, other.y + (other.height / 2)),
+            # (other.x, other.y + other.height),
+            (other.x + (other.width / 2), other.y + other.height),
+            # (other.x + other.width, other.y + other.height),
+            # (other.x + other.width, other.y + (other.height / 2)),
+        ]
         center = self.user._vision._sector_center
-        radius = self.R / 2
+        radius = self.R
         angle1 = self.alphas
         angle2 = self.alphae
-        rel_point = (point[0] - center[0], point[1] - center[1])
 
-        print('--------------')
-        print('Search point - x:%s, y:%s' % point)
-        print('Radius center - x:%s, y:%s' % center)
-        print('Radius length - %s' % radius)
-        print('Angle start - %s' % self.alphas)
-        print('Angle end - %s' % self.alphae)
-        print('Point diff - x:%s, y:%s' % rel_point)
+        logging.debug('Points: %s', points)
+        logging.debug('Width: %s', other.width)
+        logging.debug('Height: %s', other.height)
 
-        return bool(not are_clockwise(center, radius, angle1, rel_point) and
-                    are_clockwise(center, radius, angle2, rel_point) and
-                    (rel_point[0] ** 2 + rel_point[1] ** 2 <= radius ** 2))
+        for point in points:
+            rel_point = (point[0] - center[0], point[1] - center[1])
+
+            logging.debug('--------------')
+            logging.debug('Search point - x:%s, y:%s' % point)
+            logging.debug('Radius center - x:%s, y:%s' % center)
+            logging.debug('Radius length - %s' % radius)
+            logging.debug('Angle start - %s' % self.alphas)
+            logging.debug('Angle end - %s' % self.alphae)
+            logging.debug('Point diff - x:%s, y:%s' % rel_point)
+            logging.debug('--------------')
+
+            is_detected = bool(
+                not are_clockwise(center, radius, angle1, rel_point) and
+                are_clockwise(center, radius, angle2, rel_point) and
+                (rel_point[0] ** 2 + rel_point[1] ** 2 <= radius ** 2))
+            if is_detected:
+                return True
+        else:
+            return False
 
     @property
     def alphas(self):
@@ -77,8 +99,8 @@ class WeaponVision(object):
 
     @property
     def _sector_center(self):
-        result = ((self.user.x + self.user.width) / 2,
-                  (self.user.y + self.user.height) / 2)
+        result = (self.user.x + (self.user.width / 2),
+                  self.user.y + (self.user.height / 2))
         logging.info('Sector start coords: (%s, %s)' % result)
         return result
 
@@ -105,7 +127,7 @@ class UserModel(object):
                  weapon=WeaponType.NO_WEAPON,
                  armors=None,
                  weapons=None,
-                 health=100,
+                 health=1,
                  sprites=None,
                  *args, **kwargs):
 
@@ -177,8 +199,6 @@ class UserModel(object):
             'sprites': self.sprites,
             'vision': self._vision.to_dict()
         }
-        if hasattr(self, 'detected'):
-            data['detected'] = True
         return data
 
     def to_json(self):
@@ -208,8 +228,8 @@ class UserModel(object):
             y=random.randint(0, local_db['map_size']['height'] - 100),
         )
         user.save()
-        print('Registered user at point: x - %s, y - %s' %
-              user._vision._sector_center)
+        # print('Registered user at point: x - %s, y - %s' %
+        #       user._vision._sector_center)
         local_db['socket2uid'][socket] = user.id
         local_db['uid2socket'][user.id] = socket
         return user
@@ -266,8 +286,18 @@ class UserModel(object):
 
     @autosave
     def shoot(self):
-        self.health -= 1
-        return self
+        detected = False
+        other = None
+        for other in self.__class__.all():
+            if other.id != self.id:
+                if self._vision.is_inside_sector(other):
+                    detected = True
+                    break
+
+        if detected:
+            other.health -= 1
+            other.save()
+        return other
 
     @autosave
     def equip(self, type):
@@ -311,8 +341,3 @@ class UserModel(object):
         if self.is_collide:
             self.x = x
             self.y = y
-
-        for other in self.__class__.all():
-            if other.id != self.id:
-                if self._vision.is_inside_sector(other):
-                    self.detected = True

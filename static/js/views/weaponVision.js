@@ -8,8 +8,6 @@ var app = app || {},
 
     app.WeaponVisionView = Backbone.View.extend({
 
-        el: 'canvas',
-
         initialize: function() {
             this.sshape = new createjs.Shape().set({
                 x: this.model.currentSprite.x,
@@ -36,16 +34,16 @@ var app = app || {},
             this.sshape.graphics.moveTo(cx, cy);
             this.sshape.graphics.arc(cx, cy, R, utils.toRadians(alphas), utils.toRadians(alphae));
             this.sshape.graphics.lt(cx, cy);
+            this.sshape.graphics.endFill();
 
             this.sshape.visible = this.model.equipedByWeapon();
 
-            if (this.model.detected) {
-                $('#weapon_vision').html(this.model.detected);
-            } else {
-                $('#weapon_vision').html(false);
-            }
-
             return this
+        },
+        destroy: function() {
+            app.stage.removeChild(this.sshape);
+            this.remove();
+            this.unbind();
         }
     });
 })();
