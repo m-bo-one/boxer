@@ -37,6 +37,7 @@ var app = app || {},
         },
         refreshData: function(options) {
             this._options = options;
+            this.detected = options.detected;
 
             this.health = options.health;
             if (this.health <= 0) {

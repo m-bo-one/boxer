@@ -24,63 +24,56 @@ class WeaponVision(object):
             'R': self.R
         }
 
-    def distance(self, p1, p2):
-        result = math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
-        print('distance: %s' % result)
-        return result
-
     def is_inside_sector(self, other):
+        def are_clockwise(center, radius, angle, point2):
+            point1 = (
+                (center[0] + radius) * math.cos(math.radians(angle)),
+                (center[1] + radius) * math.sin(math.radians(angle))
+            )
+            return bool(-point1[0] * point2[1] + point1[1] * point2[0] > 0)
+
         point = other._vision._sector_center
-        return bool(
-            self.distance(self._sector_start, point) +
-            self.distance(point, self._sector_end) ==
-            self.distance(self._sector_start, self._sector_end))
+        center = self.user._vision._sector_center
+        radius = self.R / 2
+        angle1 = self.alphas
+        angle2 = self.alphae
+        rel_point = (point[0] - center[0], point[1] - center[1])
 
-    # def _are_clockwise(self, p1, p2):
-    #     return -p1[0] * p2[1] + p1[1] * p2[0] > 0
+        print('--------------')
+        print('Search point - x:%s, y:%s' % point)
+        print('Radius center - x:%s, y:%s' % center)
+        print('Radius length - %s' % radius)
+        print('Angle start - %s' % self.alphas)
+        print('Angle end - %s' % self.alphae)
+        print('Point diff - x:%s, y:%s' % rel_point)
 
-    # def _is_within_radius(self, p):
-    #     return p[0] ** 2 + p[1] ** 2 <= self.R
-
-    # def is_inside_sector(self, other):
-    #     point = other._vision._sector_center
-    #     sector_start = self._sector_start
-    #     sector_end = self._sector_end
-    #     center = self._sector_center
-    #     rel_point = (point[0] - center[0], point[1] - center[1])
-    #     print('Check sector!')
-    #     print('Sector start (x: %s, y: %s)' % sector_start)
-    #     print('Sector end (x: %s, y: %s)' % sector_end)
-    #     print('Sector center (x: %s, y: %s)' % center)
-    #     is_in = bool(
-    #         not self._are_clockwise(sector_start, rel_point) and
-    #         self._are_clockwise(sector_end, rel_point) and
-    #         self._is_within_radius(rel_point)
-    #     )
-    #     print('STATUS %s' % is_in)
-    #     return is_in
+        return bool(not are_clockwise(center, radius, angle1, rel_point) and
+                    are_clockwise(center, radius, angle2, rel_point) and
+                    (rel_point[0] ** 2 + rel_point[1] ** 2 <= radius ** 2))
 
     @property
     def alphas(self):
+        alpha = self.alpha / 2
         if self.user.direction == 'left':
-            return 180 - self.alpha
+            return 180 - alpha
         elif self.user.direction == 'right':
-            return -self.alpha
+            return -alpha
         elif self.user.direction == 'top':
-            return -90 - self.alpha
+            return -90 - alpha
         elif self.user.direction == 'bottom':
-            return 90 - self.alpha
+            return 90 - alpha
 
     @property
     def alphae(self):
+        alpha = self.alpha / 2
         if self.user.direction == 'left':
-            return 180 + self.alpha
+            return 180 + alpha
         elif self.user.direction == 'right':
-            return self.alpha
+            return alpha
         elif self.user.direction == 'top':
-            return -90 + self.alpha
+            return -90 + alpha
         elif self.user.direction == 'bottom':
-            return 90 + self.alpha
+            return 90 + alpha
 
     @property
     def _sector_center(self):
@@ -88,36 +81,6 @@ class WeaponVision(object):
                   (self.user.y + self.user.height) / 2)
         logging.info('Sector start coords: (%s, %s)' % result)
         return result
-
-    @property
-    def _sector_start(self):
-        horde = 2 * self.R * math.sin(math.radians(self.alpha / 2))
-        distance_to_horde = math.sqrt(self.R ** 2 - (horde / 2) ** 2)
-        center = self._sector_center
-
-        if self.user.direction == 'left':
-            return (center[0] - distance_to_horde, center[1] + (horde / 2))
-        elif self.user.direction == 'right':
-            return (center[0] + distance_to_horde, center[1] - (horde / 2))
-        elif self.user.direction == 'top':
-            return (center[0] - (horde / 2), center[1] - distance_to_horde)
-        elif self.user.direction == 'bottom':
-            return (center[0] + (horde / 2), center[1] + distance_to_horde)
-
-    @property
-    def _sector_end(self):
-        horde = 2 * self.R * math.sin(math.radians(self.alpha / 2))
-        distance_to_horde = math.sqrt(self.R ** 2 - (horde / 2) ** 2)
-        center = self._sector_center
-
-        if self.user.direction == 'left':
-            return (center[0] - distance_to_horde, center[1] - (horde / 2))
-        elif self.user.direction == 'right':
-            return (center[0] + distance_to_horde, center[1] + (horde / 2))
-        elif self.user.direction == 'top':
-            return (center[0] + (horde / 2), center[1] - distance_to_horde)
-        elif self.user.direction == 'bottom':
-            return (center[0] - (horde / 2), center[1] + distance_to_horde)
 
     @classmethod
     def patch_user(cls, user):
@@ -197,7 +160,7 @@ class UserModel(object):
         return cls.all(False)
 
     def to_dict(self):
-        return {
+        data = {
             'id': self.id,
             'x': self.x,
             'y': self.y,
@@ -214,6 +177,9 @@ class UserModel(object):
             'sprites': self.sprites,
             'vision': self._vision.to_dict()
         }
+        if hasattr(self, 'detected'):
+            data['detected'] = True
+        return data
 
     def to_json(self):
         return json.dumps(self.to_dict())
@@ -242,6 +208,8 @@ class UserModel(object):
             y=random.randint(0, local_db['map_size']['height'] - 100),
         )
         user.save()
+        print('Registered user at point: x - %s, y - %s' %
+              user._vision._sector_center)
         local_db['socket2uid'][socket] = user.id
         local_db['uid2socket'][user.id] = socket
         return user
@@ -345,5 +313,6 @@ class UserModel(object):
             self.y = y
 
         for other in self.__class__.all():
-            if self._vision.is_inside_sector(other):
-                print('FOUND!')
+            if other.id != self.id:
+                if self._vision.is_inside_sector(other):
+                    self.detected = True

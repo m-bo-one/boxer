@@ -39,6 +39,12 @@ var app = app || {},
 
             this.sshape.visible = this.model.equipedByWeapon();
 
+            if (this.model.detected) {
+                $('#weapon_vision').html(this.model.detected);
+            } else {
+                $('#weapon_vision').html(false);
+            }
+
             return this
         }
     });
