@@ -86,7 +86,7 @@ $(function () {
                             app.users[user_id].refreshData(otherUser);
                         } else {
                             app.users[user_id] = new app.UserModel(otherUser);
-                            app.sprites[user_id] = new app.SpriteView({ model: app.user });  
+                            app.sprites[user_id] = new app.SpriteView({ model: app.users[user_id] });  
                         }
                     }
                 }

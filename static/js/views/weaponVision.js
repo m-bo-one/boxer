@@ -24,7 +24,8 @@ var app = app || {},
             this.sshape.y = this.model.currentSprite.y;
 
             R = this.model.vision.R;
-            alphas = alphae = this.model.vision.alpha;
+            alphas = this.model.vision.alphas;
+            alphae = this.model.vision.alphae;
             cx = this.model.width / 2;
             cy = this.model.height / 2;
 
@@ -32,25 +33,6 @@ var app = app || {},
             this.sshape.graphics.s("#f00")
             this.sshape.graphics.ss(0.75);
             this.sshape.graphics.setStrokeDash([5, 5]);
-
-            switch (this.model.direction) {
-                case 'left':
-                    alphas = 180 - alphas;
-                    alphae = 180 + alphae;
-                    break;
-                case 'right':
-                    alphas = -alphas;
-                    break;
-                case 'top':
-                    alphas = -90 - alphas;
-                    alphae = -90 + alphae;
-                    break;
-                case 'bottom':
-                    alphas = 90 - alphas;
-                    alphae = 90 + alphae;
-                    break;
-            }
-
             this.sshape.graphics.moveTo(cx, cy);
             this.sshape.graphics.arc(cx, cy, R, utils.toRadians(alphas), utils.toRadians(alphae));
             this.sshape.graphics.lt(cx, cy);

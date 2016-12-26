@@ -1,6 +1,9 @@
+from __future__ import division
+
 import logging
 import random
 import json
+import math
 
 from db import redis_db, local_db
 from constants import ActionType, DirectionType, WeaponType, ArmorType
@@ -9,41 +12,112 @@ from .sprite import sprite_proto, sp_key_builder
 
 class WeaponVision(object):
 
-    def __init__(self, user, R=200, alpha=25):
+    def __init__(self, user, R=200, alpha=30):
         self.user = user
         self.R = R
         self.alpha = alpha
 
     def to_dict(self):
         return {
-            'alpha': self.alpha,
+            'alphas': self.alphas,
+            'alphae': self.alphae,
             'R': self.R
         }
 
+    def distance(self, p1, p2):
+        result = math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
+        print('distance: %s' % result)
+        return result
+
+    def is_inside_sector(self, other):
+        point = other._vision._sector_center
+        return bool(
+            self.distance(self._sector_start, point) +
+            self.distance(point, self._sector_end) ==
+            self.distance(self._sector_start, self._sector_end))
+
+    # def _are_clockwise(self, p1, p2):
+    #     return -p1[0] * p2[1] + p1[1] * p2[0] > 0
+
+    # def _is_within_radius(self, p):
+    #     return p[0] ** 2 + p[1] ** 2 <= self.R
+
+    # def is_inside_sector(self, other):
+    #     point = other._vision._sector_center
+    #     sector_start = self._sector_start
+    #     sector_end = self._sector_end
+    #     center = self._sector_center
+    #     rel_point = (point[0] - center[0], point[1] - center[1])
+    #     print('Check sector!')
+    #     print('Sector start (x: %s, y: %s)' % sector_start)
+    #     print('Sector end (x: %s, y: %s)' % sector_end)
+    #     print('Sector center (x: %s, y: %s)' % center)
+    #     is_in = bool(
+    #         not self._are_clockwise(sector_start, rel_point) and
+    #         self._are_clockwise(sector_end, rel_point) and
+    #         self._is_within_radius(rel_point)
+    #     )
+    #     print('STATUS %s' % is_in)
+    #     return is_in
+
     @property
-    def init_point(self):
-        result = ((self.x + self.width) / 2, (self.y + self.height) / 2)
+    def alphas(self):
+        if self.user.direction == 'left':
+            return 180 - self.alpha
+        elif self.user.direction == 'right':
+            return -self.alpha
+        elif self.user.direction == 'top':
+            return -90 - self.alpha
+        elif self.user.direction == 'bottom':
+            return 90 - self.alpha
+
+    @property
+    def alphae(self):
+        if self.user.direction == 'left':
+            return 180 + self.alpha
+        elif self.user.direction == 'right':
+            return self.alpha
+        elif self.user.direction == 'top':
+            return -90 + self.alpha
+        elif self.user.direction == 'bottom':
+            return 90 + self.alpha
+
+    @property
+    def _sector_center(self):
+        result = ((self.user.x + self.user.width) / 2,
+                  (self.user.y + self.user.height) / 2)
         logging.info('Sector start coords: (%s, %s)' % result)
         return result
 
     @property
-    def end_point(self):
-        import math
-        alpha = 30  # grad
-        R = 10  # radius
-        # segment height
-        h = R * (1 - math.cos(math.radians(alpha)))
-        # from circle center to start point of segment
-        ir = R * math.sin(math.radians(180 - alpha))
-        total = h + ir
-        if self.direction == 'left':
-            return (self.init_point[0] - total, self.init_point[1])
-        elif self.direction == 'right':
-            return (self.init_point[0] + total, self.init_point[1])
-        elif self.direction == 'top':
-            return (self.init_point[0], self.init_point[1] - total)
-        elif self.direction == 'bottom':
-            return (self.init_point[0], self.init_point[1] + total)
+    def _sector_start(self):
+        horde = 2 * self.R * math.sin(math.radians(self.alpha / 2))
+        distance_to_horde = math.sqrt(self.R ** 2 - (horde / 2) ** 2)
+        center = self._sector_center
+
+        if self.user.direction == 'left':
+            return (center[0] - distance_to_horde, center[1] + (horde / 2))
+        elif self.user.direction == 'right':
+            return (center[0] + distance_to_horde, center[1] - (horde / 2))
+        elif self.user.direction == 'top':
+            return (center[0] - (horde / 2), center[1] - distance_to_horde)
+        elif self.user.direction == 'bottom':
+            return (center[0] + (horde / 2), center[1] + distance_to_horde)
+
+    @property
+    def _sector_end(self):
+        horde = 2 * self.R * math.sin(math.radians(self.alpha / 2))
+        distance_to_horde = math.sqrt(self.R ** 2 - (horde / 2) ** 2)
+        center = self._sector_center
+
+        if self.user.direction == 'left':
+            return (center[0] - distance_to_horde, center[1] - (horde / 2))
+        elif self.user.direction == 'right':
+            return (center[0] + distance_to_horde, center[1] + (horde / 2))
+        elif self.user.direction == 'top':
+            return (center[0] + (horde / 2), center[1] - distance_to_horde)
+        elif self.user.direction == 'bottom':
+            return (center[0] - (horde / 2), center[1] + distance_to_horde)
 
     @classmethod
     def patch_user(cls, user):
@@ -269,3 +343,7 @@ class UserModel(object):
         if self.is_collide:
             self.x = x
             self.y = y
+
+        for other in self.__class__.all():
+            if self._vision.is_inside_sector(other):
+                print('FOUND!')
