@@ -5,6 +5,8 @@ import random
 import json
 import math
 
+import gevent
+
 from db import redis_db, local_db
 from constants import ActionType, DirectionType, WeaponType, ArmorType
 from .sprite import sprite_proto, sp_key_builder
@@ -286,18 +288,19 @@ class UserModel(object):
 
     @autosave
     def shoot(self):
-        detected = False
-        other = None
+        detected = []
         for other in self.__class__.all():
             if other.id != self.id:
                 if self._vision.is_inside_sector(other):
-                    detected = True
-                    break
+                    detected.append(other)
 
-        if detected:
-            other.health -= 1
-            other.save()
-        return other
+        def _det_update(user):
+            user.health -= 1
+            user.save()
+
+        gevent.joinall([gevent.spawn(_det_update(user)) for user in detected])
+
+        return detected
 
     @autosave
     def equip(self, type):

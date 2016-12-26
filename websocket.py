@@ -100,10 +100,11 @@ class GameApplication(WebSocketApplication):
     @ws_event.on('player_shoot')
     def player_shoot(self, message):
         with self.validated_user(self.get_user_from_ws()) as user:
-            hitted_player = user.shoot()
-            if hitted_player:
-                self.broadcast('player_update', hitted_player.to_dict(),
-                               local_db['uid2socket'][hitted_player.id])
+            hitted_players = user.shoot()
+            if hitted_players:
+                for hitted_player in hitted_players:
+                    self.broadcast('player_update', hitted_player.to_dict(),
+                                   local_db['uid2socket'][hitted_player.id])
 
 
 if __name__ == '__main__':
