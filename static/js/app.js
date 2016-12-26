@@ -65,11 +65,13 @@ $(function () {
             });
             ws.on('register_user', function(data) {
                 app.user = new app.UserModel(data);
+                app.sprites[app.user.id] = new app.SpriteView({ model: app.user });
                 app.hud = new app.HudView({ model: app.user });
                 app.weaponVision = new app.WeaponVisionView({ model: app.user });
             });
             ws.on('unregister_user', function(data) {
                 app.users[data.id].destroy();
+                app.sprites[data.id].destroy();
             });
             ws.on('player_update', function(data) {
                 app.user.refreshData(data);
@@ -83,7 +85,8 @@ $(function () {
                         if (app.users.hasOwnProperty(user_id)) {
                             app.users[user_id].refreshData(otherUser);
                         } else {
-                            app.users[user_id] = new app.UserModel(otherUser);   
+                            app.users[user_id] = new app.UserModel(otherUser);
+                            app.sprites[user_id] = new app.SpriteView({ model: app.user });  
                         }
                     }
                 }
@@ -98,6 +101,7 @@ $(function () {
     app.keys = {};
     app.users = {};
     app.user = null;
+    app.sprites = {};
     app.commandsBlocked = false;
     app.stage = new createjs.Stage(app.canvas);
 
