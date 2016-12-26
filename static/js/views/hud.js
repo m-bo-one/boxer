@@ -8,24 +8,19 @@ var app = app || {},
 
         el: 'canvas',
 
-        initialize: function(options) {
+        initialize: function() {
             this._text = new createjs.Text();
             this._text.font = '40px Arial';
             this._text.color = '#ff7700';
-            this._text.text = 'HP: ' + options.health;
+            this._text.text = 'HP: ' + this.model.health;
             this._text.x = app.canvas.width - 145;
             this._text.y -= 5;
-            this.render();
-        },
-
-        render: function(options) {
             app.stage.addChild(this._text);
-            return this._text;
+            this.model.on("change", this.render, this);
         },
-
-        update: function(options) {
-            this._text.text = 'HP: ' + options.health;
-        },
-
+        render: function() {
+            this._text.text = 'HP: ' + this.model.health;
+            return this;
+        }
     });
 })();

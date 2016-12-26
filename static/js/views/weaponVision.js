@@ -10,35 +10,30 @@ var app = app || {},
 
         el: 'canvas',
 
-        initialize: function(options) {
+        initialize: function() {
             this.sshape = new createjs.Shape().set({
-                x: options.x,
-                y: options.y,
-                visible: false
+                x: this.model.currentSprite.x,
+                y: this.model.currentSprite.y,
+                visible: this.model.equipedByWeapon()
             });
-            this.render(options);
-        },
-
-        render: function(options) {
-
-            this._drawByDirection(options);
-
             app.stage.addChild(this.sshape);
-            return this.sshape;
+            this.model.on("change", this.render, this);
         },
+        render: function() {
+            this.sshape.x = this.model.currentSprite.x;
+            this.sshape.y = this.model.currentSprite.y;
 
-        _drawByDirection: function(options) {
-            R = options.vision.R;
-            alphas = alphae = options.vision.alpha;
-            cx = options.width / 2;
-            cy = options.height / 2;
+            R = this.model.vision.R;
+            alphas = alphae = this.model.vision.alpha;
+            cx = this.model.width / 2;
+            cy = this.model.height / 2;
 
             this.sshape.graphics.clear();
             this.sshape.graphics.s("#f00")
             this.sshape.graphics.ss(0.75);
             this.sshape.graphics.setStrokeDash([5, 5]);
 
-            switch (options.direction) {
+            switch (this.model.direction) {
                 case 'left':
                     alphas = 180 - alphas;
                     alphae = 180 + alphae;
@@ -59,15 +54,10 @@ var app = app || {},
             this.sshape.graphics.moveTo(cx, cy);
             this.sshape.graphics.arc(cx, cy, R, utils.toRadians(alphas), utils.toRadians(alphae));
             this.sshape.graphics.lt(cx, cy);
-        },
 
-        update: function(options) {
-            this.sshape.x = options.x;
-            this.sshape.y = options.y;
+            this.sshape.visible = this.model.equipedByWeapon();
 
-            this._drawByDirection(options);
-
-            this.sshape.visible = (options.weapon === 'no_weapon') ? false : true;
-        },
+            return this
+        }
     });
 })();

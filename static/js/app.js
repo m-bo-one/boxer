@@ -20,7 +20,7 @@ $(function () {
         app.stage.update();
         // FOR FUTURE GRID SYSTEM
         // utils.drawBoard();
-        utils._LOG('Current FPS: ' + createjs.Ticker.getMeasuredFPS());
+        // utils._LOG('Current FPS: ' + createjs.Ticker.getMeasuredFPS());
 
         if (app.user === null || app.commandsBlocked || app.keys[38] && app.keys[87] || app.keys[40] && app.keys[83] ||
           app.keys[39] && app.keys[68] || app.keys[37] && app.keys[65]) return;
@@ -65,8 +65,8 @@ $(function () {
             });
             ws.on('register_user', function(data) {
                 app.user = new app.UserModel(data);
-                app.user.addView(new app.HudView(data));
-                app.user.addView(new app.WeaponVisionView(data));
+                app.hud = new app.HudView({ model: app.user });
+                app.weaponVision = new app.WeaponVisionView({ model: app.user });
             });
             ws.on('unregister_user', function(data) {
                 app.users[data.id].destroy();

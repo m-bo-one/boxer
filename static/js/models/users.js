@@ -15,30 +15,17 @@ var app = app || {},
             this.armor = options.armor;
             this.weapon = options.weapon;
             this.health = options.health;
+            this.vision = options.vision;
 
             this.loadSprites(options);
 
             this.width = options.width;
             this.height = options.height;
 
-            this._views = [];
-
             app.users[this.id] = this;
         },
-        addView: function(view) {
-            this._views.push(view);
-        },
-        removeView: function(view) {
-            var index = fruits.indexOf(view);
-            if (index > -1) {
-                this._views.splice(index, 1);
-            }
-        },
-        refreshViews: function(options) {
-            for (var i = 0; i < this._views.length; i++) {
-                var view = this._views[i];
-                view.update(options);
-            }
+        equipedByWeapon: function() {
+            return (this.weapon === 'no_weapon') ? false : true;
         },
         loadSprites: function(options) {
             this._sprites = {}
@@ -75,12 +62,9 @@ var app = app || {},
 
             utils._LOG('Receive update: direction - ' + options.direction + '; action - ' + options.action);
 
-            var way = utils.getSpriteWay(options.action, options.direction);
+            this.vision = options.vision;
 
-            if (this.health <= 0) {
-                console.log('Game over!');
-                return;
-            }
+            var way = utils.getSpriteWay(options.action, options.direction);
 
             if (this.weapon != options.weapon || this.currentSprite.currentAnimation != way) {
                 app.stage.removeChild(this.currentSprite);
@@ -101,7 +85,7 @@ var app = app || {},
                 app.stage.addChild(this.currentSprite);
             }
 
-            this.refreshViews(options);
+            this.trigger('change');
         },
         move: function(action, direction) {
             utils._LOG('Send move: direction - ' + direction + '; action - ' + action);
