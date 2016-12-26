@@ -115,7 +115,7 @@ class UserModel(object):
 
     collision_pipeline = (
         'map_collision',
-        'user_collision',
+        # 'user_collision',
     )
 
     def __init__(self,
@@ -129,7 +129,7 @@ class UserModel(object):
                  weapon=WeaponType.NO_WEAPON,
                  armors=None,
                  weapons=None,
-                 health=1,
+                 health=100,
                  sprites=None,
                  *args, **kwargs):
 
@@ -286,19 +286,23 @@ class UserModel(object):
             return result
         return wrapper
 
-    @autosave
     def shoot(self):
         detected = []
+        dmg = 40
         for other in self.__class__.all():
             if other.id != self.id:
                 if self._vision.is_inside_sector(other):
                     detected.append(other)
 
-        def _det_update(user):
-            user.health -= 1
+        def _det_update(user, calc_damage):
+            user.health -= calc_damage
             user.save()
 
-        gevent.joinall([gevent.spawn(_det_update(user)) for user in detected])
+        if detected:
+            calc_damage = int(dmg / len(detected))
+            gevent.joinall([
+                gevent.spawn(_det_update(user, calc_damage))
+                for user in detected])
 
         return detected
 
