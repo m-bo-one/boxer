@@ -30,39 +30,39 @@
         var stage = new createjs.Stage("demoCanvas");
         var data = new createjs.SpriteSheet({
             "images": [
-                "../media/equipment/enclave_power_armor/no_weapon/walk/right.png",
-                '../media/equipment/enclave_power_armor/no_weapon/walk/left.png',
-                '../media/equipment/enclave_power_armor/no_weapon/walk/bottom.png',
-                '../media/equipment/enclave_power_armor/no_weapon/walk/top.png',
+                "../media/equipment/enclave_power_armor/m60/fire/test-right.png",
+                // '../media/equipment/enclave_power_armor/no_weapon/walk/left.png',
+                // '../media/equipment/enclave_power_armor/no_weapon/walk/bottom.png',
+                // '../media/equipment/enclave_power_armor/no_weapon/walk/top.png',
             ],
             "frames": {
                 // 429 x 77
-                "height": 77,
-                "count": 32,
-                "width": 53.625,
+                "height": 86,
+                "count": 18,
+                "width": 78.11,
             },
             "animations": {
                 "right": {
-                    frames: range(0, 8),
+                    frames: range(0, 18),
                     speed: 0.5
                 },
-                "left": {
-                    frames: range(8, 16),
-                    speed: 0.5,
-                },
-                "bottom": {
-                    frames: range(16, 24),
-                    speed: 0.5,
-                },
-                "top": {
-                    frames: range(24, 32),
-                    speed: 0.5,
-                },
+                // "left": {
+                //     frames: range(8, 16),
+                //     speed: 0.5,
+                // },
+                // "bottom": {
+                //     frames: range(16, 24),
+                //     speed: 0.5,
+                // },
+                // "top": {
+                //     frames: range(24, 32),
+                //     speed: 0.5,
+                // },
             }
         });
         window.character = new createjs.Sprite(data);
         // character.direction = 90;
-        character.gotoAndPlay("bottom");
+        character.gotoAndPlay("right");
         stage.addChild(character);
         createjs.Ticker.useRAF = true;
         createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
