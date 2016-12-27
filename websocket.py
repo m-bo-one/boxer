@@ -39,7 +39,9 @@ class GameApplication(WebSocketApplication):
             # logging.info('Current clients: %s',
             #              self.ws.handler.server.clients.keys())
             # logging.info('Updating map...')
-            self.broadcast_all('users_map', UserModel.get_users_map())
+            self.broadcast_all('users_map',
+                               {'users': UserModel.get_users_map(),
+                                'count': len(self.ws.handler.server.clients)})
 
     def broadcast(self, msg_type, data, ws=None):
         try:
@@ -115,6 +117,7 @@ class GameApplication(WebSocketApplication):
                 return
             user.move('idle', user.direction)
             self.broadcast('player_update', user.to_dict())
+
         gevent.spawn_later(SHOOT_DELAY, _callback)
 
 

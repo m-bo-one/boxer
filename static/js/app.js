@@ -95,14 +95,14 @@ $(function () {
                 app.user.refreshData(data);
             });
             ws.on('users_map', function(data) {
-                if (app.hud) app.hud.trigger('updateOnline', Object.keys(data).length);
+                if (app.hud) app.hud.trigger('updateOnline', data.count);
 
-                for (var user_id in data) {
+                for (var user_id in data.users) {
                     user_id = parseInt(user_id, 0);
 
                     if (app.user.id === user_id) continue;
 
-                    var otherUser = data[user_id];
+                    var otherUser = data.users[user_id];
                     otherUser = (typeof otherUser === 'string') ? JSON.parse(otherUser) : otherUser;
                     if (app.users.hasOwnProperty(user_id)) {
                         app.users[user_id].refreshData(otherUser);

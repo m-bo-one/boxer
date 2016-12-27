@@ -15,8 +15,8 @@ var app = app || {},
         initCanvas: function() {
             this.$el = $(this.el).length ? this.$el : $(this.el).appendTo('.container');
             this.canvas = this.$el[0];
-            this.canvas.width = 240;
-            this.canvas.height = 240;
+            this.canvas.width = 100;
+            this.canvas.height = 80;
             this.stage = new createjs.Stage(this.canvas);
         },
         initHP: function() {

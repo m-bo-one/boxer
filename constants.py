@@ -1,5 +1,3 @@
-import enum
-
 SHOOT_DELAY = 2
 
 
