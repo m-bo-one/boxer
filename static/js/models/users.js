@@ -19,6 +19,7 @@ var app = app || {},
             this.vision = options.vision;
             this.width = options.width;
             this.height = options.height;
+            this.operationsBlocked = options.operations_blocked;
             this._sprites = {}
             this._options = options;
 
@@ -36,10 +37,12 @@ var app = app || {},
             app.ws.send(data);
         },
         refreshData: function(options) {
+            // if (this.operationsBlocked) return;
             if (this.health <= 0) {
                 return;
             }
             this._options = options;
+            this.operationsBlocked = options.operations_blocked;
             this.detected = options.detected;
 
             this.health = options.health;
@@ -58,6 +61,7 @@ var app = app || {},
             this.trigger('change');
         },
         move: function(action, direction) {
+            // if (this.operationsBlocked) return;
             utils._LOG('Send move: direction - ' + direction + '; action - ' + action);
             var data = JSON.stringify({
                 msg_type: 'player_move',
@@ -69,6 +73,7 @@ var app = app || {},
             app.ws.send(data);
         },
         shoot: function () {
+            // if (this.operationsBlocked) return;
             var data = JSON.stringify({
                 msg_type: 'player_shoot',
                 data: {}

@@ -1,5 +1,7 @@
 import enum
 
+SHOOT_DELAY = 2
+
 
 class ActionType(dict):
     IDLE = 'idle'

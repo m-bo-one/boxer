@@ -9,7 +9,8 @@ import time
 import gevent
 
 from db import redis_db, local_db
-from constants import ActionType, DirectionType, WeaponType, ArmorType
+from constants import ActionType, DirectionType, WeaponType, ArmorType, \
+    SHOOT_DELAY
 from .sprite import sprite_proto, sp_key_builder
 
 
@@ -206,7 +207,9 @@ class UserModel(object):
             'weapons': self.weapons,
             'armors': self.armors,
             'sprites': self.sprites,
-            'vision': self._vision.to_dict()
+            'vision': self._vision.to_dict(),
+            'operations_blocked': self.operations_blocked,
+            'extra_data': self.extra_data
         }
         return data
 
@@ -295,6 +298,14 @@ class UserModel(object):
             self.save()
             return result
         return wrapper
+
+    @property
+    def operations_blocked(self):
+        if self.extra_data.get('shoot_timestamp'):
+            return bool(
+                (time.time() - self.extra_data['shoot_timestamp']) <=
+                SHOOT_DELAY)
+        return False
 
     @autosave
     def shoot(self):

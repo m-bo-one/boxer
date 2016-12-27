@@ -4,7 +4,6 @@ from __future__ import print_function, unicode_literals
 import logging
 import json
 from collections import OrderedDict
-from contextlib import contextmanager
 
 import gevent
 from gevent import monkey; monkey.patch_all()  # noqa
@@ -53,15 +52,11 @@ class GameApplication(WebSocketApplication):
         for client in self.ws.handler.server.clients.values():
             self.broadcast(msg_type, data, client.ws)
 
-    @contextmanager
-    def validated_user(self, user):
-        if not user or user.is_dead:
-            return
-        yield user
-
     def get_user_from_ws(self, ws=None):
         ws = self.ws if not ws else ws
-        return UserModel.get(local_db['socket2uid'][ws])
+        user = UserModel.get(local_db['socket2uid'][ws])
+        if user and not user.is_dead and not user.operations_blocked:
+            return user
 
     def on_open(self):
         logging.info("Connection opened")
@@ -76,9 +71,11 @@ class GameApplication(WebSocketApplication):
 
     @ws_event.on('player_equip')
     def player_equip(self, message):
-        with self.validated_user(self.get_user_from_ws()) as user:
-            user.equip(message['data']['equipment'])
-            self.broadcast('player_update', user.to_dict())
+        user = self.get_user_from_ws()
+        if not user:
+            return
+        user.equip(message['data']['equipment'])
+        self.broadcast('player_update', user.to_dict())
 
     @ws_event.on('register_user')
     def register_user(self, message):
@@ -93,19 +90,23 @@ class GameApplication(WebSocketApplication):
 
     @ws_event.on('player_move')
     def player_move(self, message):
-        with self.validated_user(self.get_user_from_ws()) as user:
-            user.move(message['data']['action'], message['data']['direction'])
-            self.broadcast('player_update', user.to_dict())
+        user = self.get_user_from_ws()
+        if not user:
+            return
+        user.move(message['data']['action'], message['data']['direction'])
+        self.broadcast('player_update', user.to_dict())
 
     @ws_event.on('player_shoot')
     def player_shoot(self, message):
-        with self.validated_user(self.get_user_from_ws()) as user:
-            hitted_players = user.shoot()
-            self.broadcast('player_update', user.to_dict())
-            if hitted_players:
-                for hitted_player in hitted_players:
-                    self.broadcast('player_update', hitted_player.to_dict(),
-                                   local_db['uid2socket'][hitted_player.id])
+        user = self.get_user_from_ws()
+        if not user:
+            return
+        hitted_players = user.shoot()
+        self.broadcast('player_update', user.to_dict())
+        if hitted_players:
+            for hitted_player in hitted_players:
+                self.broadcast('player_update', hitted_player.to_dict(),
+                               local_db['uid2socket'][hitted_player.id])
 
 
 if __name__ == '__main__':
