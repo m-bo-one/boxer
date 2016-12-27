@@ -37,9 +37,9 @@ class GameApplication(WebSocketApplication):
     def run_ticker(self):
         while True:
             gevent.sleep(0.01)
-            logging.info('Current clients: %s',
-                         self.ws.handler.server.clients.keys())
-            logging.info('Updating map...')
+            # logging.info('Current clients: %s',
+            #              self.ws.handler.server.clients.keys())
+            # logging.info('Updating map...')
             self.broadcast_all('users_map', UserModel.get_users_map())
 
     def broadcast(self, msg_type, data, ws=None):
@@ -101,6 +101,7 @@ class GameApplication(WebSocketApplication):
     def player_shoot(self, message):
         with self.validated_user(self.get_user_from_ws()) as user:
             hitted_players = user.shoot()
+            self.broadcast('player_update', user.to_dict())
             if hitted_players:
                 for hitted_player in hitted_players:
                     self.broadcast('player_update', hitted_player.to_dict(),

@@ -4,6 +4,7 @@ import enum
 class ActionType(dict):
     IDLE = 'idle'
     WALK = 'walk'
+    FIRE = 'fire'
 
 
 class DirectionType(dict):

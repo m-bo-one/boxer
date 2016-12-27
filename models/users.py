@@ -4,6 +4,7 @@ import logging
 import random
 import json
 import math
+import time
 
 import gevent
 
@@ -131,6 +132,7 @@ class UserModel(object):
                  weapons=None,
                  health=100,
                  sprites=None,
+                 extra_data=None,
                  *args, **kwargs):
 
         self.id = id or self.generate_id()
@@ -157,6 +159,11 @@ class UserModel(object):
         self.width = self._current_sprite['frames']['width']
         self.height = self._current_sprite['frames']['height']
 
+        if not extra_data:
+            extra_data = {}
+        self.extra_data = extra_data
+
+        # FIXME: This need to be removed and changed in something appropriate
         WeaponVision.patch_user(self)
 
     def save(self):
@@ -214,6 +221,11 @@ class UserModel(object):
             for armor in self.armors
             for weapon in self.weapons
             for action in [ActionType.IDLE, ActionType.WALK]}
+        self.sprites[sp_key_builder(
+            ArmorType.ENCLAVE_POWER_ARMOR,
+            WeaponType.M60,
+            ActionType.FIRE)] = sprite_proto.clone(
+            (ArmorType.ENCLAVE_POWER_ARMOR, WeaponType.M60, ActionType.FIRE))
 
     @property
     def is_dead(self):
@@ -230,8 +242,6 @@ class UserModel(object):
             y=random.randint(0, local_db['map_size']['height'] - 100),
         )
         user.save()
-        # print('Registered user at point: x - %s, y - %s' %
-        #       user._vision._sector_center)
         local_db['socket2uid'][socket] = user.id
         local_db['uid2socket'][user.id] = socket
         return user
@@ -286,9 +296,23 @@ class UserModel(object):
             return result
         return wrapper
 
+    @autosave
     def shoot(self):
+        # FIXME: This section very hardcoded, need to refactor here:
+        # 1) Damage remove from here, make it in weapon class or
+        # something similar;
+        # 2) Detection change on section finding (note for future);
+        # 3) Logic of damage distribution remove from here;
         detected = []
-        dmg = 40
+        if not self.weapon_in_hands:
+            return detected
+
+        self.action = ActionType.FIRE
+        self.extra_data['shoot_timestamp'] = time.time()
+
+        logging.info('Direction %s, action %s, weapon %s',
+                     self.direction, self.action, self.weapon)
+        dmg = 40  # hardcoded
         for other in self.__class__.all():
             if other.id != self.id:
                 if self._vision.is_inside_sector(other):
@@ -306,12 +330,16 @@ class UserModel(object):
 
         return detected
 
+    @property
+    def weapon_in_hands(self):
+        return self.weapon != WeaponType.NO_WEAPON
+
     @autosave
     def equip(self, type):
         # FIXME: Hardcoded, need to fix in future
         logging.info('Current weapon: %s', self.weapon)
 
-        if type == 'weapon' and self.weapon != WeaponType.NO_WEAPON:
+        if type == 'weapon' and self.weapon_in_hands:
             self.weapon = WeaponType.NO_WEAPON
         elif type == 'weapon':
             self.weapon = self.weapons[1]
