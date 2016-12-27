@@ -1,4 +1,4 @@
-SHOOT_DELAY = 2
+SHOOT_DELAY = 1
 
 
 class ActionType(dict):

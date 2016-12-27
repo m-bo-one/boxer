@@ -133,6 +133,7 @@ class UserModel(object):
                  weapons=None,
                  health=100,
                  sprites=None,
+                 sounds=None,
                  extra_data=None,
                  *args, **kwargs):
 
@@ -153,6 +154,11 @@ class UserModel(object):
             self.load_sprites()
         else:
             self.sprites = sprites
+
+        if not sounds:
+            self.load_sounds()
+        else:
+            self.sounds = sounds
 
         self._current_sprite = self.sprites[sp_key_builder(self.armor,
                                                            self.weapon,
@@ -209,7 +215,8 @@ class UserModel(object):
             'sprites': self.sprites,
             'vision': self._vision.to_dict(),
             'operations_blocked': self.operations_blocked,
-            'extra_data': self.extra_data
+            'extra_data': self.extra_data,
+            'sounds': self.sounds
         }
         return data
 
@@ -229,6 +236,20 @@ class UserModel(object):
             WeaponType.M60,
             ActionType.FIRE)] = sprite_proto.clone(
             (ArmorType.ENCLAVE_POWER_ARMOR, WeaponType.M60, ActionType.FIRE))
+
+    def load_sounds(self):
+        # FIXME: Hardcoded
+        self.sounds = {
+            'path': 'media/sounds/weapons/',
+            'manifest': [
+                {
+                    'id': 'm60-fire',
+                    'src': {
+                        'ogg': 'm60/fire.ogg'
+                    }
+                }
+            ]
+        }
 
     @property
     def is_dead(self):
@@ -302,9 +323,10 @@ class UserModel(object):
     @property
     def operations_blocked(self):
         if self.extra_data.get('shoot_timestamp'):
-            return bool(
-                (time.time() - self.extra_data['shoot_timestamp']) <=
-                SHOOT_DELAY)
+            if (time.time() - self.extra_data['shoot_timestamp']) <= SHOOT_DELAY:
+                return True
+            else:
+                self.extra_data['sound_to_play'] = None
         return False
 
     @autosave
@@ -320,6 +342,7 @@ class UserModel(object):
 
         self.action = ActionType.FIRE
         self.extra_data['shoot_timestamp'] = time.time()
+        self.extra_data['sound_to_play'] = 'm60-fire'
 
         logging.info('Direction %s, action %s, weapon %s',
                      self.direction, self.action, self.weapon)

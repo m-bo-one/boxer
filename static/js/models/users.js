@@ -20,10 +20,15 @@ var app = app || {},
             this.width = options.width;
             this.height = options.height;
             this.operationsBlocked = options.operations_blocked;
+            this.sounds = options.sounds;
+            this.loadSounds();
             this._sprites = {}
             this._options = options;
 
             app.users[this.id] = this;
+        },
+        loadSounds: function() {
+            createjs.Sound.registerSounds(this.sounds);
         },
         equipedByWeapon: function() {
             return (this.weapon === 'no_weapon') ? false : true;
@@ -48,6 +53,9 @@ var app = app || {},
             this.health = options.health;
             this.action = options.action;
             this.direction = options.direction;
+            if (options.extra_data.sound_to_play) {
+                createjs.Sound.play(options.extra_data.sound_to_play);
+            }
 
             utils._LOG('Receive update: direction - ' + options.direction + '; action - ' + options.action);
 
