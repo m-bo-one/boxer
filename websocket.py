@@ -101,12 +101,21 @@ class GameApplication(WebSocketApplication):
         user = self.get_user_from_ws()
         if not user:
             return
-        hitted_players = user.shoot()
+
+        for hitted_player in user.shoot():
+            self.broadcast('player_update', hitted_player.to_dict(),
+                           local_db['uid2socket'][hitted_player.id])
+
         self.broadcast('player_update', user.to_dict())
-        if hitted_players:
-            for hitted_player in hitted_players:
-                self.broadcast('player_update', hitted_player.to_dict(),
-                               local_db['uid2socket'][hitted_player.id])
+        from constants import SHOOT_DELAY
+
+        def _callback():
+            user = self.get_user_from_ws()
+            if not user:
+                return
+            user.move('idle', user.direction)
+            self.broadcast('player_update', user.to_dict())
+        gevent.spawn_later(SHOOT_DELAY, _callback)
 
 
 if __name__ == '__main__':

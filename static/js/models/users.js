@@ -29,6 +29,7 @@ var app = app || {},
             return (this.weapon === 'no_weapon') ? false : true;
         },
         equipWeapon: function(weaponName) {
+            if (this.operationsBlocked) return;
             var weaponName = weaponName || this.weapon;
             var data = JSON.stringify({
                 msg_type: 'player_equip',
@@ -37,7 +38,6 @@ var app = app || {},
             app.ws.send(data);
         },
         refreshData: function(options) {
-            // if (this.operationsBlocked) return;
             if (this.health <= 0) {
                 return;
             }
@@ -61,7 +61,7 @@ var app = app || {},
             this.trigger('change');
         },
         move: function(action, direction) {
-            // if (this.operationsBlocked) return;
+            if (this.operationsBlocked) return;
             utils._LOG('Send move: direction - ' + direction + '; action - ' + action);
             var data = JSON.stringify({
                 msg_type: 'player_move',
@@ -73,7 +73,7 @@ var app = app || {},
             app.ws.send(data);
         },
         shoot: function () {
-            // if (this.operationsBlocked) return;
+            if (this.operationsBlocked) return;
             var data = JSON.stringify({
                 msg_type: 'player_shoot',
                 data: {}
