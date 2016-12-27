@@ -21,6 +21,7 @@ $(function () {
         // FOR FUTURE GRID SYSTEM
         // utils.drawBoard();
         // utils._LOG('Current FPS: ' + createjs.Ticker.getMeasuredFPS());
+        if (app.hud) app.hud.trigger('updateFPS', createjs.Ticker.getMeasuredFPS());
 
         if (app.user === null || app.commandsBlocked || app.keys[38] && app.keys[87] || app.keys[40] && app.keys[83] ||
           app.keys[39] && app.keys[68] || app.keys[37] && app.keys[65]) return;
@@ -94,6 +95,8 @@ $(function () {
                 app.user.refreshData(data);
             });
             ws.on('users_map', function(data) {
+                if (app.hud) app.hud.trigger('updateOnline', Object.keys(data).length);
+
                 for (var user_id in data) {
                     user_id = parseInt(user_id, 0);
 
@@ -114,7 +117,7 @@ $(function () {
         }
     };
 
-    app.canvas = document.getElementById("gameBoard"),
+    app.canvas = document.getElementById("gameBoard");
     app.ctx = app.canvas.getContext("2d");
     app.keys = {};
     app.users = {};
