@@ -16,7 +16,7 @@ var app = app || {},
             this.$el = $(this.el).length ? this.$el : $(this.el).appendTo('.container');
             this.canvas = this.$el[0];
             this.canvas.width = 100;
-            this.canvas.height = 80;
+            this.canvas.height = 120;
             this.stage = new createjs.Stage(this.canvas);
         },
         initHP: function() {
@@ -47,12 +47,29 @@ var app = app || {},
             this.stage.addChild(this.textOnline);
             this.on('updateOnline', this.updateOnline);
         },
+        initMusicSwitcher: function() {
+            var mutedText = (createjs.Sound.muted) ? 'Off' : 'On';
+            this.textMusicSW = new createjs.Text();
+            this.textMusicSW.font = font;
+            this.textMusicSW.color = color;
+            this.textMusicSW.text = 'Music: ' + mutedText;
+            this.textMusicSW.x = 0;
+            this.textMusicSW.y = 3 * size;
+            this.textMusicSW.on('click', this.updateMusicSwitcher, this);
+            this.stage.addChild(this.textMusicSW);
+        },
         updateFPS: function(FPS) {
             this.textFPS.text = 'FPS: ' + FPS.toFixed(0);
             this.stage.update();
         },
         updateOnline: function(count) {
             this.textOnline.text = 'Online: ' + count;
+            this.stage.update();
+        },
+        updateMusicSwitcher: function(event) {
+            createjs.Sound.muted = (createjs.Sound.muted) ? false : true;
+            var mutedText = (createjs.Sound.muted) ? 'Off' : 'On';
+            this.textMusicSW.text = 'Music: ' + mutedText;
             this.stage.update();
         },
         // MAIN
@@ -62,6 +79,7 @@ var app = app || {},
             this.initHP();
             this.initFPS();
             this.initOnline();
+            this.initMusicSwitcher();
         },
         render: function() {
             this.textHP.text = 'HP: ' + this.model.health;

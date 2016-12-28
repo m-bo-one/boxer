@@ -81,7 +81,7 @@ var app = app || {},
             app.ws.send(data);
         },
         shoot: function () {
-            if (this.operationsBlocked) return;
+            if (this.operationsBlocked || !this.equipedByWeapon()) return;
             var data = JSON.stringify({
                 msg_type: 'player_shoot',
                 data: {}

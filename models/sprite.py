@@ -50,7 +50,7 @@ class AnimatedSprite(object):
 
     image_pattern = 'equipment/{armor}/{weapon}/{action}/{direction}.png'
 
-    def __init__(self, action, direction, armor, weapon, count, speed):
+    def __init__(self, action, direction, armor, weapon, count, speed=0.3):
         self.image_name = self.image_pattern.format(
             armor=armor, weapon=weapon, action=action, direction=direction)
         self.action = action
@@ -107,7 +107,6 @@ sprite_proto.register_object(
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
             'weapon': WeaponType.NO_WEAPON,
             'count': 8,
-            'speed': 0.5
         },
         {
             'direction': DirectionType.RIGHT,
@@ -115,7 +114,6 @@ sprite_proto.register_object(
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
             'weapon': WeaponType.NO_WEAPON,
             'count': 8,
-            'speed': 0.5
         },
         {
             'direction': DirectionType.TOP,
@@ -123,7 +121,6 @@ sprite_proto.register_object(
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
             'weapon': WeaponType.NO_WEAPON,
             'count': 8,
-            'speed': 0.5
         },
         {
             'direction': DirectionType.BOTTOM,
@@ -131,7 +128,6 @@ sprite_proto.register_object(
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
             'weapon': WeaponType.NO_WEAPON,
             'count': 8,
-            'speed': 0.5
         }
 
     ]))
@@ -147,7 +143,6 @@ sprite_proto.register_object(
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
             'weapon': WeaponType.NO_WEAPON,
             'count': 12,
-            'speed': 0.5
         },
         {
             'direction': DirectionType.RIGHT,
@@ -155,7 +150,6 @@ sprite_proto.register_object(
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
             'weapon': WeaponType.NO_WEAPON,
             'count': 12,
-            'speed': 0.5
         },
         {
             'direction': DirectionType.TOP,
@@ -163,7 +157,6 @@ sprite_proto.register_object(
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
             'weapon': WeaponType.NO_WEAPON,
             'count': 12,
-            'speed': 0.5
         },
         {
             'direction': DirectionType.BOTTOM,
@@ -171,7 +164,6 @@ sprite_proto.register_object(
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
             'weapon': WeaponType.NO_WEAPON,
             'count': 12,
-            'speed': 0.5
         }
 
     ]))
@@ -187,7 +179,6 @@ sprite_proto.register_object(
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
             'weapon': WeaponType.M60,
             'count': 8,
-            'speed': 0.5
         },
         {
             'direction': DirectionType.RIGHT,
@@ -195,7 +186,6 @@ sprite_proto.register_object(
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
             'weapon': WeaponType.M60,
             'count': 8,
-            'speed': 0.5
         },
         {
             'direction': DirectionType.TOP,
@@ -203,7 +193,6 @@ sprite_proto.register_object(
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
             'weapon': WeaponType.M60,
             'count': 8,
-            'speed': 0.5
         },
         {
             'direction': DirectionType.BOTTOM,
@@ -211,7 +200,6 @@ sprite_proto.register_object(
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
             'weapon': WeaponType.M60,
             'count': 8,
-            'speed': 0.5
         }
 
     ]))
@@ -227,7 +215,6 @@ sprite_proto.register_object(
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
             'weapon': WeaponType.M60,
             'count': 10,
-            'speed': 0.5
         },
         {
             'direction': DirectionType.RIGHT,
@@ -235,7 +222,6 @@ sprite_proto.register_object(
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
             'weapon': WeaponType.M60,
             'count': 10,
-            'speed': 0.5
         },
         {
             'direction': DirectionType.TOP,
@@ -243,7 +229,6 @@ sprite_proto.register_object(
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
             'weapon': WeaponType.M60,
             'count': 10,
-            'speed': 0.5
         },
         {
             'direction': DirectionType.BOTTOM,
@@ -251,7 +236,6 @@ sprite_proto.register_object(
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
             'weapon': WeaponType.M60,
             'count': 10,
-            'speed': 0.5
         }
 
     ]))
@@ -266,32 +250,28 @@ sprite_proto.register_object(
             'action': ActionType.FIRE,
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
             'weapon': WeaponType.M60,
-            'count': 12,
-            'speed': 0.5
+            'count': 8,
         },
         {
             'direction': DirectionType.RIGHT,
             'action': ActionType.FIRE,
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
             'weapon': WeaponType.M60,
-            'count': 12,
-            'speed': 0.5
+            'count': 8,
         },
         {
             'direction': DirectionType.TOP,
             'action': ActionType.FIRE,
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
             'weapon': WeaponType.M60,
-            'count': 12,
-            'speed': 0.5
+            'count': 8,
         },
         {
             'direction': DirectionType.BOTTOM,
             'action': ActionType.FIRE,
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
             'weapon': WeaponType.M60,
-            'count': 12,
-            'speed': 0.5
+            'count': 8,
         }
 
     ]))

@@ -23,7 +23,7 @@ $(function () {
         // utils._LOG('Current FPS: ' + createjs.Ticker.getMeasuredFPS());
         if (app.hud) app.hud.trigger('updateFPS', createjs.Ticker.getMeasuredFPS());
 
-        if (app.user === null || app.commandsBlocked || app.keys[38] && app.keys[87] || app.keys[40] && app.keys[83] ||
+        if (_.isEmpty(app.user) || app.commandsBlocked || app.keys[38] && app.keys[87] || app.keys[40] && app.keys[83] ||
           app.keys[39] && app.keys[68] || app.keys[37] && app.keys[65]) return;
 
         if (app.keys[38] || app.keys[87]) {
@@ -158,20 +158,13 @@ $(function () {
         }
         // button 'space'
         if (app.keys[32]) {
-            // if (app.commandsBlocked) return;
             app.user.shoot();
-            // FIRE effect
-            // createjs.Sound.trigger('fire', 'm60-fire');
-            // app.commandsBlocked = true;
-            // setTimeout(function() {
-            //     app.commandsBlocked = false;
-            // }, 500);
         }
     });
     window.addEventListener("keyup", function (e) {
         app.keys[e.keyCode] = false;
 
-        if (app.user && !app.keys[38] && !app.keys[87] && !app.keys[40] &&
+        if (!_.isEmpty(app.user) && !app.keys[38] && !app.keys[87] && !app.keys[40] &&
             !app.keys[83] && !app.keys[39] && !app.keys[68] && !app.keys[37] &&
             !app.keys[65]) app.user.stop();
     });

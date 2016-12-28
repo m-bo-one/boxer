@@ -124,7 +124,7 @@ class UserModel(object):
                  id=None,
                  x=0,
                  y=0,
-                 speed=5,
+                 speed=(4, 4),
                  action=ActionType.IDLE,
                  direction=DirectionType.LEFT,
                  armor=ArmorType.ENCLAVE_POWER_ARMOR,
@@ -396,16 +396,16 @@ class UserModel(object):
                      self.direction, self.action, self.weapon)
 
         if way == 'walk_top':
-            self.y -= self.speed
+            self.y -= self.speed[1]
 
         elif way == 'walk_bottom':
-            self.y += self.speed
+            self.y += self.speed[1]
 
         elif way == 'walk_right':
-            self.x += self.speed
+            self.x += self.speed[0]
 
         elif way == 'walk_left':
-            self.x -= self.speed
+            self.x -= self.speed[0]
 
         if self.is_collide:
             self.x = x
