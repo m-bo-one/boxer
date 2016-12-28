@@ -22,14 +22,9 @@ var app = app || {},
             this.width = options.width;
             this.height = options.height;
             this.operationsBlocked = options.operations_blocked;
-            this.sounds = options.sounds;
-            this.loadSounds();
             this._options = options;
 
             app.users[this.id] = this;
-        },
-        loadSounds: function() {
-            createjs.Sound.registerSounds(this.sounds);
         },
         equipedByWeapon: function() {
             return (this.weapon === 'no_weapon') ? false : true;

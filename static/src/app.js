@@ -98,6 +98,8 @@ $(function () {
             ws.on('users_map', function(data) {
                 if (app.hud) app.hud.trigger('updateOnline', data.count);
 
+                if (!app.assetsLoaded) return;
+
                 for (var user_id in data.users) {
                     user_id = parseInt(user_id, 0);
 
@@ -124,7 +126,6 @@ $(function () {
     app.users = {};
     app.user = {};
     app.sprites = {};
-    app.commandsBlocked = false;
     app.stage = new createjs.Stage(app.canvas);
 
     Stream.init(app);

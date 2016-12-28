@@ -8,6 +8,7 @@
         <script type="text/javascript">
             var app = app || {};
 
+            app.assetsLoaded = false;
             app.baseSprites = {};
             app.config = {{ !APP_SETTINGS }};
         </script>
@@ -16,22 +17,27 @@
                 var queue, ss, s;
                 
                 queue = new createjs.LoadQueue(true);
-                queue.setMaxConnections(10);
+                queue.setMaxConnections(20);
+                queue.installPlugin(createjs.Sound);
                 queue.on("fileload", onPreloadFile, this);
                 // queue.on("progress", onLoadProgress, this);
                 queue.on("complete", onPreloadComplete, this);
                 queue.loadManifest('manifest.json');
 
                 function onPreloadFile(evt) {
-                    if (evt.item.type == "spritesheet") {
-                        ss = evt.result;
-                        s = new createjs.Sprite(ss);
+                    switch (evt.item.type) {
+                        case createjs.AbstractLoader.SPRITESHEET:
+                            ss = evt.result;
+                            s = new createjs.Sprite(ss);
 
-                        /* simlink */
-                        s.width = ss._frameWidth;
-                        s.height = ss._frameHeight;
+                            /* simlink */
+                            s.width = ss._frameWidth;
+                            s.height = ss._frameHeight;
 
-                        app.baseSprites[evt.item.id] = s;
+                            app.baseSprites[evt.item.id] = s;
+                            break;
+                        case createjs.AbstractLoader.SOUND:
+                            break;
                     }
                 }
 
@@ -41,6 +47,8 @@
                         data: {}
                     })
                     app.ws.send(data);
+                    app.assetsLoaded = true;
+                    createjs.Sound.muted = true;
                 }
                 delete queue, ss, s;
             })();

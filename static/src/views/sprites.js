@@ -29,9 +29,9 @@ var app = app || {},
 
                 app.stage.addChild(this.model.currentSprite);
             }
-            if (app.config.DEBUG) {
-                this._debugBorder();
-            }
+            // if (app.config.DEBUG) {
+            //     this._debugBorder();
+            // }
             return this;
         },
         getWay: function() {

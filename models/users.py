@@ -11,7 +11,7 @@ import gevent
 from db import redis_db, local_db
 from constants import ActionType, DirectionType, WeaponType, ArmorType, \
     SHOOT_DELAY
-from .sprite import sprite_proto, sp_key_builder
+from .sprite import sprite_proto
 
 
 class WeaponVision(object):
@@ -132,8 +132,6 @@ class UserModel(object):
                  armors=None,
                  weapons=None,
                  health=100,
-                 sprites=None,
-                 sounds=None,
                  extra_data=None,
                  *args, **kwargs):
 
@@ -150,21 +148,9 @@ class UserModel(object):
         self.weapons = [WeaponType.NO_WEAPON, WeaponType.M60] \
             if not weapons else weapons
 
-        if not sprites:
-            self.load_sprites()
-        else:
-            self.sprites = sprites
-
-        if not sounds:
-            self.load_sounds()
-        else:
-            self.sounds = sounds
-
-        self._current_sprite = self.sprites[sp_key_builder(self.armor,
-                                                           self.weapon,
-                                                           self.action)]
-        self.width = self._current_sprite['frames']['width']
-        self.height = self._current_sprite['frames']['height']
+        _sprite = sprite_proto.clone((self.armor, self.weapon, self.action))
+        self.width = _sprite['frames']['width']
+        self.height = _sprite['frames']['height']
 
         if not extra_data:
             extra_data = {}
@@ -212,44 +198,14 @@ class UserModel(object):
             'health': self.health,
             'weapons': self.weapons,
             'armors': self.armors,
-            'sprites': self.sprites,
             'vision': self._vision.to_dict(),
             'operations_blocked': self.operations_blocked,
-            'extra_data': self.extra_data,
-            'sounds': self.sounds
+            'extra_data': self.extra_data
         }
         return data
 
     def to_json(self):
         return json.dumps(self.to_dict())
-
-    def load_sprites(self):
-        self.sprites = {
-            sp_key_builder(
-                armor, weapon, action): (sprite_proto
-                                         .clone((armor, weapon, action)))
-            for armor in self.armors
-            for weapon in self.weapons
-            for action in [ActionType.IDLE, ActionType.WALK]}
-        self.sprites[sp_key_builder(
-            ArmorType.ENCLAVE_POWER_ARMOR,
-            WeaponType.M60,
-            ActionType.FIRE)] = sprite_proto.clone(
-            (ArmorType.ENCLAVE_POWER_ARMOR, WeaponType.M60, ActionType.FIRE))
-
-    def load_sounds(self):
-        # FIXME: Hardcoded
-        self.sounds = {
-            'path': 'media/sounds/weapons/',
-            'manifest': [
-                {
-                    'id': 'm60-fire',
-                    'src': {
-                        'ogg': 'm60/fire.ogg'
-                    }
-                }
-            ]
-        }
 
     @property
     def is_dead(self):

@@ -17,18 +17,16 @@ class SpritePrototype(object):
 
     def __init__(self):
         self._objects = {}
-        clear_dir(settings.ASSETS_PATH)
+        clear_dir(settings.ASSETS_SPRITE_PATH)
 
     def register_object(self, name, obj):
         """Register an object"""
         self._objects[sp_key_builder(*name)] = obj
         with open(
-            os.path.join(settings.ASSETS_PATH,
+            os.path.join(settings.ASSETS_SPRITE_PATH,
                          '%s.json' % sp_key_builder(*name)), 'w+'
         ) as outfile:
             json.dump(obj, outfile, indent=4)
-
-        self._reg_manifest()
 
     def unregister_object(self, name):
         """Unregister an object"""
@@ -40,24 +38,9 @@ class SpritePrototype(object):
         obj.update(attr)
         return obj
 
-    def _reg_manifest(self):
-        with open(
-            os.path.join(settings.PROJECT_PATH, 'manifest.json'), 'w+'
-        ) as outfile:
-            data = {}
-            data.setdefault('path', settings.ASSETS_URL)
-            data.setdefault('manifest', [])
-            for key, obj in self._objects.iteritems():
-                data['manifest'].append({
-                    'id': key,
-                    'src': '%s.json' % key,
-                    'type': 'spritesheet'
-                })
-            json.dump(data, outfile, indent=4)
-
 
 class AnimatedSprite(object):
-    """Created animated sprite.
+    """Compile animated sprite obj.
     Init params:
         [
             {

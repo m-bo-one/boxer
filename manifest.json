@@ -1,30 +1,35 @@
 {
-    "path": "/static/assets/", 
+    "path": "", 
     "manifest": [
         {
-            "src": "enclave_power_armor-no_weapon-idle.json", 
+            "src": "/static/assets/sprites/enclave_power_armor-no_weapon-idle.json", 
             "type": "spritesheet", 
             "id": "enclave_power_armor-no_weapon-idle"
         }, 
         {
-            "src": "enclave_power_armor-m60-fire.json", 
+            "src": "/static/assets/sprites/enclave_power_armor-m60-fire.json", 
             "type": "spritesheet", 
             "id": "enclave_power_armor-m60-fire"
         }, 
         {
-            "src": "enclave_power_armor-no_weapon-walk.json", 
+            "src": "/static/assets/sprites/enclave_power_armor-no_weapon-walk.json", 
             "type": "spritesheet", 
             "id": "enclave_power_armor-no_weapon-walk"
         }, 
         {
-            "src": "enclave_power_armor-m60-walk.json", 
+            "src": "/static/assets/sprites/enclave_power_armor-m60-walk.json", 
             "type": "spritesheet", 
             "id": "enclave_power_armor-m60-walk"
         }, 
         {
-            "src": "enclave_power_armor-m60-idle.json", 
+            "src": "/static/assets/sprites/enclave_power_armor-m60-idle.json", 
             "type": "spritesheet", 
             "id": "enclave_power_armor-m60-idle"
+        }, 
+        {
+            "src": "/media/sounds/weapons/m60/fire.ogg", 
+            "type": "sound", 
+            "id": "m60-fire"
         }
     ]
 }
