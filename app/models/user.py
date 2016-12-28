@@ -16,7 +16,7 @@ from app.assets.sprite import sprite_proto
 
 class WeaponVision(object):
 
-    def __init__(self, user, R=200, alpha=30):
+    def __init__(self, user, R=400, alpha=15):
         self.user = user
         self.R = R
         self.alpha = alpha
@@ -159,6 +159,9 @@ class UserModel(object):
         # FIXME: This need to be removed and changed in something appropriate
         WeaponVision.patch_user(self)
 
+    def switchWeapon(self, weapon):
+        self.weapon = weapon
+
     def save(self):
         return redis_db.hset('users', self.id, self.to_json())
 
@@ -292,33 +295,58 @@ class UserModel(object):
         # something similar;
         # 2) Detection change on section finding (note for future);
         # 3) Logic of damage distribution remove from here;
+        # detected = []
+        # if not self.weapon_in_hands:
+        #     return detected
+
+        # self.action = ActionType.FIRE
+        # self.extra_data['shoot_timestamp'] = time.time()
+        # self.extra_data['sound_to_play'] = 'm60-fire'
+
+        # logging.info('Direction %s, action %s, weapon %s',
+        #              self.direction, self.action, self.weapon)
+        # dmg = 40  # hardcoded
+        # for other in self.__class__.all():
+        #     if other.id != self.id:
+        #         if self._vision.is_inside_sector(other):
+        #             detected.append(other)
+
+        # def _det_update(user, calc_damage):
+        #     if random.randrange(100) < 50:
+        #         calc_damage = 0
+        #     user.health -= calc_damage
+        #     user.save()
+
+        # if detected:
+        #     calc_damage = int(dmg / len(detected))
+        #     gevent.joinall([
+        #         gevent.spawn(_det_update(user, calc_damage))
+        #         for user in detected])
+
+        # return detected
+
         detected = []
-        if not self.weapon_in_hands:
-            return detected
 
-        self.action = ActionType.FIRE
-        self.extra_data['shoot_timestamp'] = time.time()
-        self.extra_data['sound_to_play'] = 'm60-fire'
+        if self.weapon_in_hands:
 
-        logging.info('Direction %s, action %s, weapon %s',
-                     self.direction, self.action, self.weapon)
-        dmg = 40  # hardcoded
-        for other in self.__class__.all():
-            if other.id != self.id:
-                if self._vision.is_inside_sector(other):
-                    detected.append(other)
+            self.action = ActionType.FIRE
+            self.extra_data['shoot_timestamp'] = time.time()
+            self.extra_data['sound_to_play'] = 'm60-fire'
 
-        def _det_update(user, calc_damage):
-            if random.randrange(100) < 50:
-                calc_damage = 0
-            user.health -= calc_damage
-            user.save()
+            detected = (self.weapon.in_vision(self, other)
+                        for other in self.__class__.all()
+                        if other.id != self.id)
 
-        if detected:
-            calc_damage = int(dmg / len(detected))
-            gevent.joinall([
-                gevent.spawn(_det_update(user, calc_damage))
-                for user in detected])
+            self.weapon.shoot(detected)
+
+            # def _det_update(user, calc_damage):
+            #     user.health -= calc_damage
+            #     user.save()
+
+            # calc_damage = int(self.weapon.DMG / len(detected))
+            # gevent.joinall([
+            #     gevent.spawn(_det_update(user, calc_damage))
+            #     for user in detected])
 
         return detected
 
