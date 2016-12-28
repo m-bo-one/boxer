@@ -14,7 +14,7 @@ from eventemitter import EventEmitter
 from conf import settings
 from utils import setup_logging
 from db import local_db
-from models import UserModel
+from app.models import UserModel
 
 
 ws_event = EventEmitter()

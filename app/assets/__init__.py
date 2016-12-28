@@ -3,7 +3,6 @@ import os
 
 from .sprite import sprite_proto
 from .sound import sound_proto
-from .users import UserModel
 
 from conf import settings
 

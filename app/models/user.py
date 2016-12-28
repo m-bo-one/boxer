@@ -11,7 +11,7 @@ import gevent
 from db import redis_db, local_db
 from constants import ActionType, DirectionType, WeaponType, ArmorType, \
     SHOOT_DELAY
-from .sprite import sprite_proto
+from app.assets.sprite import sprite_proto
 
 
 class WeaponVision(object):
