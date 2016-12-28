@@ -353,6 +353,8 @@ class UserModel(object):
                     detected.append(other)
 
         def _det_update(user, calc_damage):
+            if random.randrange(100) < 50:
+                calc_damage = 0
             user.health -= calc_damage
             user.save()
 
