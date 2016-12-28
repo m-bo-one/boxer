@@ -63,7 +63,6 @@ class GameApplication(WebSocketApplication):
     def on_open(self):
         logging.info("Connection opened")
         self.broadcast('render_map', local_db['map_size'])
-        ws_event.emit('register_user', self, {})
 
     def on_message(self, message):
         if message:

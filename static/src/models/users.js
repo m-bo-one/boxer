@@ -8,6 +8,8 @@ var app = app || {},
 
         initialize: function(options) {
             this.id = options.id;
+            this.x = options.x;
+            this.y = options.y;
             this.speed = options.speed;
             this.username = options.username;
             this.action = options.action;
@@ -22,7 +24,6 @@ var app = app || {},
             this.operationsBlocked = options.operations_blocked;
             this.sounds = options.sounds;
             this.loadSounds();
-            this._sprites = {}
             this._options = options;
 
             app.users[this.id] = this;
@@ -47,6 +48,8 @@ var app = app || {},
                 return;
             }
             this._options = options;
+            this.x = options.x;
+            this.y = options.y;
             this.operationsBlocked = options.operations_blocked;
             this.detected = options.detected;
 

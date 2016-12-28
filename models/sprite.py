@@ -3,22 +3,32 @@ from __future__ import print_function, unicode_literals
 
 import os
 import copy
+import json
 from conf import settings
-from utils import await_greenlet, get_image
+from utils import await_greenlet, get_image, clear_dir
 from constants import ActionType, DirectionType, WeaponType, ArmorType
 
 
-sp_key_builder = lambda armor, weapon, action: "%s:%s:%s" % (armor, weapon, action)
+sp_key_builder = (lambda armor, weapon, action: "%s-%s-%s" %
+                  (armor, weapon, action))
 
 
 class SpritePrototype(object):
 
     def __init__(self):
         self._objects = {}
+        clear_dir(settings.ASSETS_PATH)
 
     def register_object(self, name, obj):
         """Register an object"""
         self._objects[sp_key_builder(*name)] = obj
+        with open(
+            os.path.join(settings.ASSETS_PATH,
+                         '%s.json' % sp_key_builder(*name)), 'w+'
+        ) as outfile:
+            json.dump(obj, outfile, indent=4)
+
+        self._reg_manifest()
 
     def unregister_object(self, name):
         """Unregister an object"""
@@ -29,6 +39,21 @@ class SpritePrototype(object):
         obj = copy.deepcopy(self._objects[sp_key_builder(*name)])
         obj.update(attr)
         return obj
+
+    def _reg_manifest(self):
+        with open(
+            os.path.join(settings.PROJECT_PATH, 'manifest.json'), 'w+'
+        ) as outfile:
+            data = {}
+            data.setdefault('path', settings.ASSETS_URL)
+            data.setdefault('manifest', [])
+            for key, obj in self._objects.iteritems():
+                data['manifest'].append({
+                    'id': key,
+                    'src': '%s.json' % key,
+                    'type': 'spritesheet'
+                })
+            json.dump(data, outfile, indent=4)
 
 
 class AnimatedSprite(object):

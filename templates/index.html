@@ -7,7 +7,43 @@
         <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.3.3/backbone-min.js"></script>
         <script type="text/javascript">
             var app = app || {};
+
+            app.baseSprites = {};
             app.config = {{ !APP_SETTINGS }};
+        </script>
+        <script type="text/javascript">
+            (function () {
+                var queue, ss, s;
+                
+                queue = new createjs.LoadQueue(true);
+                queue.setMaxConnections(10);
+                queue.on("fileload", onPreloadFile, this);
+                // queue.on("progress", onLoadProgress, this);
+                queue.on("complete", onPreloadComplete, this);
+                queue.loadManifest('manifest.json');
+
+                function onPreloadFile(evt) {
+                    if (evt.item.type == "spritesheet") {
+                        ss = evt.result;
+                        s = new createjs.Sprite(ss);
+
+                        /* simlink */
+                        s.width = ss._frameWidth;
+                        s.height = ss._frameHeight;
+
+                        app.baseSprites[evt.item.id] = s;
+                    }
+                }
+
+                function onPreloadComplete(evt) {
+                    var data = JSON.stringify({
+                        msg_type: 'register_user',
+                        data: {}
+                    })
+                    app.ws.send(data);
+                }
+                delete queue, ss, s;
+            })();
         </script>
     </head>
     <body>

@@ -61,7 +61,10 @@ class BaseHttpRunner(object):
     def _register_routes(self):
         """Assign routes here
         """
-        self._app.route('/', method="GET", callback=self.handler_index)
+        self._app.route('/', method="GET",
+                        callback=self.handler_index)
+        self._app.route('/manifest.json', method="GET",
+                        callback=self.handler_index)
         self._app.route('/media/<filename:re:.*\.(jpg|png|gif|ico|svg)>',
                         callback=self.handler_image)
         self._app.route('/media/<filename:re:.*\.(ogg|mp3)>',
@@ -84,6 +87,9 @@ class BaseHttpRunner(object):
     def handler_index(self):
         """Base index page
         """
+        if 'manifest.json' in self.request.path:
+            return bottle.static_file('manifest.json',
+                                      root=settings.PROJECT_PATH)
         return self.template_with_context('index.html')
 
     def run_forever(self):

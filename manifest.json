@@ -1,0 +1,30 @@
+{
+    "path": "/static/assets/", 
+    "manifest": [
+        {
+            "src": "enclave_power_armor-no_weapon-idle.json", 
+            "type": "spritesheet", 
+            "id": "enclave_power_armor-no_weapon-idle"
+        }, 
+        {
+            "src": "enclave_power_armor-m60-fire.json", 
+            "type": "spritesheet", 
+            "id": "enclave_power_armor-m60-fire"
+        }, 
+        {
+            "src": "enclave_power_armor-no_weapon-walk.json", 
+            "type": "spritesheet", 
+            "id": "enclave_power_armor-no_weapon-walk"
+        }, 
+        {
+            "src": "enclave_power_armor-m60-walk.json", 
+            "type": "spritesheet", 
+            "id": "enclave_power_armor-m60-walk"
+        }, 
+        {
+            "src": "enclave_power_armor-m60-idle.json", 
+            "type": "spritesheet", 
+            "id": "enclave_power_armor-m60-idle"
+        }
+    ]
+}

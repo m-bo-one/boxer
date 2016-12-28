@@ -1,6 +1,6 @@
 import os
 
-DEBUG = True
+DEBUG = False
 TEMPLATE_DEBUG = False
 
 SITE_ADDRESS = ('127.0.0.1', 8080)
@@ -13,6 +13,9 @@ MEDIA_URL = '/media/'
 
 STATIC_PATH = os.path.join(PROJECT_PATH, 'static')
 STATIC_URL = '/static/'
+
+ASSETS_PATH = os.path.join(STATIC_PATH, 'assets')
+ASSETS_URL = os.path.join(STATIC_URL, 'assets/')
 
 TEMPLATES_PATH = os.path.join(PROJECT_PATH, 'templates')
 

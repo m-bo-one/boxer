@@ -1,4 +1,5 @@
 import os
+import shutil
 import sys
 import logging.config
 
@@ -62,3 +63,14 @@ def get_image(image_name, root_path=settings.MEDIA_PATH, with_close=True):
     if with_close:
         image.close()
     return image
+
+
+def clear_dir(folder):
+    for the_file in os.listdir(folder):
+        file_path = os.path.join(folder, the_file)
+        try:
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+
+        except Exception as e:
+            print(e)

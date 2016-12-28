@@ -1,0 +1,67 @@
+{
+    "images": [
+        "/media/equipment/enclave_power_armor/no_weapon/walk/left.png", 
+        "/media/equipment/enclave_power_armor/no_weapon/walk/right.png", 
+        "/media/equipment/enclave_power_armor/no_weapon/walk/top.png", 
+        "/media/equipment/enclave_power_armor/no_weapon/walk/bottom.png"
+    ], 
+    "frames": {
+        "count": 32, 
+        "width": 53.625, 
+        "height": 77
+    }, 
+    "animations": {
+        "walk_bottom": {
+            "frames": [
+                24, 
+                25, 
+                26, 
+                27, 
+                28, 
+                29, 
+                30, 
+                31
+            ], 
+            "speed": 0.3
+        }, 
+        "walk_right": {
+            "frames": [
+                8, 
+                9, 
+                10, 
+                11, 
+                12, 
+                13, 
+                14, 
+                15
+            ], 
+            "speed": 0.3
+        }, 
+        "walk_left": {
+            "frames": [
+                0, 
+                1, 
+                2, 
+                3, 
+                4, 
+                5, 
+                6, 
+                7
+            ], 
+            "speed": 0.3
+        }, 
+        "walk_top": {
+            "frames": [
+                16, 
+                17, 
+                18, 
+                19, 
+                20, 
+                21, 
+                22, 
+                23
+            ], 
+            "speed": 0.3
+        }
+    }
+}

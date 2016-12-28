@@ -2,5 +2,6 @@
 *.sqlite3
 logs/
 *.log
- __pycache__/
- bower_components/
+__pycache__/
+bower_components/
+assets/*.json
