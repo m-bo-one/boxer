@@ -67,6 +67,9 @@ $(function () {
             ws.on('register_user', function(data) {
                 app.user = new app.UserModel(data);
                 app.sprites[app.user.id] = new app.SpriteView({ model: app.user });
+                if (app.hud) {
+                    app.hud.destroy();
+                }
                 app.hud = new app.HudView({ model: app.user });
                 app.weaponVision = new app.WeaponVisionView({ model: app.user });
                 if (app.gameOver) {
@@ -79,11 +82,9 @@ $(function () {
                     app.sprites[data.id].destroy();
                     app.users[data.id].destroy();
                     if (app.user.id === data.id) {
-                        app.hud.destroy();
                         app.weaponVision.destroy();
                         app.user.destroy();
 
-                        delete app.hud;
                         delete app.weaponVision;
                         app.user = {};                 
                     }
@@ -127,25 +128,6 @@ $(function () {
     app.stage = new createjs.Stage(app.canvas);
 
     Stream.init(app);
-
-    // HARDCODED
-    // var audioPath = "media/sounds/weapons/m60/";
-    // var sounds = [
-    //     {id: "m60-fire", src: "fire.ogg"},
-    // ];
- 
-    //  _.extend(createjs.Sound, Backbone.Events);
-    // createjs.Sound.alternateExtensions = ["mp3"];
-    // createjs.Sound.on("fire", handleFire);
-    // createjs.Sound.registerSounds(sounds, audioPath);
-
-    // function handleFire(soundId) {
-    //     if (createjs.Sound.isReady() && !app.commandsBlocked) {
-    //         createjs.Sound.play(soundId);
-    //     }
-    // }
-
-    // END HARDCODED
 
     createjs.Ticker.setFPS(app.config.FPS);
     createjs.Ticker.addEventListener("tick", gameLoop);
