@@ -20,7 +20,7 @@ var app = app || {},
             way = this.getWay();
 
             if (
-                this.model.prevWeapon != this.model.weapon ||
+                this.model.prevWeapon.name != this.model.weapon.name ||
                 this.model.currentSprite.currentAnimation != way
             ) {
                 app.stage.removeChild(this.model.currentSprite);
@@ -38,7 +38,7 @@ var app = app || {},
             return [this.model.action, this.model.direction].join('_');
         },
         getCompoundKey: function() {
-            return [this.model.armor, this.model.weapon, this.model.action].join('-');
+            return [this.model.armor, this.model.weapon.name, this.model.action].join('-');
         },
         changeSprite: function(way) {
             way = way || this.getWay();

@@ -21,9 +21,9 @@ var app = app || {},
             this.sshape.x = this.model.currentSprite.x;
             this.sshape.y = this.model.currentSprite.y;
 
-            R = this.model.vision.R;
-            alphas = this.model.vision.alphas;
-            alphae = this.model.vision.alphae;
+            R = this.model.weapon.vision.range;
+            alphas = this.model.weapon.vision.alphas;
+            alphae = this.model.weapon.vision.alphae;
             cx = this.model.width / 2;
             cy = this.model.height / 2;
 

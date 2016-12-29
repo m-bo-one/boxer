@@ -3,114 +3,13 @@ from __future__ import division
 import logging
 import random
 import json
-import math
 import time
-
-import gevent
 
 from db import redis_db, local_db
 from constants import ActionType, DirectionType, WeaponType, ArmorType, \
     SHOOT_DELAY
 from app.assets.sprite import sprite_proto
-
-
-class WeaponVision(object):
-
-    def __init__(self, user, R=400, alpha=15):
-        self.user = user
-        self.R = R
-        self.alpha = alpha
-
-    def to_dict(self):
-        return {
-            'alphas': self.alphas,
-            'alphae': self.alphae,
-            'R': self.R
-        }
-
-    def is_inside_sector(self, other):
-        def are_clockwise(center, radius, angle, point2):
-            point1 = (
-                (center[0] + radius) * math.cos(math.radians(angle)),
-                (center[1] + radius) * math.sin(math.radians(angle))
-            )
-            return bool(-point1[0] * point2[1] + point1[1] * point2[0] > 0)
-
-        points = [
-            other._vision._sector_center,
-            # other.coords,
-            (other.x + (other.width / 2), other.y),
-            # (other.x + other.width, other.y),
-            # (other.x, other.y + (other.height / 2)),
-            # (other.x, other.y + other.height),
-            (other.x + (other.width / 2), other.y + other.height),
-            # (other.x + other.width, other.y + other.height),
-            # (other.x + other.width, other.y + (other.height / 2)),
-        ]
-        center = self.user._vision._sector_center
-        radius = self.R
-        angle1 = self.alphas
-        angle2 = self.alphae
-
-        logging.debug('Points: %s', points)
-        logging.debug('Width: %s', other.width)
-        logging.debug('Height: %s', other.height)
-
-        for point in points:
-            rel_point = (point[0] - center[0], point[1] - center[1])
-
-            logging.debug('--------------')
-            logging.debug('Search point - x:%s, y:%s' % point)
-            logging.debug('Radius center - x:%s, y:%s' % center)
-            logging.debug('Radius length - %s' % radius)
-            logging.debug('Angle start - %s' % self.alphas)
-            logging.debug('Angle end - %s' % self.alphae)
-            logging.debug('Point diff - x:%s, y:%s' % rel_point)
-            logging.debug('--------------')
-
-            is_detected = bool(
-                not are_clockwise(center, radius, angle1, rel_point) and
-                are_clockwise(center, radius, angle2, rel_point) and
-                (rel_point[0] ** 2 + rel_point[1] ** 2 <= radius ** 2))
-            if is_detected:
-                return True
-        else:
-            return False
-
-    @property
-    def alphas(self):
-        alpha = self.alpha / 2
-        if self.user.direction == 'left':
-            return 180 - alpha
-        elif self.user.direction == 'right':
-            return -alpha
-        elif self.user.direction == 'top':
-            return -90 - alpha
-        elif self.user.direction == 'bottom':
-            return 90 - alpha
-
-    @property
-    def alphae(self):
-        alpha = self.alpha / 2
-        if self.user.direction == 'left':
-            return 180 + alpha
-        elif self.user.direction == 'right':
-            return alpha
-        elif self.user.direction == 'top':
-            return -90 + alpha
-        elif self.user.direction == 'bottom':
-            return 90 + alpha
-
-    @property
-    def _sector_center(self):
-        result = (self.user.x + (self.user.width / 2),
-                  self.user.y + (self.user.height / 2))
-        logging.info('Sector start coords: (%s, %s)' % result)
-        return result
-
-    @classmethod
-    def patch_user(cls, user):
-        user._vision = cls(user)
+from .weapon import Weapon
 
 
 class UserModel(object):
@@ -129,8 +28,6 @@ class UserModel(object):
                  direction=DirectionType.LEFT,
                  armor=ArmorType.ENCLAVE_POWER_ARMOR,
                  weapon=WeaponType.NO_WEAPON,
-                 armors=None,
-                 weapons=None,
                  health=100,
                  extra_data=None,
                  *args, **kwargs):
@@ -142,22 +39,20 @@ class UserModel(object):
         self.action = action
         self.direction = direction
         self.armor = armor
-        self.weapon = weapon
+        self.weapon = Weapon(weapon)
         self.health = health
-        self.armors = [ArmorType.ENCLAVE_POWER_ARMOR] if not armors else armors
-        self.weapons = [WeaponType.NO_WEAPON, WeaponType.M60] \
-            if not weapons else weapons
+        self._armors = [ArmorType.ENCLAVE_POWER_ARMOR]
+        self._weapons = [Weapon(WeaponType.NO_WEAPON), Weapon(WeaponType.M60)]
 
-        _sprite = sprite_proto.clone((self.armor, self.weapon, self.action))
+        _sprite = sprite_proto.clone((self.armor,
+                                      self.weapon.name,
+                                      self.action))
         self.width = _sprite['frames']['width']
         self.height = _sprite['frames']['height']
 
         if not extra_data:
             extra_data = {}
         self.extra_data = extra_data
-
-        # FIXME: This need to be removed and changed in something appropriate
-        WeaponVision.patch_user(self)
 
     def switchWeapon(self, weapon):
         self.weapon = weapon
@@ -187,7 +82,7 @@ class UserModel(object):
         return cls.all(False)
 
     def to_dict(self):
-        data = {
+        return {
             'id': self.id,
             'x': self.x,
             'y': self.y,
@@ -197,15 +92,14 @@ class UserModel(object):
             'action': self.action,
             'direction': self.direction,
             'armor': self.armor,
-            'weapon': self.weapon,
+            'weapon': {
+                'name': self.weapon.name,
+                'vision': self.weapon.get_vision_params(self.direction)
+            },
             'health': self.health,
-            'weapons': self.weapons,
-            'armors': self.armors,
-            'vision': self._vision.to_dict(),
             'operations_blocked': self.operations_blocked,
             'extra_data': self.extra_data
         }
-        return data
 
     def to_json(self):
         return json.dumps(self.to_dict())
@@ -282,7 +176,8 @@ class UserModel(object):
     @property
     def operations_blocked(self):
         if self.extra_data.get('shoot_timestamp'):
-            if (time.time() - self.extra_data['shoot_timestamp']) <= SHOOT_DELAY:
+            ts = self.extra_data['shoot_timestamp']
+            if (time.time() - ts) <= SHOOT_DELAY:
                 return True
             else:
                 self.extra_data['sound_to_play'] = None
@@ -291,39 +186,10 @@ class UserModel(object):
     @autosave
     def shoot(self):
         # FIXME: This section very hardcoded, need to refactor here:
-        # 1) Damage remove from here, make it in weapon class or
+        # ~~1) Damage remove from here, make it in weapon class or
         # something similar;
         # 2) Detection change on section finding (note for future);
-        # 3) Logic of damage distribution remove from here;
-        # detected = []
-        # if not self.weapon_in_hands:
-        #     return detected
-
-        # self.action = ActionType.FIRE
-        # self.extra_data['shoot_timestamp'] = time.time()
-        # self.extra_data['sound_to_play'] = 'm60-fire'
-
-        # logging.info('Direction %s, action %s, weapon %s',
-        #              self.direction, self.action, self.weapon)
-        # dmg = 40  # hardcoded
-        # for other in self.__class__.all():
-        #     if other.id != self.id:
-        #         if self._vision.is_inside_sector(other):
-        #             detected.append(other)
-
-        # def _det_update(user, calc_damage):
-        #     if random.randrange(100) < 50:
-        #         calc_damage = 0
-        #     user.health -= calc_damage
-        #     user.save()
-
-        # if detected:
-        #     calc_damage = int(dmg / len(detected))
-        #     gevent.joinall([
-        #         gevent.spawn(_det_update(user, calc_damage))
-        #         for user in detected])
-
-        # return detected
+        # ~~3) Logic of damage distribution remove from here;
 
         detected = []
 
@@ -333,39 +199,30 @@ class UserModel(object):
             self.extra_data['shoot_timestamp'] = time.time()
             self.extra_data['sound_to_play'] = 'm60-fire'
 
-            detected = (self.weapon.in_vision(self, other)
-                        for other in self.__class__.all()
-                        if other.id != self.id)
+            detected = [other for other in self.__class__.all()
+                        if other.id != self.id and
+                        self.weapon.in_vision(self, other)]
 
-            self.weapon.shoot(detected)
-
-            # def _det_update(user, calc_damage):
-            #     user.health -= calc_damage
-            #     user.save()
-
-            # calc_damage = int(self.weapon.DMG / len(detected))
-            # gevent.joinall([
-            #     gevent.spawn(_det_update(user, calc_damage))
-            #     for user in detected])
+            if detected:
+                self.weapon.shoot(detected)
 
         return detected
 
     @property
     def weapon_in_hands(self):
-        return self.weapon != WeaponType.NO_WEAPON
+        return self.weapon.name != WeaponType.NO_WEAPON
 
     @autosave
     def equip(self, type):
-        # FIXME: Hardcoded, need to fix in future
-        logging.info('Current weapon: %s', self.weapon)
+        logging.info('Current weapon: %s', self.weapon.name)
 
         if type == 'weapon' and self.weapon_in_hands:
-            self.weapon = WeaponType.NO_WEAPON
+            self.weapon = self._weapons[0]
         elif type == 'weapon':
-            self.weapon = self.weapons[1]
+            self.weapon = self._weapons[1]
 
         if type == 'armor':
-            self.armor = self.armors[0]
+            self.armor = self._armors[0]
 
     @autosave
     def move(self, action, direction):
@@ -379,7 +236,7 @@ class UserModel(object):
         self.direction = direction
 
         logging.info('Direction %s, action %s, weapon %s',
-                     self.direction, self.action, self.weapon)
+                     self.direction, self.action, self.weapon.name)
 
         if way == 'walk_top':
             self.y -= self.speed[1]

@@ -18,7 +18,6 @@ var app = app || {},
             this.weapon = options.weapon;
             this.prevWeapon = null;
             this.health = options.health;
-            this.vision = options.vision;
             this.width = options.width;
             this.height = options.height;
             this.operationsBlocked = options.operations_blocked;
@@ -27,11 +26,11 @@ var app = app || {},
             app.users[this.id] = this;
         },
         equipedByWeapon: function() {
-            return (this.weapon === 'no_weapon') ? false : true;
+            return (this.weapon.name === 'no_weapon') ? false : true;
         },
         equipWeapon: function(weaponName) {
             if (this.operationsBlocked) return;
-            var weaponName = weaponName || this.weapon;
+            var weaponName = weaponName || this.weapon.name;
             var data = JSON.stringify({
                 msg_type: 'player_equip',
                 data: {'equipment': 'weapon'}
