@@ -7,7 +7,7 @@ import time
 
 from db import redis_db, local_db
 from constants import ActionType, DirectionType, WeaponType, ArmorType, \
-    StatusType, SHOOT_DELAY
+    SHOOT_DELAY
 from app.assets.sprite import sprite_proto
 from .weapon import Weapon
 
@@ -29,7 +29,6 @@ class UserModel(object):
                  armor=ArmorType.ENCLAVE_POWER_ARMOR,
                  weapon=WeaponType.NO_WEAPON,
                  health=100,
-                 status=StatusType.ALIVE,
                  extra_data=None,
                  *args, **kwargs):
 
@@ -42,7 +41,6 @@ class UserModel(object):
         self.armor = armor
         self.weapon = Weapon(weapon)
         self.health = health
-        self.status = status
         self._armors = [ArmorType.ENCLAVE_POWER_ARMOR]
         self._weapons = [Weapon(WeaponType.NO_WEAPON), Weapon(WeaponType.M60)]
 
@@ -94,7 +92,6 @@ class UserModel(object):
             'action': self.action,
             'direction': self.direction,
             'armor': self.armor,
-            'status': self.status,
             'weapon': {
                 'name': self.weapon.name,
                 'vision': self.weapon.get_vision_params(self.direction)
@@ -212,9 +209,9 @@ class UserModel(object):
 
         return detected
 
-    @autosave
-    def kill(self):
-        self.status = StatusType.DEAD
+    # @autosave
+    # def kill(self):
+    #     self.status = StatusType.DEAD
 
     @property
     def weapon_in_hands(self):
@@ -243,7 +240,10 @@ class UserModel(object):
         self.action = action
         self.direction = direction
 
-        logging.info('Direction %s, action %s, weapon %s',
+        logging.info('\n'
+                     'Direction: %s\n'
+                     'Action: %s\n'
+                     'Weapon: %s\n',
                      self.direction, self.action, self.weapon.name)
 
         if way == 'walk_top':

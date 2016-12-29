@@ -46,7 +46,11 @@ var app = app || {},
             this.model.currentSprite.x = this.model.x;
             this.model.currentSprite.y = this.model.y;
             utils._LOG('Start playing animation: ' + way);
-            this.model.currentSprite.gotoAndPlay(way);
+            if (this.model.action == 'death') {
+                this.model.currentSprite.gotoAndStop(way);
+            } else {
+                this.model.currentSprite.gotoAndPlay(way);
+            }
         },
         _debugBorder: function() {
             if (this.sshape) {

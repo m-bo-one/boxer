@@ -18,7 +18,6 @@ var app = app || {},
             this.weapon = options.weapon;
             this.prevWeapon = null;
             this.health = options.health;
-            this.status = options.status;
             this.width = options.width;
             this.height = options.height;
             this.operationsBlocked = options.operations_blocked;
@@ -38,14 +37,10 @@ var app = app || {},
             })
             app.ws.send(data);
         },
+        isDead: function() {
+            return this.health <= 0;
+        },
         refreshData: function(options) {
-            if (this.health <= 0) {
-                // var data = JSON.stringify({
-                //     msg_type: 'kill_user'
-                // });
-                // app.ws.send(data);
-                return;
-            }
             this._options = options;
             this.x = options.x;
             this.y = options.y;
@@ -59,7 +54,7 @@ var app = app || {},
                 createjs.Sound.play(options.extra_data.sound_to_play);
             }
 
-            utils._LOG('Receive update: direction - ' + options.direction + '; action - ' + options.action);
+            utils._LOG('Receive update: direction - ' + options.direction + '; action - ' + options.action + '; status - ' + options.status);
 
             this.vision = options.vision;
             this.prevWeapon = this.weapon;
@@ -71,7 +66,7 @@ var app = app || {},
             this.trigger('change');
         },
         move: function(action, direction) {
-            if (this.operationsBlocked) return;
+            if (this.operationsBlocked || this.isDead()) return;
             utils._LOG('Send move: direction - ' + direction + '; action - ' + action);
             var data = JSON.stringify({
                 msg_type: 'player_move',
