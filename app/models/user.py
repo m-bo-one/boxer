@@ -33,7 +33,7 @@ class UserModel(object):
                  *args, **kwargs):
 
         self.id = id
-        self.username = 'username'
+        self.username = 'Enclave#%s' % id
         self.x = x
         self.y = y
         self.speed = speed
@@ -148,6 +148,9 @@ class UserModel(object):
             user_id = None
 
         return user_id
+
+    def reg_map(self, size):
+        local_db['map_size'][self.id] = size
 
     @property
     def coords(self):

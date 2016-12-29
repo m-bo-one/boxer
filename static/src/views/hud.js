@@ -62,25 +62,25 @@ var app = app || {},
             this.textMusicSW.text = 'Music: ' + mutedText;
             this.stage.update();
         },
-        initHP: function() {
-            this.initHP = new createjs.Text();
-            this.initHP.font = '10 px Arial';
-            this.updateHP();
-            app.stage.addChild(this.initHP);
-            this.model.on("change", this.updateHP, this);
-        },
-        updateHP: function() {
-            this.initHP.text = this.model.health + '/' + 100;
-            this.initHP.x = this.model.x + 5;
-            this.initHP.y = this.model.y - 10;
-            if (66 < this.model.health && this.model.health <= 100) {
-                this.initHP.color = '#408328';
-            } else if (33 < this.model.health && this.model.health <= 66) {
-                this.initHP.color = '#D5D515';
-            } else {
-                this.initHP.color = '#990000';
-            }
-        },
+        // initHP: function() {
+        //     this.initHP = new createjs.Text();
+        //     this.initHP.font = '10 px Arial';
+        //     this.updateHP();
+        //     app.stage.addChild(this.initHP);
+        //     this.model.on("change", this.updateHP, this);
+        // },
+        // updateHP: function() {
+        //     this.initHP.text = this.model.health + '/' + 100;
+        //     this.initHP.x = this.model.x + 5;
+        //     this.initHP.y = this.model.y - 10;
+        //     if (66 < this.model.health && this.model.health <= 100) {
+        //         this.initHP.color = '#408328';
+        //     } else if (33 < this.model.health && this.model.health <= 66) {
+        //         this.initHP.color = '#D5D515';
+        //     } else {
+        //         this.initHP.color = '#990000';
+        //     }
+        // },
 
         // MAIN
         initialize: function() {
@@ -89,7 +89,7 @@ var app = app || {},
             this.initFPS();
             this.initOnline();
             this.initMusicSwitcher();
-            this.initHP();
+            // this.initHP();
         },
         render: function() {
             this.stage.update();

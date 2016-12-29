@@ -81,7 +81,6 @@ class GameApplication(WebSocketApplication):
     @ws_event.on('register_user')
     def register_user(self, message):
         user = UserModel.register_user(self.ws)
-        self.broadcast('render_map', local_db['map_size'])
         self.broadcast('register_user', user.to_dict())
 
     @ws_event.on('unregister_user')
@@ -89,13 +88,15 @@ class GameApplication(WebSocketApplication):
         user_id = UserModel.unregister_user(self.ws)
         self.broadcast_all('unregister_user', {'id': user_id})
 
-    # @ws_event.on('kill_user')
-    # def kill_user(self, message):
+    # @ws_event.on('register_user')
+    # def reg_map(self, message):
+    #     # TODO: Remove in future when we have a camera
+    #     ws_event.wait_event('my event')
     #     user = self.get_user_from_ws()
     #     if not user:
     #         return
-    #     user.kill()
-    #     self.broadcast('player_update', user.to_dict())
+    #     user.reg_map(message)
+    #     self.broadcast('render_map', local_db['map_size'][user.id])
 
     @ws_event.on('player_move')
     def player_move(self, message):

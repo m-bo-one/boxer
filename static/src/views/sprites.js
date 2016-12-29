@@ -4,11 +4,15 @@ var app = app || {},
 (function() {
     'use strict';
 
+    var _stars, _hpColor,
+        size = 10;
+
     app.SpriteView = Backbone.View.extend({
 
         initialize: function() {
             this.changeSprite();
-            // this.initUsername();
+            this.initUsername();
+            this.initHP();
             this.model.on("change", this.render, this);
         },
         render: function() {
@@ -24,7 +28,8 @@ var app = app || {},
             // if (app.config.DEBUG) {
                 // this._debugBorder();
             // }
-            // this.updateUsername();
+            this.updateUsername();
+            this.updateHP();
             return this;
         },
         changeSprite: function() {
@@ -71,20 +76,59 @@ var app = app || {},
             // this.sshape.graphics.drawRect(0, 0, this.model.width, this.model.height);
             app.stage.addChild(this.sshape);
         },
-        // initUsername: function() {
-        //     this.textUsername = new createjs.Text();
-        //     this.textUsername.font = '10 px Arial';
-        //     this.updateUsername();
-        //     app.stage.addChild(this.textUsername);
-        // },
-        // updateUsername: function() {
-        //     this.textUsername.text = this.model.username;
-        //     this.textUsername.x = this.model.x + 5;
-        //     this.textUsername.y = this.model.y - 10;
-        // },
+        initUsername: function() {
+            this.textUsername = new createjs.Text();
+            this.textUsername.font = size + ' px Arial';
+            this.updateUsername();
+            app.stage.addChild(this.textUsername);
+        },
+        updateUsername: function() {
+            this.textUsername.text = this.model.username;
+            this.textUsername.x = this.model.x + size / 1.5 - this.model.username.length;
+            this.textUsername.y = this.model.y - size;
+        },
+        initHP: function() {
+            this.initHP = new createjs.Text();
+            this.initHP.font = size + ' px Arial';
+            this.updateHP();
+            app.stage.addChild(this.initHP);
+        },
+        updateHP: function() {
+            if (this.model.health == 100) {
+                _hpColor = '#156526';
+                _stars = ' * '.repeat(4);
+            } else if (66 < this.model.health && this.model.health <= 100) {
+                _hpColor = '#1de592';
+                _stars = ' * '.repeat(3);
+            } else if (33 < this.model.health && this.model.health <= 66) {
+                _hpColor = '#D5D515';
+                _stars = ' * '.repeat(2);
+            } else if (0 < this.model.health && this.model.health <= 33) {
+                _hpColor = '#FF7400';
+                _stars = ' * '.repeat(1);
+            } else {
+                _hpColor = '#990000';
+                _stars = '-';
+            }
+
+            this.initHP.color = _hpColor;
+
+            if (this.model == app.user) {
+                this.initHP.text = this.model.health + '/' + 100;
+                this.initHP.x = this.model.x + size - this.initHP.text.length;
+                this.initHP.y = this.model.y - 2 * size;
+            } else {
+                this.initHP.text = _stars;
+                this.initHP.x = this.model.x + size - this.initHP.text.length;
+                this.initHP.y = this.model.y - 2 * size;
+            }
+        },
         destroy: function() {
+            app.stage.removeChild(this.textUsername);
+            app.stage.removeChild(this.initHP);
             this.remove();
             this.unbind();
+            delete app.sprites[this.model.id];
         }
     });
 })();

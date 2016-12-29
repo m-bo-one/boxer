@@ -123,11 +123,17 @@ class NoWeapon(object):
 
 class M60Weapon(object):
 
-    DMG = 60
-    RANGE = 200  # px
+    DMG = (15, 25)
+    RANGE = 210  # px
     SPECTRE = 30  # degree
-    CRIT_CHANCE = 15  # persent
-    CRIT_MULTIPLIER = 2
+    CRIT_CHANCE = 10  # persent
+    CRIT_MULTIPLIER = 4
+
+    @property
+    def damage(self):
+        return int(random.choice(xrange(self.DMG[0],
+                                        self.DMG[1],
+                                        1)))
 
     def shoot(self, detected):
         def _det_update(user, calc_damage):
@@ -139,7 +145,7 @@ class M60Weapon(object):
             else:
                 user.save()
 
-        calc_damage = int(self.DMG / len(detected))
+        calc_damage = int(self.damage / len(detected))
         gevent.joinall([
             gevent.spawn(_det_update(user, calc_damage))
             for user in detected])

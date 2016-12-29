@@ -15,8 +15,8 @@ _LOCAL_DB = {
     'socket2uid': {},
     'uid2socket': {},
     'map_size': {
-        'width': 1080,
-        'height': 640
+        'width': 1280,
+        'height': 768
     }
 }
 
