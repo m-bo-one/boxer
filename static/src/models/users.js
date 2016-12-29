@@ -46,16 +46,18 @@ var app = app || {},
             this._options = options;
             this.x = options.x;
             this.y = options.y;
-            this.operationsBlocked = options.operations_blocked;
+            this.username = options.username;
             this.detected = options.detected;
             this.updatedAt = options.updated_at;
 
             this.health = options.health;
             this.action = options.action;
             this.direction = options.direction;
-            if (options.extra_data.sound_to_play) {
+
+            if (options.extra_data.sound_to_play && !this.operationsBlocked) {
                 createjs.Sound.play(options.extra_data.sound_to_play);
             }
+            this.operationsBlocked = options.operations_blocked;
 
             utils._LOG('Receive update: direction - ' + options.direction + '; action - ' + options.action + '; status - ' + options.status);
 

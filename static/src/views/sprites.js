@@ -39,7 +39,7 @@ var app = app || {},
                 // play one time, hack
                 this.model.currentSprite.gotoAndStop(this.model.animation.way);
                 this.model.currentSprite._animation.next = false
-                if (Math.floor(Date.now() / 1000) - this.model.updatedAt > 1.5) {
+                if (Math.floor(Date.now() / 1000) - this.model.updatedAt > 2) {
                     this.model.currentSprite._animation.frames.splice(0, this.model.currentSprite._animation.frames.length - 1);
                 }
             }

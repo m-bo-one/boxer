@@ -12,7 +12,7 @@ var app = app || {},
             this.sshape = new createjs.Shape().set({
                 x: this.model.currentSprite.x,
                 y: this.model.currentSprite.y,
-                visible: this.model.equipedByWeapon()
+                visible: this.model.equipedByWeapon() && !this.model.isDead()
             });
             app.stage.addChild(this.sshape);
             this.model.on("change", this.render, this);
@@ -36,7 +36,7 @@ var app = app || {},
             this.sshape.graphics.lt(cx, cy);
             this.sshape.graphics.endFill();
 
-            this.sshape.visible = this.model.equipedByWeapon();
+            this.sshape.visible = this.model.equipedByWeapon() && !this.model.isDead();
 
             return this
         },

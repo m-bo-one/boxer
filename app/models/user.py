@@ -32,7 +32,8 @@ class UserModel(object):
                  extra_data=None,
                  *args, **kwargs):
 
-        self.id = id or self.generate_id()
+        self.id = id
+        self.username = 'username'
         self.x = x
         self.y = y
         self.speed = speed
@@ -84,6 +85,7 @@ class UserModel(object):
     def to_dict(self):
         return {
             'id': self.id,
+            'username': self.username,
             'x': self.x,
             'y': self.y,
             'width': self.width,
@@ -126,6 +128,7 @@ class UserModel(object):
     @classmethod
     def register_user(cls, socket, **kwargs):
         user = cls(
+            id=cls.generate_id(),
             x=random.randint(0, local_db['map_size']['width'] - 100),
             y=random.randint(0, local_db['map_size']['height'] - 100),
         )
