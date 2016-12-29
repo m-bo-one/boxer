@@ -61,18 +61,23 @@ class WeaponVision(object):
             return False
 
     def _get_alphas(self, direction):
-        alpha = self.alpha / 2
-        if direction == 'left':
-            return 180 - alpha
-        elif direction == 'right':
-            return -alpha
-        elif direction == 'top':
-            return -90 - alpha
-        elif direction == 'bottom':
-            return 90 - alpha
+        if not hasattr(self, '_alphas'):
+            alpha = self.alpha / 2
+            if direction == 'left':
+                self._alphas = 180 - alpha
+            elif direction == 'right':
+                self._alphas = -alpha
+            elif direction == 'top':
+                self._alphas = -90 - alpha
+            elif direction == 'bottom':
+                self._alphas = 90 - alpha
+
+        return self._alphas
 
     def _get_alphae(self, direction):
-        return self._get_alphas(direction) + self.alpha
+        if not hasattr(self, '_alphae'):
+            self._alphae = self._get_alphas(direction) + self.alpha
+        return self._alphae
 
     def _get_user_sector_center(self):
         result = (self.user.x + (self.user.width / 2),
