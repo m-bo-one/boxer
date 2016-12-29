@@ -10,6 +10,7 @@ class ActionType(dict):
     IDLE = 'idle'
     WALK = 'walk'
     FIRE = 'fire'
+    DEATH_FROM_ABOVE = 'death_from_above'
 
 
 class DirectionType(dict):

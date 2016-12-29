@@ -123,6 +123,7 @@ $(function () {
 
     Stream.init(app);
 
+    createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
     createjs.Ticker.setFPS(app.config.FPS);
     createjs.Ticker.addEventListener("tick", gameLoop);
 

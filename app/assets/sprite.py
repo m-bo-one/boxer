@@ -6,14 +6,14 @@ import copy
 import json
 from conf import settings
 from utils import await_greenlet, get_image, clear_dir
-from constants import ActionType, DirectionType, WeaponType, ArmorType
-
-
-sp_key_builder = (lambda armor, weapon, action: "%s-%s-%s" %
-                  (armor, weapon, action))
+from constants import ActionType, DirectionType, WeaponType, ArmorType, \
+    StatusType
 
 
 class SpritePrototype(object):
+
+    sp_key_builder = staticmethod(lambda armor, weapon, action: "%s-%s-%s" %
+                                  (armor, weapon, action))
 
     def __init__(self):
         self._objects = {}
@@ -21,23 +21,23 @@ class SpritePrototype(object):
 
     def register_object(self, name, obj):
         """Register an object"""
-        self._objects[sp_key_builder(*name)] = obj
+        self._objects[self.sp_key_builder(*name)] = obj
         with open(
             os.path.join(settings.ASSETS_SPRITE_PATH,
-                         '%s.json' % sp_key_builder(*name)), 'w+'
+                         '%s.json' % self.sp_key_builder(*name)), 'w+'
         ) as outfile:
             json.dump(obj, outfile, indent=4)
 
     def get(self, name):
-        return self._objects[sp_key_builder(*name)]
+        return self._objects[self.sp_key_builder(*name)]
 
     def unregister_object(self, name):
         """Unregister an object"""
-        del self._objects[sp_key_builder(*name)]
+        del self._objects[self.sp_key_builder(*name)]
 
     def clone(self, name, **attr):
         """Clone a registered object and update inner attributes dictionary"""
-        obj = copy.deepcopy(self._objects[sp_key_builder(*name)])
+        obj = copy.deepcopy(self._objects[self.sp_key_builder(*name)])
         obj.update(attr)
         return obj
 
@@ -59,11 +59,19 @@ class AnimatedSprite(object):
         ]
     """
 
-    image_pattern = 'equipment/{armor}/{weapon}/{action}/{direction}.png'
+    image_patterns = {
+        'default': 'equipment/{armor}/{weapon}/{action}/{direction}.png',
+        'death': 'equipment/{armor}/{action}/{direction}.png'
+    }
 
-    def __init__(self, action, direction, armor, weapon, count, speed=0.3):
-        self.image_name = self.image_pattern.format(
-            armor=armor, weapon=weapon, action=action, direction=direction)
+    def __init__(self, action, direction, armor, weapon=None, count=0,
+                 speed=0.3):
+        if weapon:
+            self.image_name = self.image_patterns['default'].format(
+                armor=armor, weapon=weapon, action=action, direction=direction)
+        else:
+            self.image_name = self.image_patterns['default'].format(
+                armor=armor, action=action, direction=direction)
         self.action = action
         self.direction = direction
         self.count = count
@@ -283,6 +291,78 @@ sprite_proto.register_object(
             'armor': ArmorType.ENCLAVE_POWER_ARMOR,
             'weapon': WeaponType.M60,
             'count': 8,
+        }
+
+    ]))
+
+sprite_proto.register_object(
+
+    (ArmorType.ENCLAVE_POWER_ARMOR, WeaponType.NO_WEAPON, ActionType.DEATH_FROM_ABOVE),
+
+    AnimatedSprite.prepare_easeljs_data([
+        {
+            'direction': DirectionType.LEFT,
+            'action': ActionType.DEATH_FROM_ABOVE,
+            'armor': ArmorType.ENCLAVE_POWER_ARMOR,
+            'weapon': WeaponType.NO_WEAPON,
+            'count': 19,
+        },
+        {
+            'direction': DirectionType.RIGHT,
+            'action': ActionType.DEATH_FROM_ABOVE,
+            'armor': ArmorType.ENCLAVE_POWER_ARMOR,
+            'weapon': WeaponType.NO_WEAPON,
+            'count': 19,
+        },
+        {
+            'direction': DirectionType.TOP,
+            'action': ActionType.DEATH_FROM_ABOVE,
+            'armor': ArmorType.ENCLAVE_POWER_ARMOR,
+            'weapon': WeaponType.NO_WEAPON,
+            'count': 19,
+        },
+        {
+            'direction': DirectionType.BOTTOM,
+            'action': ActionType.DEATH_FROM_ABOVE,
+            'armor': ArmorType.ENCLAVE_POWER_ARMOR,
+            'weapon': WeaponType.NO_WEAPON,
+            'count': 19,
+        }
+
+    ]))
+
+sprite_proto.register_object(
+
+    (ArmorType.ENCLAVE_POWER_ARMOR, WeaponType.M60, ActionType.DEATH_FROM_ABOVE),
+
+    AnimatedSprite.prepare_easeljs_data([
+        {
+            'direction': DirectionType.LEFT,
+            'action': ActionType.DEATH_FROM_ABOVE,
+            'armor': ArmorType.ENCLAVE_POWER_ARMOR,
+            'weapon': WeaponType.NO_WEAPON,
+            'count': 19,
+        },
+        {
+            'direction': DirectionType.RIGHT,
+            'action': ActionType.DEATH_FROM_ABOVE,
+            'armor': ArmorType.ENCLAVE_POWER_ARMOR,
+            'weapon': WeaponType.NO_WEAPON,
+            'count': 19,
+        },
+        {
+            'direction': DirectionType.TOP,
+            'action': ActionType.DEATH_FROM_ABOVE,
+            'armor': ArmorType.ENCLAVE_POWER_ARMOR,
+            'weapon': WeaponType.NO_WEAPON,
+            'count': 19,
+        },
+        {
+            'direction': DirectionType.BOTTOM,
+            'action': ActionType.DEATH_FROM_ABOVE,
+            'armor': ArmorType.ENCLAVE_POWER_ARMOR,
+            'weapon': WeaponType.NO_WEAPON,
+            'count': 19,
         }
 
     ]))

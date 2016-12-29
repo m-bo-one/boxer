@@ -98,7 +98,18 @@ class UserModel(object):
             },
             'health': self.health,
             'operations_blocked': self.operations_blocked,
-            'extra_data': self.extra_data
+            'animation': self.animation_key,
+            'extra_data': self.extra_data,
+            'updated_at': time.time()
+        }
+
+    @property
+    def animation_key(self):
+        return {
+            'way': "_".join([self.action, self.direction]),
+            'compound': sprite_proto.sp_key_builder(self.armor,
+                                                    self.weapon.name,
+                                                    self.action),
         }
 
     def to_json(self):
@@ -228,6 +239,11 @@ class UserModel(object):
 
         if type == 'armor':
             self.armor = self._armors[0]
+
+    @autosave
+    def kill(self):
+        death_actions = [ActionType.DEATH_FROM_ABOVE]
+        self.action = random.choice(death_actions)
 
     @autosave
     def move(self, action, direction):

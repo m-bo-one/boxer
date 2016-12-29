@@ -134,7 +134,10 @@ class M60Weapon(object):
             if random.randrange(100) < self.CRIT_CHANCE:
                 calc_damage = self.CRIT_MULTIPLIER * calc_damage
             user.health -= calc_damage
-            user.save()
+            if user.is_dead:
+                user.kill()
+            else:
+                user.save()
 
         calc_damage = int(self.DMG / len(detected))
         gevent.joinall([

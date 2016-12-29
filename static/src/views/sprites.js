@@ -4,8 +4,6 @@ var app = app || {},
 (function() {
     'use strict';
 
-    var compoundKey, way;
-
     app.SpriteView = Backbone.View.extend({
 
         initialize: function() {
@@ -17,11 +15,9 @@ var app = app || {},
             this.model.currentSprite.x = this.model.x;
             this.model.currentSprite.y = this.model.y;
 
-            way = this.getWay();
-
             if (
                 this.model.prevWeapon.name != this.model.weapon.name ||
-                this.model.currentSprite.currentAnimation != way
+                this.model.currentSprite.currentAnimation != this.model.animation.way
             ) {
                 app.stage.removeChild(this.model.currentSprite);
 
@@ -34,23 +30,21 @@ var app = app || {},
             // }
             return this;
         },
-        getWay: function() {
-            return [this.model.action, this.model.direction].join('_');
-        },
-        getCompoundKey: function() {
-            return [this.model.armor, this.model.weapon.name, this.model.action].join('-');
-        },
-        changeSprite: function(way) {
-            way = way || this.getWay();
-            this.model.currentSprite = _.clone(app.baseSprites[this.getCompoundKey()]);
+        changeSprite: function() {
+            this.model.currentSprite = _.clone(app.baseSprites[this.model.animation.compound]);
             this.model.currentSprite.x = this.model.x;
             this.model.currentSprite.y = this.model.y;
-            utils._LOG('Start playing animation: ' + way);
-            if (this.model.action == 'death') {
-                this.model.currentSprite.gotoAndStop(way);
-            } else {
-                this.model.currentSprite.gotoAndPlay(way);
+
+            if (this.model.isDead()) {
+                // play one time, hack
+                this.model.currentSprite.gotoAndStop(this.model.animation.way);
+                this.model.currentSprite._animation.next = false
+                if (Math.floor(Date.now() / 1000) - this.model.updatedAt > 1.5) {
+                    this.model.currentSprite._animation.frames.splice(0, this.model.currentSprite._animation.frames.length - 1);
+                }
             }
+            this.model.currentSprite.gotoAndPlay(this.model.animation.way);
+            utils._LOG('Start playing animation: ' + this.model.animation.way);
         },
         _debugBorder: function() {
             if (this.sshape) {

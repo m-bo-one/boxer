@@ -2,9 +2,9 @@
     "path": "", 
     "manifest": [
         {
-            "src": "/static/assets/sprites/enclave_power_armor-no_weapon-idle.json", 
+            "src": "/static/assets/sprites/enclave_power_armor-m60-death_from_above.json", 
             "type": "spritesheet", 
-            "id": "enclave_power_armor-no_weapon-idle"
+            "id": "enclave_power_armor-m60-death_from_above"
         }, 
         {
             "src": "/static/assets/sprites/enclave_power_armor-m60-fire.json", 
@@ -12,9 +12,14 @@
             "id": "enclave_power_armor-m60-fire"
         }, 
         {
-            "src": "/static/assets/sprites/enclave_power_armor-no_weapon-walk.json", 
+            "src": "/static/assets/sprites/enclave_power_armor-m60-idle.json", 
             "type": "spritesheet", 
-            "id": "enclave_power_armor-no_weapon-walk"
+            "id": "enclave_power_armor-m60-idle"
+        }, 
+        {
+            "src": "/static/assets/sprites/enclave_power_armor-no_weapon-death_from_above.json", 
+            "type": "spritesheet", 
+            "id": "enclave_power_armor-no_weapon-death_from_above"
         }, 
         {
             "src": "/static/assets/sprites/enclave_power_armor-m60-walk.json", 
@@ -22,9 +27,14 @@
             "id": "enclave_power_armor-m60-walk"
         }, 
         {
-            "src": "/static/assets/sprites/enclave_power_armor-m60-idle.json", 
+            "src": "/static/assets/sprites/enclave_power_armor-no_weapon-idle.json", 
             "type": "spritesheet", 
-            "id": "enclave_power_armor-m60-idle"
+            "id": "enclave_power_armor-no_weapon-idle"
+        }, 
+        {
+            "src": "/static/assets/sprites/enclave_power_armor-no_weapon-walk.json", 
+            "type": "spritesheet", 
+            "id": "enclave_power_armor-no_weapon-walk"
         }, 
         {
             "src": "/media/sounds/weapons/m60/fire.ogg", 

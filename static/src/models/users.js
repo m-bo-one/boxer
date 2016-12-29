@@ -21,6 +21,8 @@ var app = app || {},
             this.width = options.width;
             this.height = options.height;
             this.operationsBlocked = options.operations_blocked;
+            this.animation = options.animation;
+            this.updatedAt = options.updated_at;
             this._options = options;
 
             app.users[this.id] = this;
@@ -46,6 +48,7 @@ var app = app || {},
             this.y = options.y;
             this.operationsBlocked = options.operations_blocked;
             this.detected = options.detected;
+            this.updatedAt = options.updated_at;
 
             this.health = options.health;
             this.action = options.action;
@@ -62,6 +65,7 @@ var app = app || {},
             this.armor = options.armor;
             this.width = options.width;
             this.height = options.height;
+            this.animation = options.animation;
 
             this.trigger('change');
         },
