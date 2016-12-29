@@ -18,6 +18,7 @@ var app = app || {},
             this.weapon = options.weapon;
             this.prevWeapon = null;
             this.health = options.health;
+            this.status = options.status;
             this.width = options.width;
             this.height = options.height;
             this.operationsBlocked = options.operations_blocked;
@@ -39,6 +40,10 @@ var app = app || {},
         },
         refreshData: function(options) {
             if (this.health <= 0) {
+                // var data = JSON.stringify({
+                //     msg_type: 'kill_user'
+                // });
+                // app.ws.send(data);
                 return;
             }
             this._options = options;

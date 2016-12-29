@@ -7,7 +7,7 @@ import time
 
 from db import redis_db, local_db
 from constants import ActionType, DirectionType, WeaponType, ArmorType, \
-    SHOOT_DELAY
+    StatusType, SHOOT_DELAY
 from app.assets.sprite import sprite_proto
 from .weapon import Weapon
 
@@ -29,6 +29,7 @@ class UserModel(object):
                  armor=ArmorType.ENCLAVE_POWER_ARMOR,
                  weapon=WeaponType.NO_WEAPON,
                  health=100,
+                 status=StatusType.ALIVE,
                  extra_data=None,
                  *args, **kwargs):
 
@@ -41,12 +42,13 @@ class UserModel(object):
         self.armor = armor
         self.weapon = Weapon(weapon)
         self.health = health
+        self.status = status
         self._armors = [ArmorType.ENCLAVE_POWER_ARMOR]
         self._weapons = [Weapon(WeaponType.NO_WEAPON), Weapon(WeaponType.M60)]
 
-        _sprite = sprite_proto.clone((self.armor,
-                                      self.weapon.name,
-                                      self.action))
+        _sprite = sprite_proto.get((self.armor,
+                                    self.weapon.name,
+                                    self.action))
         self.width = _sprite['frames']['width']
         self.height = _sprite['frames']['height']
 
@@ -92,6 +94,7 @@ class UserModel(object):
             'action': self.action,
             'direction': self.direction,
             'armor': self.armor,
+            'status': self.status,
             'weapon': {
                 'name': self.weapon.name,
                 'vision': self.weapon.get_vision_params(self.direction)
@@ -200,13 +203,18 @@ class UserModel(object):
             self.extra_data['sound_to_play'] = 'm60-fire'
 
             detected = [other for other in self.__class__.all()
-                        if other.id != self.id and
+                        if other.id != self.id and not
+                        other.is_dead and
                         self.weapon.in_vision(self, other)]
 
             if detected:
                 self.weapon.shoot(detected)
 
         return detected
+
+    @autosave
+    def kill(self):
+        self.status = StatusType.DEAD
 
     @property
     def weapon_in_hands(self):

@@ -28,6 +28,9 @@ class SpritePrototype(object):
         ) as outfile:
             json.dump(obj, outfile, indent=4)
 
+    def get(self, name):
+        return self._objects[sp_key_builder(*name)]
+
     def unregister_object(self, name):
         """Unregister an object"""
         del self._objects[sp_key_builder(*name)]

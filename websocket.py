@@ -89,6 +89,14 @@ class GameApplication(WebSocketApplication):
         user_id = UserModel.unregister_user(self.ws)
         self.broadcast_all('unregister_user', {'id': user_id})
 
+    @ws_event.on('kill_user')
+    def kill_user(self, message):
+        user = self.get_user_from_ws()
+        if not user:
+            return
+        user.kill()
+        self.broadcast('player_update', user.to_dict())
+
     @ws_event.on('player_move')
     def player_move(self, message):
         user = self.get_user_from_ws()

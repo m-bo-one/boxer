@@ -1,5 +1,6 @@
 import logging
 import math
+import random
 
 import gevent
 
@@ -79,12 +80,6 @@ class WeaponVision(object):
             self._alphae = self._get_alphas(direction) + self.alpha
         return self._alphae
 
-    def _get_user_sector_center(self):
-        result = (self.user.x + (self.user.width / 2),
-                  self.user.y + (self.user.height / 2))
-        logging.info('Sector start coords: (%s, %s)' % result)
-        return result
-
 
 class Weapon(object):
 
@@ -129,11 +124,15 @@ class NoWeapon(object):
 class M60Weapon(object):
 
     DMG = 60
-    RANGE = 200
-    SPECTRE = 30
+    RANGE = 200  # px
+    SPECTRE = 30  # degree
+    CRIT_CHANCE = 15  # persent
+    CRIT_MULTIPLIER = 2
 
     def shoot(self, detected):
         def _det_update(user, calc_damage):
+            if random.randrange(100) < self.CRIT_CHANCE:
+                calc_damage = self.CRIT_MULTIPLIER * calc_damage
             user.health -= calc_damage
             user.save()
 

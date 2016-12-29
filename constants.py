@@ -1,6 +1,11 @@
 SHOOT_DELAY = 1
 
 
+class StatusType(dict):
+    ALIVE = 'alive'
+    DEAD = 'dead'
+
+
 class ActionType(dict):
     IDLE = 'idle'
     WALK = 'walk'

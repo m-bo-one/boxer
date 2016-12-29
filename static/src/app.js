@@ -72,10 +72,6 @@ $(function () {
                 }
                 app.hud = new app.HudView({ model: app.user });
                 app.weaponVision = new app.WeaponVisionView({ model: app.user });
-                if (app.gameOver) {
-                    app.gameOver.destroy();
-                }
-                app.gameOver = new app.GameOverView({ model: app.user });
             });
             ws.on('unregister_user', function(data) {
                 try {
@@ -84,9 +80,6 @@ $(function () {
                     if (app.user.id === data.id) {
                         app.weaponVision.destroy();
                         app.user.destroy();
-
-                        delete app.weaponVision;
-                        app.user = {};                 
                     }
                 } catch(e) {
                     // pass
