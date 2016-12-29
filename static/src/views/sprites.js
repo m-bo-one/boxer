@@ -8,7 +8,7 @@ var app = app || {},
 
         initialize: function() {
             this.changeSprite();
-            app.stage.addChild(this.model.currentSprite);
+            // this.initUsername();
             this.model.on("change", this.render, this);
         },
         render: function() {
@@ -19,18 +19,17 @@ var app = app || {},
                 this.model.prevWeapon.name != this.model.weapon.name ||
                 this.model.currentSprite.currentAnimation != this.model.animation.way
             ) {
-                app.stage.removeChild(this.model.currentSprite);
-
                 this.changeSprite();
-
-                app.stage.addChild(this.model.currentSprite);
             }
             // if (app.config.DEBUG) {
-            //     this._debugBorder();
+                // this._debugBorder();
             // }
+            // this.updateUsername();
             return this;
         },
         changeSprite: function() {
+            if (this.model.currentSprite) app.stage.removeChild(this.model.currentSprite);
+
             this.model.currentSprite = _.clone(app.baseSprites[this.model.animation.compound]);
             this.model.currentSprite.x = this.model.x;
             this.model.currentSprite.y = this.model.y;
@@ -38,13 +37,19 @@ var app = app || {},
             if (this.model.isDead()) {
                 // play one time, hack
                 this.model.currentSprite.gotoAndStop(this.model.animation.way);
-                this.model.currentSprite._animation.next = false
+                this.model.currentSprite._animation.next = false;
                 if (Math.floor(Date.now() / 1000) - this.model.updatedAt > 2) {
                     this.model.currentSprite._animation.frames.splice(0, this.model.currentSprite._animation.frames.length - 1);
                 }
             }
-            this.model.currentSprite.gotoAndPlay(this.model.animation.way);
+            if (this.model.action == 'idle') {
+                this.model.currentSprite.gotoAndStop(this.model.animation.way);
+            } else {
+                this.model.currentSprite.gotoAndPlay(this.model.animation.way);
+            }
             utils._LOG('Start playing animation: ' + this.model.animation.way);
+
+            app.stage.addChild(this.model.currentSprite);
         },
         _debugBorder: function() {
             if (this.sshape) {
@@ -66,6 +71,17 @@ var app = app || {},
             // this.sshape.graphics.drawRect(0, 0, this.model.width, this.model.height);
             app.stage.addChild(this.sshape);
         },
+        // initUsername: function() {
+        //     this.textUsername = new createjs.Text();
+        //     this.textUsername.font = '10 px Arial';
+        //     this.updateUsername();
+        //     app.stage.addChild(this.textUsername);
+        // },
+        // updateUsername: function() {
+        //     this.textUsername.text = this.model.username;
+        //     this.textUsername.x = this.model.x + 5;
+        //     this.textUsername.y = this.model.y - 10;
+        // },
         destroy: function() {
             this.remove();
             this.unbind();

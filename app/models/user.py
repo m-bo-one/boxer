@@ -223,10 +223,6 @@ class UserModel(object):
 
         return detected
 
-    # @autosave
-    # def kill(self):
-    #     self.status = StatusType.DEAD
-
     @property
     def weapon_in_hands(self):
         return self.weapon.name != WeaponType.NO_WEAPON

@@ -1,10 +1,10 @@
 import os
 
-DEBUG = True
+DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
-SITE_ADDRESS = ('127.0.0.1', 8080)
-WEBSOCKET_ADDRESS = ('127.0.0.1', 9999)
+SITE_ADDRESS = ('0.0.0.0', 8080)
+WEBSOCKET_ADDRESS = ('0.0.0.0', 9999)
 
 PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 

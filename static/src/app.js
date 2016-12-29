@@ -43,7 +43,7 @@ $(function () {
 
     var Stream = {
         init: function (app) {
-            var ws = new WebSocket("ws://" + app.config.WEBSOCKET_ADDRESS + "/game");
+            var ws = new WebSocket("ws://" + document.domain + ":9999" + "/game");
             _.extend(ws, Backbone.Events);
 
             ws.onmessage = function(evt) {
@@ -66,10 +66,9 @@ $(function () {
             });
             ws.on('register_user', function(data) {
                 app.user = new app.UserModel(data);
+                // TODO: Maybe revert back to model??
                 app.sprites[app.user.id] = new app.SpriteView({ model: app.user });
-                if (app.hud) {
-                    app.hud.destroy();
-                }
+
                 app.hud = new app.HudView({ model: app.user });
                 app.weaponVision = new app.WeaponVisionView({ model: app.user });
             });

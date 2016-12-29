@@ -35,8 +35,9 @@ class BaseHttpRunner(object):
         context = {
             'STATIC_URL': settings.STATIC_URL,
             'MEDIA_URL': settings.MEDIA_URL,
-            'FILE_VERSION': (hashlib.md5(str(time.time())).hexdigest()
-                             if not settings.TEMPLATE_DEBUG else ''),
+            # 'FILE_VERSION': (hashlib.md5(str(time.time())).hexdigest()
+            #                  if not settings.TEMPLATE_DEBUG else ''),
+            'FILE_VERSION': '',
             'APP_SETTINGS': json.dumps(self.app_settings)
         }
         if isinstance(extra, dict):
