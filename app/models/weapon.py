@@ -36,21 +36,21 @@ class WeaponVision(object):
         angle1 = self._get_alphas(user.direction)
         angle2 = self._get_alphae(user.direction)
 
-        logging.debug('Points: %s', points)
-        logging.debug('Width: %s', other.width)
-        logging.debug('Height: %s', other.height)
+        # logging.debug('Points: %s', points)
+        # logging.debug('Width: %s', other.width)
+        # logging.debug('Height: %s', other.height)
 
         for point in points:
             rel_point = (point[0] - center[0], point[1] - center[1])
 
-            logging.debug('--------------')
-            logging.debug('Search point - x:%s, y:%s' % point)
-            logging.debug('Radius center - x:%s, y:%s' % center)
-            logging.debug('Radius length - %s' % radius)
-            logging.debug('Angle start - %s' % angle1)
-            logging.debug('Angle end - %s' % angle2)
-            logging.debug('Point diff - x:%s, y:%s' % rel_point)
-            logging.debug('--------------')
+            # logging.debug('--------------')
+            # logging.debug('Search point - x:%s, y:%s' % point)
+            # logging.debug('Radius center - x:%s, y:%s' % center)
+            # logging.debug('Radius length - %s' % radius)
+            # logging.debug('Angle start - %s' % angle1)
+            # logging.debug('Angle end - %s' % angle2)
+            # logging.debug('Point diff - x:%s, y:%s' % rel_point)
+            # logging.debug('--------------')
 
             is_detected = bool(
                 not are_clockwise(center, radius, angle1, rel_point) and
@@ -140,12 +140,10 @@ class M60Weapon(object):
                                         1)))
 
     def shoot(self, detected):
-        def _det_update(other, calc_damage):
-            if random.randrange(100) < self.CRIT_CHANCE:
-                calc_damage = self.CRIT_MULTIPLIER * calc_damage
-            other.got_hit(calc_damage)
-
         calc_damage = int(self.damage / len(detected))
-        gevent.joinall([
-            gevent.spawn(_det_update(other, calc_damage))
-            for other in detected])
+
+        if random.randrange(100) < self.CRIT_CHANCE:
+            calc_damage = self.CRIT_MULTIPLIER * calc_damage
+
+        for other in detected:
+            other.got_hit(calc_damage)

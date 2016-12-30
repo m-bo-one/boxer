@@ -10,6 +10,7 @@ from gevent.queue import Queue
 from gevent.event import Event
 
 from db import redis_db, local_db
+from utils import await_greenlet
 from constants import ActionType, DirectionType, WeaponType, ArmorType, \
     RESURECTION_TIME, HEAL_TIME, HUMAN_HEALTH
 from app.assets.sprite import sprite_proto
@@ -126,6 +127,9 @@ class UserModel(object):
                                                     self.action),
         }
 
+    def __repr__(self):
+        return '<UserModel: id - %s>' % self.id
+
     def to_json(self):
         return json.dumps(self.to_dict())
 
@@ -201,16 +205,19 @@ class UserModel(object):
 
     def autosave(func):
         def wrapper(self, *args, **kwargs):
-            result = func(self, *args, **kwargs)
-            self.save()
-            UserModel.tasks.put_nowait({'user_id': self.id})
+            result = await_greenlet(func, self, *args, **kwargs)
+            await_greenlet(self.save)
             _evt.set()
+            UserModel.tasks.put({'user_id': self.id})
             return result
         return wrapper
 
     @property
     def operations_blocked(self):
         try:
+            if self.is_dead:
+                return True
+
             ct = time.time()
             if ((ct - self.extra_data['shoot_timestamp']) <=
                self.weapon.w.SHOOT_TIME):
@@ -226,11 +233,13 @@ class UserModel(object):
         else:
             return False
 
-    def _delayed_command(self, delay, func):
+    def _delayed_command(self, delay, fname):
 
         def _callback():
             _evt.wait()
-            func()
+            user = await_greenlet(UserModel.get, self.id)
+            func = getattr(user, fname)
+            await_greenlet(func)
 
         gevent.spawn_later(delay, _callback)
 
@@ -244,7 +253,7 @@ class UserModel(object):
 
         detected = []
 
-        if self.weapon_in_hands:
+        if self.weapon_in_hands and not self.operations_blocked:
 
             self.action = ActionType.FIRE
             self.extra_data['shoot_timestamp'] = time.time()
@@ -256,15 +265,21 @@ class UserModel(object):
                         self.weapon.in_vision(self, other)]
 
             if detected:
+                logging.info('Found users: %s', detected)
                 self.weapon.shoot(detected)
 
-            self._delayed_command(self.weapon.w.SHOOT_TIME, self.stop)
+            self._delayed_command(self.weapon.w.SHOOT_TIME, 'stop')
 
         return detected
 
     @property
     def weapon_in_hands(self):
         return self.weapon.name != WeaponType.NO_WEAPON
+
+    def attr_from_db(self, value):
+        logging.info('Update attr: %s', value)
+        user_data = await_greenlet(UserModel.get, self.id)
+        return getattr(user_data, value)
 
     @autosave
     def equip(self, type):
@@ -280,19 +295,23 @@ class UserModel(object):
 
     @autosave
     def got_hit(self, dmg):
-        self.health -= dmg
+        logging.info('Health before hit: %s', self.health)
+        self.health = self.attr_from_db('health') - dmg
+        logging.info('Health after hit: %s', self.health)
         if self.is_dead:
-            self.kill()
+            await_greenlet(self.kill)
 
     @autosave
     def heal(self, target=None):
-        if not self.is_full_health:
+        if not self.is_full_health and not self.operations_blocked:
             if target is not None and target != self:
                 raise NotImplementedError()
             else:
                 # TODO: For future, add inventory and
                 # replace heal of inventory stimulators
-                self.health += 10  # hardcoded value
+                logging.info('Health before heal: %s', self.health)
+                self.health = 10 + self.attr_from_db('health')
+                logging.info('Health before heal: %s', self.health)
 
                 self.action = ActionType.HEAL
                 self.extra_data['heal_timestamp'] = time.time()
@@ -300,7 +319,7 @@ class UserModel(object):
                 if self.health > 100:
                     self.health = 100
 
-                self._delayed_command(HEAL_TIME, self.stop)
+                self._delayed_command(HEAL_TIME, 'stop')
 
     @autosave
     def kill(self):
@@ -308,7 +327,7 @@ class UserModel(object):
         self.action = random.choice(death_actions)
         self.extra_data['resurection_time'] = RESURECTION_TIME
 
-        self._delayed_command(RESURECTION_TIME, self.resurect)
+        self._delayed_command(RESURECTION_TIME, 'resurect')
 
     @autosave
     def resurect(self):

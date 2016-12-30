@@ -37,9 +37,9 @@ class GameApplication(WebSocketApplication):
     def run_ticker(self):
         while True:
             gevent.sleep(0.01)
-            logging.info('Current clients: %s',
-                         self.ws.handler.server.clients.keys())
-            logging.info('Updating map...')
+            # logging.info('Current clients: %s',
+            #              self.ws.handler.server.clients.keys())
+            # logging.info('Updating map...')
             self.broadcast_all('users_map',
                                {'users': UserModel.get_users_map(),
                                 'count': len(self.ws.handler.server.clients)})
