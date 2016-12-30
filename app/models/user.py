@@ -10,7 +10,6 @@ from gevent.queue import Queue
 from gevent.event import Event
 
 from db import redis_db, local_db
-from utils import await_greenlet
 from constants import ActionType, DirectionType, WeaponType, ArmorType, \
     RESURECTION_TIME, HEAL_TIME, HUMAN_HEALTH
 from app.assets.sprite import sprite_proto
@@ -205,10 +204,10 @@ class UserModel(object):
 
     def autosave(func):
         def wrapper(self, *args, **kwargs):
-            result = await_greenlet(func, self, *args, **kwargs)
-            await_greenlet(self.save)
+            result = func(self, *args, **kwargs)
+            self.save()
             _evt.set()
-            UserModel.tasks.put({'user_id': self.id})
+            UserModel.tasks.put_nowait({'user_id': self.id})
             return result
         return wrapper
 
@@ -237,9 +236,8 @@ class UserModel(object):
 
         def _callback():
             _evt.wait()
-            user = await_greenlet(UserModel.get, self.id)
-            func = getattr(user, fname)
-            await_greenlet(func)
+            user = UserModel.get(self.id)
+            getattr(user, fname)()
 
         gevent.spawn_later(delay, _callback)
 
@@ -278,8 +276,7 @@ class UserModel(object):
 
     def attr_from_db(self, value):
         logging.info('Update attr: %s', value)
-        user_data = await_greenlet(UserModel.get, self.id)
-        return getattr(user_data, value)
+        return getattr(UserModel.get(self.id), value)
 
     @autosave
     def equip(self, type):
@@ -299,7 +296,7 @@ class UserModel(object):
         self.health = self.attr_from_db('health') - dmg
         logging.info('Health after hit: %s', self.health)
         if self.is_dead:
-            await_greenlet(self.kill)
+            self.kill()
 
     @autosave
     def heal(self, target=None):
