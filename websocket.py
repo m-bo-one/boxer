@@ -31,17 +31,25 @@ class GameApplication(WebSocketApplication):
         if not GameApplication._packager_initialized:
             [gevent.spawn(self.run_ticker)
              for _ in xrange(self._packager_max_workers)]
+            gevent.spawn(self.run_user_ticker)
             GameApplication._packager_initialized = True
 
     def run_ticker(self):
         while True:
             gevent.sleep(0.01)
-            # logging.info('Current clients: %s',
-            #              self.ws.handler.server.clients.keys())
-            # logging.info('Updating map...')
+            logging.info('Current clients: %s',
+                         self.ws.handler.server.clients.keys())
+            logging.info('Updating map...')
             self.broadcast_all('users_map',
                                {'users': UserModel.get_users_map(),
                                 'count': len(self.ws.handler.server.clients)})
+
+    def run_user_ticker(self):
+        while True:
+            task = UserModel.tasks.get()
+            user = UserModel.get(task['user_id'])
+            self.broadcast('player_update', user.to_dict(),
+                           local_db['uid2socket'][user.id])
 
     def broadcast(self, msg_type, data, ws=None):
         try:
@@ -76,7 +84,7 @@ class GameApplication(WebSocketApplication):
         if not user:
             return
         user.equip(message['data']['equipment'])
-        self.broadcast('player_update', user.to_dict())
+        # self.broadcast('player_update', user.to_dict())
 
     @ws_event.on('register_user')
     def register_user(self, message):
@@ -88,23 +96,13 @@ class GameApplication(WebSocketApplication):
         user_id = UserModel.unregister_user(self.ws)
         self.broadcast_all('unregister_user', {'id': user_id})
 
-    # @ws_event.on('register_user')
-    # def reg_map(self, message):
-    #     # TODO: Remove in future when we have a camera
-    #     ws_event.wait_event('my event')
-    #     user = self.get_user_from_ws()
-    #     if not user:
-    #         return
-    #     user.reg_map(message)
-    #     self.broadcast('render_map', local_db['map_size'][user.id])
-
     @ws_event.on('player_move')
     def player_move(self, message):
         user = self.get_user_from_ws()
         if not user:
             return
         user.move(message['data']['action'], message['data']['direction'])
-        self.broadcast('player_update', user.to_dict())
+        # self.broadcast('player_update', user.to_dict())
 
     @ws_event.on('player_shoot')
     def player_shoot(self, message):
@@ -116,7 +114,7 @@ class GameApplication(WebSocketApplication):
             self.broadcast('player_update', hitted_player.to_dict(),
                            local_db['uid2socket'][hitted_player.id])
 
-        self.broadcast('player_update', user.to_dict())
+        # self.broadcast('player_update', user.to_dict())
         from constants import SHOOT_DELAY
 
         def _callback():
@@ -124,7 +122,7 @@ class GameApplication(WebSocketApplication):
             if not user:
                 return
             user.move('idle', user.direction)
-            self.broadcast('player_update', user.to_dict())
+            # self.broadcast('player_update', user.to_dict())
 
         gevent.spawn_later(SHOOT_DELAY, _callback)
 

@@ -1,4 +1,5 @@
 SHOOT_DELAY = 1
+RESURECTION_TIME = 5
 
 
 class StatusType(dict):

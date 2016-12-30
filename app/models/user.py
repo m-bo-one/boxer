@@ -5,9 +5,12 @@ import random
 import json
 import time
 
+import gevent
+from gevent.queue import Queue
+
 from db import redis_db, local_db
 from constants import ActionType, DirectionType, WeaponType, ArmorType, \
-    SHOOT_DELAY
+    SHOOT_DELAY, RESURECTION_TIME
 from app.assets.sprite import sprite_proto
 from .weapon import Weapon
 
@@ -18,6 +21,7 @@ class UserModel(object):
         'map_collision',
         # 'user_collision',
     )
+    tasks = Queue()
 
     def __init__(self,
                  id=None,
@@ -190,6 +194,7 @@ class UserModel(object):
         def wrapper(self, *args, **kwargs):
             result = func(self, *args, **kwargs)
             self.save()
+            UserModel.tasks.put_nowait({'user_id': self.id})
             return result
         return wrapper
 
@@ -225,7 +230,7 @@ class UserModel(object):
                         self.weapon.in_vision(self, other)]
 
             if detected:
-                self.weapon.shoot(self, detected)
+                self.weapon.shoot(detected)
 
         return detected
 
@@ -246,9 +251,32 @@ class UserModel(object):
             self.armor = self._armors[0]
 
     @autosave
+    def got_hit(self, dmg):
+        self.health -= dmg
+        if self.is_dead:
+            self.kill()
+
+    @autosave
     def kill(self):
         death_actions = [ActionType.DEATH_FROM_ABOVE]
         self.action = random.choice(death_actions)
+        self.extra_data['resurection_time'] = RESURECTION_TIME
+
+        gevent.spawn_later(RESURECTION_TIME, self.resurect)
+
+    @autosave
+    def resurect(self):
+        self.health = 100
+        self.weapon = self._weapons[0]
+        self.x = random.randint(0, local_db['map_size']['width'] - 100)
+        self.y = random.randint(0, local_db['map_size']['height'] - 100)
+        self.action = ActionType.IDLE
+        self.direction = DirectionType.LEFT
+
+        try:
+            del self.extra_data['resurection_time']
+        except KeyError:
+            pass
 
     @autosave
     def move(self, action, direction):
