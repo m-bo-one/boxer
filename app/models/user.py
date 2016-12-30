@@ -7,12 +7,16 @@ import time
 
 import gevent
 from gevent.queue import Queue
+from gevent.event import Event
 
 from db import redis_db, local_db
 from constants import ActionType, DirectionType, WeaponType, ArmorType, \
-    SHOOT_DELAY, RESURECTION_TIME
+    RESURECTION_TIME, HEAL_TIME, HUMAN_HEALTH
 from app.assets.sprite import sprite_proto
 from .weapon import Weapon
+
+
+_evt = Event()
 
 
 class UserModel(object):
@@ -109,7 +113,8 @@ class UserModel(object):
             'animation': self.animation_key,
             'extra_data': self.extra_data,
             'updated_at': time.time(),
-            'scores': self.scores
+            'scores': self.scores,
+            'max_health': HUMAN_HEALTH
         }
 
     @property
@@ -164,6 +169,10 @@ class UserModel(object):
         return (self.x, self.y)
 
     @property
+    def is_full_health(self):
+        return self.health == HUMAN_HEALTH
+
+    @property
     def is_collide(self):
         result = False
         for col_func in self.collision_pipeline:
@@ -195,18 +204,35 @@ class UserModel(object):
             result = func(self, *args, **kwargs)
             self.save()
             UserModel.tasks.put_nowait({'user_id': self.id})
+            _evt.set()
             return result
         return wrapper
 
     @property
     def operations_blocked(self):
-        if self.extra_data.get('shoot_timestamp'):
-            ts = self.extra_data['shoot_timestamp']
-            if (time.time() - ts) <= SHOOT_DELAY:
+        try:
+            ct = time.time()
+            if ((ct - self.extra_data['shoot_timestamp']) <=
+               self.weapon.w.SHOOT_TIME):
                 return True
             else:
                 self.extra_data['sound_to_play'] = None
-        return False
+
+            if ((ct - self.extra_data['heal_timestamp']) <=
+               HEAL_TIME):
+                return True
+        except KeyError:
+            return False
+        else:
+            return False
+
+    def _delayed_command(self, delay, func):
+
+        def _callback():
+            _evt.wait()
+            func()
+
+        gevent.spawn_later(delay, _callback)
 
     @autosave
     def shoot(self):
@@ -231,6 +257,8 @@ class UserModel(object):
 
             if detected:
                 self.weapon.shoot(detected)
+
+            self._delayed_command(self.weapon.w.SHOOT_TIME, self.stop)
 
         return detected
 
@@ -257,12 +285,30 @@ class UserModel(object):
             self.kill()
 
     @autosave
+    def heal(self, target=None):
+        if not self.is_full_health:
+            if target is not None and target != self:
+                raise NotImplementedError()
+            else:
+                # TODO: For future, add inventory and
+                # replace heal of inventory stimulators
+                self.health += 10  # hardcoded value
+
+                self.action = ActionType.HEAL
+                self.extra_data['heal_timestamp'] = time.time()
+
+                if self.health > 100:
+                    self.health = 100
+
+                self._delayed_command(HEAL_TIME, self.stop)
+
+    @autosave
     def kill(self):
         death_actions = [ActionType.DEATH_FROM_ABOVE]
         self.action = random.choice(death_actions)
         self.extra_data['resurection_time'] = RESURECTION_TIME
 
-        gevent.spawn_later(RESURECTION_TIME, self.resurect)
+        self._delayed_command(RESURECTION_TIME, self.resurect)
 
     @autosave
     def resurect(self):
@@ -277,6 +323,10 @@ class UserModel(object):
             del self.extra_data['resurection_time']
         except KeyError:
             pass
+
+    @autosave
+    def stop(self):
+        self.move('idle', self.direction)
 
     @autosave
     def move(self, action, direction):

@@ -295,74 +295,80 @@ sprite_proto.register_object(
 
     ]))
 
-sprite_proto.register_object(
 
-    (ArmorType.ENCLAVE_POWER_ARMOR, WeaponType.NO_WEAPON, ActionType.DEATH_FROM_ABOVE),
+for wp_type in WeaponType.__slots__:
 
-    AnimatedSprite.prepare_easeljs_data([
-        {
-            'direction': DirectionType.LEFT,
-            'action': ActionType.DEATH_FROM_ABOVE,
-            'armor': ArmorType.ENCLAVE_POWER_ARMOR,
-            'weapon': WeaponType.NO_WEAPON,
-            'count': 19,
-        },
-        {
-            'direction': DirectionType.RIGHT,
-            'action': ActionType.DEATH_FROM_ABOVE,
-            'armor': ArmorType.ENCLAVE_POWER_ARMOR,
-            'weapon': WeaponType.NO_WEAPON,
-            'count': 19,
-        },
-        {
-            'direction': DirectionType.TOP,
-            'action': ActionType.DEATH_FROM_ABOVE,
-            'armor': ArmorType.ENCLAVE_POWER_ARMOR,
-            'weapon': WeaponType.NO_WEAPON,
-            'count': 19,
-        },
-        {
-            'direction': DirectionType.BOTTOM,
-            'action': ActionType.DEATH_FROM_ABOVE,
-            'armor': ArmorType.ENCLAVE_POWER_ARMOR,
-            'weapon': WeaponType.NO_WEAPON,
-            'count': 19,
-        }
+    sprite_proto.register_object(
 
-    ]))
+        (ArmorType.ENCLAVE_POWER_ARMOR, wp_type, ActionType.DEATH_FROM_ABOVE),
 
-sprite_proto.register_object(
+        AnimatedSprite.prepare_easeljs_data([
+            {
+                'direction': DirectionType.LEFT,
+                'action': ActionType.DEATH_FROM_ABOVE,
+                'armor': ArmorType.ENCLAVE_POWER_ARMOR,
+                'weapon': WeaponType.NO_WEAPON,
+                'count': 19,
+            },
+            {
+                'direction': DirectionType.RIGHT,
+                'action': ActionType.DEATH_FROM_ABOVE,
+                'armor': ArmorType.ENCLAVE_POWER_ARMOR,
+                'weapon': WeaponType.NO_WEAPON,
+                'count': 19,
+            },
+            {
+                'direction': DirectionType.TOP,
+                'action': ActionType.DEATH_FROM_ABOVE,
+                'armor': ArmorType.ENCLAVE_POWER_ARMOR,
+                'weapon': WeaponType.NO_WEAPON,
+                'count': 19,
+            },
+            {
+                'direction': DirectionType.BOTTOM,
+                'action': ActionType.DEATH_FROM_ABOVE,
+                'armor': ArmorType.ENCLAVE_POWER_ARMOR,
+                'weapon': WeaponType.NO_WEAPON,
+                'count': 19,
+            }
 
-    (ArmorType.ENCLAVE_POWER_ARMOR, WeaponType.M60, ActionType.DEATH_FROM_ABOVE),
+        ]))
 
-    AnimatedSprite.prepare_easeljs_data([
-        {
-            'direction': DirectionType.LEFT,
-            'action': ActionType.DEATH_FROM_ABOVE,
-            'armor': ArmorType.ENCLAVE_POWER_ARMOR,
-            'weapon': WeaponType.NO_WEAPON,
-            'count': 19,
-        },
-        {
-            'direction': DirectionType.RIGHT,
-            'action': ActionType.DEATH_FROM_ABOVE,
-            'armor': ArmorType.ENCLAVE_POWER_ARMOR,
-            'weapon': WeaponType.NO_WEAPON,
-            'count': 19,
-        },
-        {
-            'direction': DirectionType.TOP,
-            'action': ActionType.DEATH_FROM_ABOVE,
-            'armor': ArmorType.ENCLAVE_POWER_ARMOR,
-            'weapon': WeaponType.NO_WEAPON,
-            'count': 19,
-        },
-        {
-            'direction': DirectionType.BOTTOM,
-            'action': ActionType.DEATH_FROM_ABOVE,
-            'armor': ArmorType.ENCLAVE_POWER_ARMOR,
-            'weapon': WeaponType.NO_WEAPON,
-            'count': 19,
-        }
 
-    ]))
+for wp_type in WeaponType.__slots__:
+
+    sprite_proto.register_object(
+
+        (ArmorType.ENCLAVE_POWER_ARMOR, wp_type, ActionType.HEAL),
+
+        AnimatedSprite.prepare_easeljs_data([
+            {
+                'direction': DirectionType.LEFT,
+                'action': ActionType.HEAL,
+                'armor': ArmorType.ENCLAVE_POWER_ARMOR,
+                'weapon': WeaponType.NO_WEAPON,
+                'count': 19,
+            },
+            {
+                'direction': DirectionType.RIGHT,
+                'action': ActionType.HEAL,
+                'armor': ArmorType.ENCLAVE_POWER_ARMOR,
+                'weapon': WeaponType.NO_WEAPON,
+                'count': 19,
+            },
+            {
+                'direction': DirectionType.TOP,
+                'action': ActionType.HEAL,
+                'armor': ArmorType.ENCLAVE_POWER_ARMOR,
+                'weapon': WeaponType.NO_WEAPON,
+                'count': 19,
+            },
+            {
+                'direction': DirectionType.BOTTOM,
+                'action': ActionType.HEAL,
+                'armor': ArmorType.ENCLAVE_POWER_ARMOR,
+                'weapon': WeaponType.NO_WEAPON,
+                'count': 19,
+            }
+
+        ]))

@@ -91,17 +91,17 @@ class Weapon(object):
         if isinstance(name, dict):
             name = name['name']
         self.name = name
-        self._w = _weapons[name]()
+        self.w = _weapons[name]()
         self.vision = WeaponVision(
-            R=self._w.RANGE,
-            alpha=self._w.SPECTRE
+            R=self.w.RANGE,
+            alpha=self.w.SPECTRE
         )
 
     def in_vision(self, user, other):
         return self.vision.in_sector(user, other)
 
     def shoot(self, detected):
-        return self._w.shoot(detected)
+        return self.w.shoot(detected)
 
     def get_vision_params(self, direction):
         return {
@@ -116,6 +116,9 @@ class NoWeapon(object):
     DMG = 1
     RANGE = 1
     SPECTRE = 1
+    CRIT_CHANCE = 1
+    CRIT_MULTIPLIER = 1
+    SHOOT_TIME = 1
 
     def shoot(self, detected):
         raise NotImplementedError()
@@ -128,6 +131,7 @@ class M60Weapon(object):
     SPECTRE = 30  # degree
     CRIT_CHANCE = 10  # persent
     CRIT_MULTIPLIER = 4
+    SHOOT_TIME = 1
 
     @property
     def damage(self):

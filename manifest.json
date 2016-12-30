@@ -7,6 +7,11 @@
             "id": "enclave_power_armor-m60-death_from_above"
         }, 
         {
+            "src": "/static/assets/sprites/enclave_power_armor-m60-heal.json", 
+            "type": "spritesheet", 
+            "id": "enclave_power_armor-m60-heal"
+        }, 
+        {
             "src": "/static/assets/sprites/enclave_power_armor-m60-fire.json", 
             "type": "spritesheet", 
             "id": "enclave_power_armor-m60-fire"
@@ -15,6 +20,11 @@
             "src": "/static/assets/sprites/enclave_power_armor-m60-idle.json", 
             "type": "spritesheet", 
             "id": "enclave_power_armor-m60-idle"
+        }, 
+        {
+            "src": "/static/assets/sprites/enclave_power_armor-no_weapon-heal.json", 
+            "type": "spritesheet", 
+            "id": "enclave_power_armor-no_weapon-heal"
         }, 
         {
             "src": "/static/assets/sprites/enclave_power_armor-no_weapon-death_from_above.json", 

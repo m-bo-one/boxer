@@ -24,6 +24,7 @@ var app = app || {},
             this.animation = options.animation;
             this.updatedAt = options.updated_at;
             this.scores = options.scores;
+            this.maxHealth = options.max_health;
             this._options = options;
 
             app.users[this.id] = this;
@@ -42,6 +43,9 @@ var app = app || {},
         },
         isDead: function() {
             return this.health <= 0;
+        },
+        isFullHealth: function() {
+            return this.health == this.maxHealth;
         },
         refreshData: function(options) {
             this._options = options;
@@ -94,6 +98,14 @@ var app = app || {},
             if (this.operationsBlocked || !this.equipedByWeapon()) return;
             var data = JSON.stringify({
                 msg_type: 'player_shoot',
+                data: {}
+            });
+            app.ws.send(data);
+        },
+        heal: function () {
+            if (this.operationsBlocked || this.isDead() || this.isFullHealth()) return;
+            var data = JSON.stringify({
+                msg_type: 'player_heal',
                 data: {}
             });
             app.ws.send(data);

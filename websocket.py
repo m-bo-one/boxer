@@ -31,7 +31,7 @@ class GameApplication(WebSocketApplication):
         if not GameApplication._packager_initialized:
             [gevent.spawn(self.run_ticker)
              for _ in xrange(self._packager_max_workers)]
-            gevent.spawn(self.run_user_ticker)
+            gevent.spawn(self.user_cron_update)
             GameApplication._packager_initialized = True
 
     def run_ticker(self):
@@ -44,7 +44,7 @@ class GameApplication(WebSocketApplication):
                                {'users': UserModel.get_users_map(),
                                 'count': len(self.ws.handler.server.clients)})
 
-    def run_user_ticker(self):
+    def user_cron_update(self):
         while True:
             task = UserModel.tasks.get()
             user = UserModel.get(task['user_id'])
@@ -84,7 +84,13 @@ class GameApplication(WebSocketApplication):
         if not user:
             return
         user.equip(message['data']['equipment'])
-        # self.broadcast('player_update', user.to_dict())
+
+    @ws_event.on('player_heal')
+    def player_heal(self, message):
+        user = self.get_user_from_ws()
+        if not user:
+            return
+        user.heal()
 
     @ws_event.on('register_user')
     def register_user(self, message):
@@ -102,7 +108,6 @@ class GameApplication(WebSocketApplication):
         if not user:
             return
         user.move(message['data']['action'], message['data']['direction'])
-        # self.broadcast('player_update', user.to_dict())
 
     @ws_event.on('player_shoot')
     def player_shoot(self, message):
@@ -114,21 +119,10 @@ class GameApplication(WebSocketApplication):
             self.broadcast('player_update', hitted_player.to_dict(),
                            local_db['uid2socket'][hitted_player.id])
 
-        # self.broadcast('player_update', user.to_dict())
-        from constants import SHOOT_DELAY
-
-        def _callback():
-            user = self.get_user_from_ws()
-            if not user:
-                return
-            user.move('idle', user.direction)
-            # self.broadcast('player_update', user.to_dict())
-
-        gevent.spawn_later(SHOOT_DELAY, _callback)
-
 
 if __name__ == '__main__':
     try:
+        UserModel.delete()
         loglevel = logging.ERROR if not settings.DEBUG else logging.INFO
         setup_logging(default_level=loglevel)
         logging.info('Starting server...\n')
@@ -139,4 +133,3 @@ if __name__ == '__main__':
         server.serve_forever()
     except KeyboardInterrupt:
         logging.info('Killing server...\n')
-        UserModel.delete()

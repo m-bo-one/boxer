@@ -113,15 +113,15 @@ var app = app || {},
 
             this.initHP.color = _hpColor;
 
-            if (this.model == app.user) {
-                this.initHP.text = this.model.health + '/' + 100;
-                this.initHP.x = this.model.x + size - this.initHP.text.length;
-                this.initHP.y = this.model.y - 2 * size;
-            } else {
-                this.initHP.text = _stars;
-                this.initHP.x = this.model.x + size - this.initHP.text.length;
-                this.initHP.y = this.model.y - 2 * size;
-            }
+            // if (this.model == app.user) {
+            this.initHP.text = this.model.health + '/' + this.model.maxHealth;
+            this.initHP.x = this.model.x + size - this.initHP.text.length;
+            this.initHP.y = this.model.y - 2 * size;
+            // } else {
+            //     this.initHP.text = _stars;
+            //     this.initHP.x = this.model.x + size - this.initHP.text.length;
+            //     this.initHP.y = this.model.y - 2 * size;
+            // }
         },
         destroy: function() {
             app.stage.removeChild(this.textUsername);

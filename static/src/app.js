@@ -43,7 +43,7 @@ $(function () {
 
     var Stream = {
         init: function (app) {
-            var ws = new WebSocket("ws://" + document.domain + ":9999" + "/game");
+            var ws = new WebSocket("ws://" + app.config.WEBSOCKET_ADDRESS + "/game");
             _.extend(ws, Backbone.Events);
 
             ws.onmessage = function(evt) {
@@ -135,6 +135,10 @@ $(function () {
         // button 'space'
         if (app.keys[32]) {
             app.user.shoot();
+        }
+        // button 'H'
+        if (app.keys[72]) {
+            app.user.heal();
         }
     });
     window.addEventListener("keyup", function (e) {
