@@ -347,28 +347,28 @@ for wp_type in WeaponType.__slots__:
                 'action': ActionType.HEAL,
                 'armor': ArmorType.ENCLAVE_POWER_ARMOR,
                 'weapon': WeaponType.NO_WEAPON,
-                'count': 19,
+                'count': 11,
             },
             {
                 'direction': DirectionType.RIGHT,
                 'action': ActionType.HEAL,
                 'armor': ArmorType.ENCLAVE_POWER_ARMOR,
                 'weapon': WeaponType.NO_WEAPON,
-                'count': 19,
+                'count': 11,
             },
             {
                 'direction': DirectionType.TOP,
                 'action': ActionType.HEAL,
                 'armor': ArmorType.ENCLAVE_POWER_ARMOR,
                 'weapon': WeaponType.NO_WEAPON,
-                'count': 19,
+                'count': 11,
             },
             {
                 'direction': DirectionType.BOTTOM,
                 'action': ActionType.HEAL,
                 'armor': ArmorType.ENCLAVE_POWER_ARMOR,
                 'weapon': WeaponType.NO_WEAPON,
-                'count': 19,
+                'count': 11,
             }
 
         ]))
