@@ -48,6 +48,16 @@ var app = app || {},
             this.textMusicSW.on('click', this.updateMusicSwitcher, this);
             this.stage.addChild(this.textMusicSW);
         },
+        initScores: function() {
+            this.textScores = new createjs.Text();
+            this.textScores.font = font;
+            this.textScores.color = 'grey';
+            this.textScores.x = 0;
+            this.textScores.y = 3 * size;
+            this.updateScores();
+            this.model.on("change", this.updateScores, this);
+            this.stage.addChild(this.textScores);
+        },
         updateFPS: function(FPS) {
             this.textFPS.text = 'FPS: ' + FPS.toFixed(0);
             this.stage.update();
@@ -62,25 +72,10 @@ var app = app || {},
             this.textMusicSW.text = 'Music: ' + mutedText;
             this.stage.update();
         },
-        // initHP: function() {
-        //     this.initHP = new createjs.Text();
-        //     this.initHP.font = '10 px Arial';
-        //     this.updateHP();
-        //     app.stage.addChild(this.initHP);
-        //     this.model.on("change", this.updateHP, this);
-        // },
-        // updateHP: function() {
-        //     this.initHP.text = this.model.health + '/' + 100;
-        //     this.initHP.x = this.model.x + 5;
-        //     this.initHP.y = this.model.y - 10;
-        //     if (66 < this.model.health && this.model.health <= 100) {
-        //         this.initHP.color = '#408328';
-        //     } else if (33 < this.model.health && this.model.health <= 66) {
-        //         this.initHP.color = '#D5D515';
-        //     } else {
-        //         this.initHP.color = '#990000';
-        //     }
-        // },
+        updateScores: function() {
+            this.textScores.text = 'Scores: ' + this.model.scores;
+            this.stage.update();
+        },
 
         // MAIN
         initialize: function() {
@@ -89,7 +84,7 @@ var app = app || {},
             this.initFPS();
             this.initOnline();
             this.initMusicSwitcher();
-            // this.initHP();
+            this.initScores();
         },
         render: function() {
             this.stage.update();

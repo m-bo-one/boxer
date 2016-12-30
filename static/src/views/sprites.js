@@ -101,10 +101,10 @@ var app = app || {},
                 _hpColor = '#1de592';
                 _stars = ' * '.repeat(3);
             } else if (33 < this.model.health && this.model.health <= 66) {
-                _hpColor = '#D5D515';
+                _hpColor = '#FF7400';
                 _stars = ' * '.repeat(2);
             } else if (0 < this.model.health && this.model.health <= 33) {
-                _hpColor = '#FF7400';
+                _hpColor = '#990000';
                 _stars = ' * '.repeat(1);
             } else {
                 _hpColor = '#990000';

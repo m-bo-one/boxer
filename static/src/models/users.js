@@ -23,6 +23,7 @@ var app = app || {},
             this.operationsBlocked = options.operations_blocked;
             this.animation = options.animation;
             this.updatedAt = options.updated_at;
+            this.scores = options.scores;
             this._options = options;
 
             app.users[this.id] = this;
@@ -49,6 +50,7 @@ var app = app || {},
             this.username = options.username;
             this.detected = options.detected;
             this.updatedAt = options.updated_at;
+            this.scores = options.scores;
 
             this.health = options.health;
             this.action = options.action;

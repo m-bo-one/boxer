@@ -100,8 +100,8 @@ class Weapon(object):
     def in_vision(self, user, other):
         return self.vision.in_sector(user, other)
 
-    def shoot(self, detected):
-        return self._w.shoot(detected)
+    def shoot(self, user, detected):
+        return self._w.shoot(user, detected)
 
     def get_vision_params(self, direction):
         return {
@@ -135,17 +135,23 @@ class M60Weapon(object):
                                         self.DMG[1],
                                         1)))
 
-    def shoot(self, detected):
-        def _det_update(user, calc_damage):
+    @property
+    def random_score(self):
+        return int(self.damage * self.RANGE / 100)
+
+    def shoot(self, user, detected):
+        def _det_update(other, calc_damage):
             if random.randrange(100) < self.CRIT_CHANCE:
                 calc_damage = self.CRIT_MULTIPLIER * calc_damage
-            user.health -= calc_damage
-            if user.is_dead:
-                user.kill()
-            else:
+            other.health -= calc_damage
+            if other.is_dead:
+                other.kill()
+                user.scores += self.random_score
                 user.save()
+            else:
+                other.save()
 
         calc_damage = int(self.damage / len(detected))
         gevent.joinall([
-            gevent.spawn(_det_update(user, calc_damage))
-            for user in detected])
+            gevent.spawn(_det_update(other, calc_damage))
+            for other in detected])

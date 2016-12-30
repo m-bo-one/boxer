@@ -30,6 +30,7 @@ class UserModel(object):
                  weapon=WeaponType.NO_WEAPON,
                  health=100,
                  extra_data=None,
+                 scores=0,
                  *args, **kwargs):
 
         self.id = id
@@ -42,6 +43,7 @@ class UserModel(object):
         self.armor = armor
         self.weapon = Weapon(weapon)
         self.health = health
+        self.scores = scores
         self._armors = [ArmorType.ENCLAVE_POWER_ARMOR]
         self._weapons = [Weapon(WeaponType.NO_WEAPON), Weapon(WeaponType.M60)]
 
@@ -102,7 +104,8 @@ class UserModel(object):
             'operations_blocked': self.operations_blocked,
             'animation': self.animation_key,
             'extra_data': self.extra_data,
-            'updated_at': time.time()
+            'updated_at': time.time(),
+            'scores': self.scores
         }
 
     @property
@@ -222,7 +225,7 @@ class UserModel(object):
                         self.weapon.in_vision(self, other)]
 
             if detected:
-                self.weapon.shoot(detected)
+                self.weapon.shoot(self, detected)
 
         return detected
 
