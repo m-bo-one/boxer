@@ -65,7 +65,7 @@ class AnimatedSprite(object):
     }
 
     def __init__(self, action, direction, armor, weapon=None, count=0,
-                 speed=0.3):
+                 speed=0.2):
         if weapon:
             self.image_name = self.image_patterns['default'].format(
                 armor=armor, weapon=weapon, action=action, direction=direction)
@@ -348,6 +348,7 @@ for wp_type in WeaponType.__slots__:
                 'armor': ArmorType.ENCLAVE_POWER_ARMOR,
                 'weapon': WeaponType.NO_WEAPON,
                 'count': 11,
+                'speed': 0.2
             },
             {
                 'direction': DirectionType.RIGHT,
@@ -355,6 +356,7 @@ for wp_type in WeaponType.__slots__:
                 'armor': ArmorType.ENCLAVE_POWER_ARMOR,
                 'weapon': WeaponType.NO_WEAPON,
                 'count': 11,
+                'speed': 0.2
             },
             {
                 'direction': DirectionType.TOP,
@@ -362,6 +364,7 @@ for wp_type in WeaponType.__slots__:
                 'armor': ArmorType.ENCLAVE_POWER_ARMOR,
                 'weapon': WeaponType.NO_WEAPON,
                 'count': 11,
+                'speed': 0.2
             },
             {
                 'direction': DirectionType.BOTTOM,
@@ -369,6 +372,7 @@ for wp_type in WeaponType.__slots__:
                 'armor': ArmorType.ENCLAVE_POWER_ARMOR,
                 'weapon': WeaponType.NO_WEAPON,
                 'count': 11,
+                'speed': 0.2
             }
 
         ]))

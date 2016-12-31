@@ -31,7 +31,7 @@ class UserModel(object):
                  id=None,
                  x=0,
                  y=0,
-                 speed=(4, 4),
+                 speed=(3, 3),
                  action=ActionType.IDLE,
                  direction=DirectionType.LEFT,
                  armor=ArmorType.ENCLAVE_POWER_ARMOR,
@@ -307,7 +307,8 @@ class UserModel(object):
                 # TODO: For future, add inventory and
                 # replace heal of inventory stimulators
                 logging.info('Health before heal: %s', self.health)
-                self.health = 10 + self.attr_from_db('health')
+                self.health = random.randrange(10, 20, 1) + \
+                    self.attr_from_db('health')
                 logging.info('Health before heal: %s', self.health)
 
                 self.action = ActionType.HEAL
