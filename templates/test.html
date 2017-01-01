@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <script src="https://code.createjs.com/createjs-2015.11.26.min.js"></script>
+    <script>
+    function range(start, stop, step) {
+        if (typeof stop == 'undefined') {
+            // one param defined
+            stop = start;
+            start = 0;
+        }
+
+        if (typeof step == 'undefined') {
+            step = 1;
+        }
+
+        if ((step > 0 && start >= stop) || (step < 0 && start <= stop)) {
+            return [];
+        }
+
+        var result = [];
+        for (var i = start; step > 0 ? i < stop : i > stop; i += step) {
+            result.push(i);
+        }
+
+        return result;
+    };
+    function init() {
+        var stage = new createjs.Stage("demoCanvas");
+        // var data = new createjs.SpriteSheet({
+        //     "images": [
+        //         "../media/equipment/enclave_power_armor/m60/death/right.png",
+        //         // '../media/equipment/enclave_power_armor/no_weapon/walk/left.png',
+        //         // '../media/equipment/enclave_power_armor/no_weapon/walk/bottom.png',
+        //         // '../media/equipment/enclave_power_armor/no_weapon/walk/top.png',
+        //     ],
+        //     "frames": {
+        //         // 429 x 77
+        //         "height": 92,
+        //         "count": 19,
+        //         "width": 114.74,
+        //     },
+        //     "animations": {
+        //         "right": {
+        //             frames: range(0, 19),
+        //             speed: 0.3
+        //         },
+        //         // "left": {
+        //         //     frames: range(8, 16),
+        //         //     speed: 0.5,
+        //         // },
+        //         // "bottom": {
+        //         //     frames: range(16, 24),
+        //         //     speed: 0.5,
+        //         // },
+        //         // "top": {
+        //         //     frames: range(24, 32),
+        //         //     speed: 0.5,
+        //         // },
+        //     }
+        // });
+        // window.character = new createjs.Sprite(data);
+        // // character.direction = 90;
+        // character.gotoAndPlay("right");
+        // stage.addChild(character);
+        // textUsername = new createjs.Text();
+        // textUsername.font = '20 px Arial';
+        // // textUsername.text = 'Text';
+        // textUsername.x = 100;
+        // textUsername.y = 100;
+        // textUsername.alpha = 0;
+        // stage.addChild(textUsername);
+
+        var dmgs = range(0, 100, 10);
+        var wait = 0;
+        for (var i = 0; i < dmgs.length; i++) {
+
+            var dmg = dmgs[i];
+            var _run = function(dmg) {
+                var size = 20;
+                var x = 100;
+                var y = 100;
+                var textUsername = new createjs.Text();
+                textUsername.font = '20 px Arial';
+                textUsername.text = dmg;
+                textUsername.color = 'red';
+                textUsername.x = x;
+                textUsername.y = y;
+                textUsername.alpha = 0;
+                stage.addChild(textUsername);
+                createjs.Tween.get(textUsername)
+                    .wait(wait)
+                    .to({y: textUsername.y - size, alpha: 1}, 333)
+                    .to({y: textUsername.y - 2 * size, alpha: 0}, 333)
+                    .call(function() {
+                        stage.removeChild(textUsername);
+                    });
+                wait += 500;
+            }
+            _run(dmg);
+        }
+
+
+
+        createjs.Ticker.useRAF = true;
+        createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
+        createjs.Ticker.setFPS(30);
+        createjs.Ticker.addEventListener("tick", update);
+        function update(event) {
+            stage.update();
+            // console.log("Current measures FPS: " + createjs.Ticker.getMeasuredFPS());
+            // if (character.x >= 500 - 53) {
+            //     // We've reached the right side of our screen
+            //     // We need to walk left now to go back to our initial position
+            //     character.direction = -90;
+            //     character.gotoAndPlay("left")
+            // }
+
+            // if (character.x < 0) {
+            //     // We've reached the left side of our screen
+            //     // We need to walk right now
+            //     character.direction = 90;
+            //     character.gotoAndPlay("right");
+            // }
+
+            // // Moving the sprite based on the direction & the speed
+            // if (character.direction == 90) {
+            //     character.x += 5;
+            // }
+            // else {
+            //     character.x -= 5;
+            // }
+        }
+    }
+    </script>
+</head>
+<body onload="init();">
+  <canvas id="demoCanvas" width="500" height="300"></canvas>
+</body>
+</html>
