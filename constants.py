@@ -1,6 +1,7 @@
 HEAL_TIME = 1
 RESURECTION_TIME = 5
 HUMAN_HEALTH = 100
+MAX_AP = 10
 
 
 class StatusType(dict):

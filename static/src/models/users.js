@@ -25,6 +25,7 @@ var app = app || {},
             this.updatedAt = options.updated_at;
             this.scores = options.scores;
             this.maxHealth = options.max_health;
+            this.AP = options.AP;
             this._options = options;
 
             app.users[this.id] = this;
@@ -74,6 +75,8 @@ var app = app || {},
             this.width = options.width;
             this.height = options.height;
             this.animation = options.animation;
+            this.AP = options.AP;
+            $('#AP').html(this.AP);
 
             // if (app.user.id == this.id && options.extra_data.resurection_time) {
             //     // TODO: Dont know where resurect timer need to show( End it in future

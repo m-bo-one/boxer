@@ -9,7 +9,7 @@ import gevent
 
 from db import redis_db, local_db
 from constants import ActionType, DirectionType, WeaponType, ArmorType, \
-    RESURECTION_TIME, HEAL_TIME, HUMAN_HEALTH
+    RESURECTION_TIME, HEAL_TIME, HUMAN_HEALTH, MAX_AP
 from app.assets.sprite import sprite_proto
 from .weapon import Weapon
 
@@ -20,6 +20,7 @@ class UserModel(object):
         'map_collision',
         # 'user_collision',
     )
+    AP_stats = {}
 
     def __init__(self,
                  id=None,
@@ -33,6 +34,7 @@ class UserModel(object):
                  health=100,
                  extra_data=None,
                  scores=0,
+                 AP=10,
                  *args, **kwargs):
 
         self.id = id
@@ -43,24 +45,21 @@ class UserModel(object):
         self.action = action
         self.direction = direction
         self.armor = armor
-        self.weapon = Weapon(weapon)
+        self.weapon = Weapon(weapon, self)
         self.health = health
+        self.max_health = HUMAN_HEALTH
         self.scores = scores
         self._armors = [ArmorType.ENCLAVE_POWER_ARMOR]
-        self._weapons = [Weapon(WeaponType.NO_WEAPON), Weapon(WeaponType.M60)]
+        self._weapons = [Weapon(WeaponType.NO_WEAPON, self),
+                         Weapon(WeaponType.M60, self)]
 
-        _sprite = sprite_proto.get((self.armor,
-                                    self.weapon.name,
-                                    self.action))
-        self.width = _sprite['frames']['width']
-        self.height = _sprite['frames']['height']
+        self.width, self.height = self.size
+        self.operations = kwargs.get('operations') or []
+        self.AP = AP
 
         if not extra_data:
             extra_data = {}
         self.extra_data = extra_data
-
-    def switchWeapon(self, weapon):
-        self.weapon = weapon
 
     def save(self):
         return redis_db.hset('users', self.id, self.to_json())
@@ -98,21 +97,27 @@ class UserModel(object):
             'action': self.action,
             'direction': self.direction,
             'armor': self.armor,
-            'weapon': {
-                'name': self.weapon.name,
-                'vision': self.weapon.get_vision_params(self.direction)
-            },
+            'weapon': self.weapon.to_dict(),
             'health': self.health,
             'operations_blocked': self.operations_blocked,
-            'animation': self.animation_key,
+            'animation': self.animation,
             'extra_data': self.extra_data,
             'updated_at': time.time(),
             'scores': self.scores,
-            'max_health': HUMAN_HEALTH
+            'max_health': self.max_health,
+            'operations': self.operations,
+            'AP': self.AP
         }
 
     @property
-    def animation_key(self):
+    def size(self):
+        _sprite = sprite_proto.get((self.armor,
+                                    self.weapon.name,
+                                    self.action))
+        return _sprite['frames']['width'], _sprite['frames']['height']
+
+    @property
+    def animation(self):
         return {
             'way': "_".join([self.action, self.direction]),
             'compound': sprite_proto.sp_key_builder(self.armor,
@@ -157,6 +162,12 @@ class UserModel(object):
             user_id = None
 
         return user_id
+
+    def block_operation(self, type):
+        self.operations.append({
+            'type': type,
+            'blocked_at': time.time()
+        })
 
     def reg_map(self, size):
         local_db['map_size'][self.id] = size
@@ -210,15 +221,16 @@ class UserModel(object):
                 return True
 
             ct = time.time()
-            if ((ct - self.extra_data['shoot_timestamp']) <=
-               self.weapon.w.SHOOT_TIME):
-                return True
-            else:
-                self.extra_data['sound_to_play'] = None
 
-            if ((ct - self.extra_data['heal_timestamp']) <=
-               HEAL_TIME):
-                return True
+            for operation in self.operations:
+                if operation['type'] == 'shoot':
+                    block_for = self.weapon.w.SHOOT_TIME
+                elif operation['type'] == 'heal':
+                    block_for = HEAL_TIME
+                if ct - operation['blocked_at'] <= block_for:
+                    return True
+                else:
+                    self.extra_data['sound_to_play'] = None
         except KeyError:
             return False
         else:
@@ -227,40 +239,32 @@ class UserModel(object):
     def _delayed_command(self, delay, fname):
 
         def _callback():
-            # _evt.wait()
             user = UserModel.get(self.id)
             getattr(user, fname)()
 
-        gevent.spawn_later(delay, _callback)
+        return gevent.spawn_later(delay, _callback)
 
     @autosave
     def shoot(self):
-        # FIXME: This section very hardcoded, need to refactor here:
-        # ~~1) Damage remove from here, make it in weapon class or
-        # something similar;
-        # 2) Detection change on section finding (note for future);
-        # ~~3) Logic of damage distribution remove from here;
+        if (not self.weapon_in_hands or self.operations_blocked or
+           self.AP - 5 < 0):
+            return
 
-        detected = []
+        self.action = ActionType.FIRE
+        self.block_operation('shoot')
+        self.use_AP(5)
+        self.extra_data['sound_to_play'] = 'm60-fire'
 
-        if self.weapon_in_hands and not self.operations_blocked:
+        detected = [other for other in self.__class__.all()
+                    if other.id != self.id and not
+                    other.is_dead and self.weapon.in_vision(other)]
 
-            self.action = ActionType.FIRE
-            self.extra_data['shoot_timestamp'] = time.time()
-            self.extra_data['sound_to_play'] = 'm60-fire'
+        if detected:
+            logging.info('Found users: %s', detected)
+            self.weapon.shoot(detected)
 
-            detected = [other for other in self.__class__.all()
-                        if other.id != self.id and not
-                        other.is_dead and
-                        self.weapon.in_vision(self, other)]
-
-            if detected:
-                logging.info('Found users: %s', detected)
-                self.weapon.shoot(detected)
-
-            self._delayed_command(self.weapon.w.SHOOT_TIME, 'stop')
-
-        return detected
+        self._delayed_command(self.weapon.w.SHOOT_TIME, 'stop')
+        self._delayed_command(1, 'restore_AP')
 
     @property
     def weapon_in_hands(self):
@@ -282,6 +286,29 @@ class UserModel(object):
         if type == 'armor':
             self.armor = self._armors[0]
 
+    def use_AP(self, p):
+        self.AP = self.attr_from_db('AP') - p
+        if self.AP < 0:
+            self.AP = 0
+
+    def restore_AP(self):
+        x = 0
+        self.AP_stats.setdefault(self.id, [])
+        if self.AP_stats[self.id]:
+            gevent.killall(self.AP_stats[self.id])
+        for _ in range(MAX_AP - self.AP):
+            thread = self._delayed_command(x, 'incr_AP')
+            self.AP_stats[self.id].append(thread)
+            x += 1
+
+    @autosave
+    def incr_AP(self):
+        self.AP = self.attr_from_db('AP') + 1
+        if self.AP > MAX_AP:
+            self.AP = MAX_AP
+
+        print(self.AP)
+
     @autosave
     def got_hit(self, dmg):
         logging.info('Health before hit: %s', self.health)
@@ -292,7 +319,7 @@ class UserModel(object):
 
     @autosave
     def heal(self, target=None):
-        if not self.is_full_health and not self.operations_blocked:
+        if not self.is_full_health and not self.operations_blocked and self.AP - 2 >= 0:
             if target is not None and target != self:
                 raise NotImplementedError()
             else:
@@ -304,12 +331,14 @@ class UserModel(object):
                 logging.info('Health before heal: %s', self.health)
 
                 self.action = ActionType.HEAL
-                self.extra_data['heal_timestamp'] = time.time()
+                self.block_operation('heal')
+                self.use_AP(2)
 
-                if self.health > 100:
-                    self.health = 100
+                if self.health > self.max_health:
+                    self.health = self.max_health
 
                 self._delayed_command(HEAL_TIME, 'stop')
+                self._delayed_command(1, 'restore_AP')
 
     @autosave
     def kill(self):
@@ -321,7 +350,7 @@ class UserModel(object):
 
     @autosave
     def resurect(self):
-        self.health = 100
+        self.health = self.max_health
         self.weapon = self._weapons[0]
         self.x = random.randint(0, local_db['map_size']['width'] - 100)
         self.y = random.randint(0, local_db['map_size']['height'] - 100)

@@ -83,7 +83,7 @@ class WeaponVision(object):
 
 class Weapon(object):
 
-    def __init__(self, name):
+    def __init__(self, name, user):
         _weapons = {
             WeaponType.NO_WEAPON: NoWeapon,
             WeaponType.M60: M60Weapon
@@ -92,13 +92,20 @@ class Weapon(object):
             name = name['name']
         self.name = name
         self.w = _weapons[name]()
+        self.user = user
         self.vision = WeaponVision(
             R=self.w.RANGE,
             alpha=self.w.SPECTRE
         )
 
-    def in_vision(self, user, other):
-        return self.vision.in_sector(user, other)
+    def to_dict(self):
+        return {
+            'name': self.name,
+            'vision': self.get_vision_params(self.user.direction)
+        }
+
+    def in_vision(self, other):
+        return self.vision.in_sector(self.user, other)
 
     def shoot(self, detected):
         return self.w.shoot(detected)
