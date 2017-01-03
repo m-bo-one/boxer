@@ -29,9 +29,9 @@ var app = app || {},
 
             this.sshape.graphics.clear();
             this.sshape.graphics.s("#f00")
-            this.sshape.graphics.ss(0.75);
-            this.sshape.graphics.setStrokeDash([5, 5]);
+            this.sshape.graphics.ss(0.2);
             this.sshape.graphics.moveTo(cx, cy);
+            // this.sshape.graphics.setStrokeDash([5, 5]);
             this.sshape.graphics.arc(cx, cy, R, utils.toRadians(alphas), utils.toRadians(alphae));
             this.sshape.graphics.lt(cx, cy);
             this.sshape.graphics.endFill();

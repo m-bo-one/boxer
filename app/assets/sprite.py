@@ -17,6 +17,9 @@ class SpritePrototype(object):
 
     def __init__(self):
         self._objects = {}
+        if not os.path.exists(settings.ASSETS_SPRITE_PATH):
+            os.mkdir(settings.ASSETS_PATH)
+            os.mkdir(settings.ASSETS_SPRITE_PATH)
         clear_dir(settings.ASSETS_SPRITE_PATH)
 
     def register_object(self, name, obj):
