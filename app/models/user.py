@@ -6,8 +6,6 @@ import json
 import time
 
 import gevent
-from gevent.queue import Queue
-from gevent.event import Event
 
 from db import redis_db, local_db
 from constants import ActionType, DirectionType, WeaponType, ArmorType, \
@@ -16,16 +14,12 @@ from app.assets.sprite import sprite_proto
 from .weapon import Weapon
 
 
-_evt = Event()
-
-
 class UserModel(object):
 
     collision_pipeline = (
         'map_collision',
         # 'user_collision',
     )
-    tasks = Queue()
 
     def __init__(self,
                  id=None,
@@ -206,8 +200,6 @@ class UserModel(object):
         def wrapper(self, *args, **kwargs):
             result = func(self, *args, **kwargs)
             self.save()
-            _evt.set()
-            UserModel.tasks.put_nowait({'user_id': self.id})
             return result
         return wrapper
 
@@ -235,7 +227,7 @@ class UserModel(object):
     def _delayed_command(self, delay, fname):
 
         def _callback():
-            _evt.wait()
+            # _evt.wait()
             user = UserModel.get(self.id)
             getattr(user, fname)()
 

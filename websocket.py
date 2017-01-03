@@ -7,6 +7,7 @@ from collections import OrderedDict
 
 import gevent
 from gevent import monkey; monkey.patch_all()  # noqa
+from gevent.queue import Queue
 from geventwebsocket import (
     WebSocketServer, WebSocketApplication, Resource, WebSocketError)
 from eventemitter import EventEmitter
@@ -18,51 +19,25 @@ from app.models import UserModel
 
 
 ws_event = EventEmitter()
+main_queue = Queue()
 
 
 class GameApplication(WebSocketApplication):
 
-    _packager_initialized = False
-    _packager_max_workers = 1
-
-    def __init__(self, *args, **kwargs):
-        super(GameApplication, self).__init__(*args, **kwargs)
-
-        if not GameApplication._packager_initialized:
-            [gevent.spawn(self.run_ticker)
-             for _ in xrange(self._packager_max_workers)]
-            gevent.spawn(self.user_cron_update)
-            GameApplication._packager_initialized = True
-
-    def run_ticker(self):
-        while True:
-            gevent.sleep(0.01)
-            # logging.info('Current clients: %s',
-            #              self.ws.handler.server.clients.keys())
-            # logging.info('Updating map...')
-            self.broadcast_all('users_map',
-                               {'users': UserModel.get_users_map(),
-                                'count': len(self.ws.handler.server.clients)})
-
-    def user_cron_update(self):
-        while True:
-            task = UserModel.tasks.get()
-            user = UserModel.get(task['user_id'])
-            self.broadcast('player_update', user.to_dict(),
-                           local_db['uid2socket'][user.id])
-
-    def broadcast(self, msg_type, data, ws=None):
+    @staticmethod
+    def broadcast(client, msg_type, data):
         try:
-            ws = self.ws if not ws else ws
-            ws.send(json.dumps({'msg_type': msg_type, 'data': data}))
+            client.ws.send(json.dumps({'msg_type': msg_type, 'data': data}))
         except WebSocketError as e:
             logging.error(e)
 
-    def broadcast_all(self, msg_type, data):
-        for client in self.ws.handler.server.clients.values():
-            self.broadcast(msg_type, data, client.ws)
+    @staticmethod
+    def broadcast_all(clients, msg_type, data):
+        for client in clients:
+            GameApplication.broadcast(client, msg_type, data)
 
     def get_user_from_ws(self, ws=None):
+        # self.user = UserModel.get(self.id)
         ws = self.ws if not ws else ws
         user = UserModel.get(local_db['socket2uid'][ws])
         if user and not user.is_dead and not user.operations_blocked:
@@ -70,7 +45,8 @@ class GameApplication(WebSocketApplication):
 
     def on_open(self):
         logging.info("Connection opened")
-        self.broadcast('render_map', local_db['map_size'])
+        self.broadcast(self, 'render_map', local_db['map_size'])
+        ws_event.emit('register_user', self, {})
 
     def on_message(self, message):
         if message:
@@ -94,13 +70,13 @@ class GameApplication(WebSocketApplication):
 
     @ws_event.on('register_user')
     def register_user(self, message):
-        user = UserModel.register_user(self.ws)
-        self.broadcast('register_user', user.to_dict())
+        self.user = UserModel.register_user(self.ws)
+        self.broadcast(self, 'register_user', self.user.to_dict())
 
     @ws_event.on('unregister_user')
     def unregister_user(self, message):
         user_id = UserModel.unregister_user(self.ws)
-        self.broadcast_all('unregister_user', {'id': user_id})
+        main_queue.put_nowait(user_id)
 
     @ws_event.on('player_move')
     def player_move(self, message):
@@ -114,10 +90,27 @@ class GameApplication(WebSocketApplication):
         user = self.get_user_from_ws()
         if not user:
             return
+        user.shoot()
 
-        for hitted_player in user.shoot():
-            self.broadcast('player_update', hitted_player.to_dict(),
-                           local_db['uid2socket'][hitted_player.id])
+
+def main_ticker(server):
+
+    while True:
+        gevent.sleep(0.01)
+        data = {
+            'users': {
+                'update': UserModel.get_users_map(),
+                'remove': []
+            },
+            'count': len(server.clients),
+        }
+        try:
+            result = main_queue.get_nowait()
+            data['users']['remove'].append(result)
+        except:
+            pass
+        GameApplication.broadcast_all(server.clients.values(),
+                                      'users_map', data)
 
 
 if __name__ == '__main__':
@@ -130,6 +123,7 @@ if __name__ == '__main__':
             settings.WEBSOCKET_ADDRESS, Resource(OrderedDict({
                 '/game': GameApplication
             })))
+        server._spawn(main_ticker, server)
         server.serve_forever()
     except KeyboardInterrupt:
         logging.info('Killing server...\n')

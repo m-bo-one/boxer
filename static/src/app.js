@@ -41,77 +41,6 @@ $(function () {
 
     };
 
-    var Stream = {
-        init: function (app) {
-            var ws = new WebSocket("ws://" + app.config.WEBSOCKET_ADDRESS + "/game");
-            _.extend(ws, Backbone.Events);
-
-            ws.onmessage = function(evt) {
-                var answer = JSON.parse(evt.data);
-                var parsedData = answer.data;
-                ws.trigger(answer.msg_type, parsedData);
-            };
-            ws.onopen = function(evt) {
-                $('#conn_status').html('<b>WS Connected</b>');
-            };
-            ws.onerror = function(evt) {
-                $('#conn_status').html('<b>WS Error</b>');
-            };
-            ws.onclose = function(evt) {
-                $('#conn_status').html('<b>WS Closed</b>');
-            };
-            ws.on('render_map', function(data) {
-                app.canvas.width = data.width;
-                app.canvas.height = data.height;
-            });
-            ws.on('register_user', function(data) {
-                app.user = new app.UserModel(data);
-                // TODO: Maybe revert back to model??
-                app.sprites[app.user.id] = new app.SpriteView({ model: app.user });
-
-                app.hud = new app.HudView({ model: app.user });
-                app.weaponVision = new app.WeaponVisionView({ model: app.user });
-            });
-            ws.on('unregister_user', function(data) {
-                try {
-                    app.sprites[data.id].destroy();
-                    app.users[data.id].destroy();
-                    if (app.user.id === data.id) {
-                        app.weaponVision.destroy();
-                        app.user.destroy();
-                    }
-                } catch(e) {
-                    // pass
-                }
-            });
-            ws.on('player_update', function(data) {
-                app.user.refreshData(data);
-            });
-            ws.on('users_map', function(data) {
-                if (app.hud) app.hud.trigger('updateOnline', data.count);
-
-                if (!app.assetsLoaded) return;
-
-                for (var user_id in data.users) {
-                    user_id = parseInt(user_id, 0);
-
-                    if (app.user.id === user_id) continue;
-
-                    var otherUser = data.users[user_id];
-                    otherUser = (typeof otherUser === 'string') ? JSON.parse(otherUser) : otherUser;
-                    if (app.users.hasOwnProperty(user_id)) {
-                        app.users[user_id].refreshData(otherUser);
-                    } else {
-                        app.users[user_id] = new app.UserModel(otherUser);
-                        app.sprites[user_id] = new app.SpriteView({ model: app.users[user_id] });  
-                    }
-                }
-            });
-
-            app.ws = ws;
-        }
-    };
-
     app.canvas = document.getElementById("gameBoard");
     app.ctx = app.canvas.getContext("2d");
     app.keys = {};
@@ -119,8 +48,6 @@ $(function () {
     app.user = {};
     app.sprites = {};
     app.stage = new createjs.Stage(app.canvas);
-
-    Stream.init(app);
 
     // createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
     createjs.Ticker.setFPS(app.config.FPS);

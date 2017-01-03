@@ -75,10 +75,10 @@ var app = app || {},
             this.height = options.height;
             this.animation = options.animation;
 
-            if (app.user.id == this.id && options.extra_data.resurection_time) {
-                // TODO: Dont know where resurect timer need to show( End it in future
-                utils.startTimer(options.extra_data.resurection_time);
-            }
+            // if (app.user.id == this.id && options.extra_data.resurection_time) {
+            //     // TODO: Dont know where resurect timer need to show( End it in future
+            //     utils.startTimer(options.extra_data.resurection_time);
+            // }
 
             this.trigger('change');
         },
