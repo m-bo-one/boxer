@@ -67,7 +67,10 @@ class UserModel(object):
 
     @classmethod
     def get(cls, id):
-        return cls(**json.loads(redis_db.hget('users', id)))
+        try:
+            return cls(**json.loads(redis_db.hget('users', id)))
+        except TypeError:
+            import ipdb; ipdb.set_trace()
 
     @classmethod
     def delete(cls, id=None):

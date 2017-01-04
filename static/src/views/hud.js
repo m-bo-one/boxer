@@ -83,9 +83,11 @@ var app = app || {},
             this.stage.update();
         },
         updateAP: function() {
-            var dist = 0;
-            for (var j = 0; j < this.imageActiveAP.length; j++) {
-                this.stage.removeChild(this.imageActiveAP[j]);
+            var dist = 0,
+                cAP = this.imageActiveAP.slice();
+            this.imageActiveAP = [];
+            for (var j = 0; j < cAP.length; j++) {
+                this.stage.removeChild(cAP[j]);
             }
             for (var i = 0; i < this.model.AP; i++) {
                 var img = app.baseImages['active-AP'].clone();

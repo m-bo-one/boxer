@@ -34,21 +34,21 @@
                     ws.on('render_map', function(data) {
                         app.canvas.width = data.width;
                         app.canvas.height = data.height;
-                        app.canvas.addEventListener("mousewheel", function(e) {
-                            var zoom;
-                            if (Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)))>0)
-                                zoom = 1.1;
-                            else
-                                zoom = 1 / 1.1;
-                                var local = app.stage.globalToLocal(app.stage.mouseX, app.stage.mouseY);
-                            app.stage.regX = local.x;
-                            app.stage.regY = local.y;
-                            app.stage.x = app.stage.mouseX;
-                            app.stage.y = app.stage.mouseY;   
-                            app.stage.scaleX = app.stage.scaleY *= zoom;
+                        // app.canvas.addEventListener("mousewheel", function(e) {
+                        //     var zoom;
+                        //     if (Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)))>0)
+                        //         zoom = 1.1;
+                        //     else
+                        //         zoom = 1 / 1.1;
+                        //         var local = app.stage.globalToLocal(app.stage.mouseX, app.stage.mouseY);
+                        //     app.stage.regX = local.x;
+                        //     app.stage.regY = local.y;
+                        //     app.stage.x = app.stage.mouseX;
+                        //     app.stage.y = app.stage.mouseY;   
+                        //     app.stage.scaleX = app.stage.scaleY *= zoom;
 
-                            app.stage.update();
-                        }, false);
+                        //     app.stage.update();
+                        // }, false);
                     });
                     ws.on('register_user', function(data) {
                         app.user = new app.UserModel(data);
