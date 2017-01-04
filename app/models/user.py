@@ -222,7 +222,7 @@ class UserModel(object):
 
             ct = time.time()
 
-            for operation in self.operations:
+            for i, operation in enumerate(self.operations[:]):
                 if operation['type'] == 'shoot':
                     block_for = self.weapon.w.SHOOT_TIME
                 elif operation['type'] == 'heal':
@@ -230,6 +230,7 @@ class UserModel(object):
                 if ct - operation['blocked_at'] <= block_for:
                     return True
                 else:
+                    del self.operations[i]
                     self.extra_data['sound_to_play'] = None
         except KeyError:
             return False
@@ -296,6 +297,7 @@ class UserModel(object):
         self.AP_stats.setdefault(self.id, [])
         if self.AP_stats[self.id]:
             gevent.killall(self.AP_stats[self.id])
+            self.AP_stats[self.id] = []
         for _ in range(MAX_AP - self.AP):
             thread = self._delayed_command(x, 'incr_AP')
             self.AP_stats[self.id].append(thread)
@@ -307,7 +309,7 @@ class UserModel(object):
         if self.AP > MAX_AP:
             self.AP = MAX_AP
 
-        print(self.AP)
+        logging.info("ID: %s- AP: %s" % (self.id, self.AP))
 
     @autosave
     def got_hit(self, dmg):

@@ -9,6 +9,7 @@
             var app = app || {};
 
             app.baseSprites = {};
+            app.baseImages = {};
             app.config = {{ !APP_SETTINGS }};
 
             var Stream = {
@@ -100,12 +101,15 @@
                             break;
                         case createjs.AbstractLoader.SOUND:
                             break;
+                        case createjs.AbstractLoader.IMAGE:
+                            app.baseImages[evt.item.id] = new createjs.Bitmap(evt.result);
+                            break;
                     }
                 }
 
                 function onPreloadComplete(evt) {
                     Stream.init(app);
-                    createjs.Sound.muted = true;
+                    createjs.Sound.muted = false;
                 }
                 delete queue, ss, s;
             })();
@@ -122,7 +126,6 @@
     </head>
     <body>
         <div id="conn_status">Not Connected</div>
-        <div id="AP"></div>
         <div class="container">
             <canvas id="gameBoard" style="border:1px solid #d3d3d3; float: left">Your browser does not support the HTML5 canvas tag.</canvas>
             <canvas id="gameHUD" style="border:1px solid #d3d3d3; float: left">Your browser does not support the HTML5 canvas tag.</canvas>

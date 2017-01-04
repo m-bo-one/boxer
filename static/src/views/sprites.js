@@ -55,7 +55,7 @@ var app = app || {},
             }
             utils._LOG('Start playing animation: ' + this.model.animation.way);
 
-            app.stage.addChild(this.model.currentSprite);
+            app.stage.addChildAt(this.model.currentSprite, 0);
         },
         _debugBorder: function() {
             if (this.sshape) {

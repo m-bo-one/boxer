@@ -20,4 +20,9 @@ with open(
         })
     for key, obj in sound_proto._objects.iteritems():
         data['manifest'].append(obj)
+    data['manifest'].append({
+        'id': 'active-AP',
+        'src': os.path.join(settings.MEDIA_URL, 'active_AP.png'),
+        'type': 'image'
+    })
     json.dump(data, outfile, indent=4)

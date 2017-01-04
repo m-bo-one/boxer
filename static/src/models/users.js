@@ -76,7 +76,6 @@ var app = app || {},
             this.height = options.height;
             this.animation = options.animation;
             this.AP = options.AP;
-            $('#AP').html(this.AP);
 
             // if (app.user.id == this.id && options.extra_data.resurection_time) {
             //     // TODO: Dont know where resurect timer need to show( End it in future

@@ -6,7 +6,8 @@ var app = app || {},
 
     var size = 20,
         font = size + 'px Arial',
-        color = '#ff7700';
+        color = '#ff7700',
+        scale = 3;
 
     app.HudView = Backbone.View.extend({
 
@@ -58,6 +59,11 @@ var app = app || {},
             this.model.on("change", this.updateScores, this);
             this.stage.addChild(this.textScores);
         },
+        initAP: function() {
+            this.imageActiveAP = [];
+            this.model.on("change", this.updateAP, this);
+            this.updateAP();
+        },
         updateFPS: function(FPS) {
             this.textFPS.text = 'FPS: ' + FPS.toFixed(0);
             this.stage.update();
@@ -76,6 +82,23 @@ var app = app || {},
             this.textScores.text = 'Scores: ' + this.model.scores;
             this.stage.update();
         },
+        updateAP: function() {
+            var dist = 0;
+            for (var j = 0; j < this.imageActiveAP.length; j++) {
+                app.stage.removeChild(this.imageActiveAP[j]);
+            }
+            for (var i = 0; i < this.model.AP; i++) {
+                var img = _.clone(app.baseImages['active-AP']);
+                img.scaleX = scale;
+                img.scaleY = scale;
+                img.x += 30 + dist;
+                img.y = app.canvas.height - scale * img.getBounds().height - 30;
+                app.stage.addChildAt(img, app.stage.numChildren - 1);
+                this.imageActiveAP.push(img);
+                dist += 30
+            }
+            app.stage.update();
+        },
 
         // MAIN
         initialize: function() {
@@ -85,6 +108,7 @@ var app = app || {},
             this.initOnline();
             this.initMusicSwitcher();
             this.initScores();
+            this.initAP();
         },
         render: function() {
             this.stage.update();
