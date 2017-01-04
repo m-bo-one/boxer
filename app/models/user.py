@@ -8,8 +8,9 @@ import time
 import gevent
 
 from db import redis_db, local_db
-from constants import ActionType, DirectionType, WeaponType, ArmorType, \
-    RESURECTION_TIME, HEAL_TIME, HUMAN_HEALTH, MAX_AP
+from constants import (
+    ActionType, DirectionType, WeaponType, ArmorType,
+    RESURECTION_TIME, HEAL_TIME, HUMAN_HEALTH, MAX_AP, FIRE_AP, HEAL_AP)
 from app.assets.sprite import sprite_proto
 from .weapon import Weapon
 
@@ -247,25 +248,26 @@ class UserModel(object):
 
     @autosave
     def shoot(self):
-        if (not self.weapon_in_hands or self.operations_blocked or
-           self.AP - 5 < 0):
-            return
+        if all([
+            self.weapon_in_hands,
+            not self.operations_blocked,
+            self.AP - FIRE_AP >= 0
+        ]):
+            self.action = ActionType.FIRE
+            self.block_operation('shoot')
+            self.use_AP(FIRE_AP)
+            self.extra_data['sound_to_play'] = 'm60-fire'
 
-        self.action = ActionType.FIRE
-        self.block_operation('shoot')
-        self.use_AP(5)
-        self.extra_data['sound_to_play'] = 'm60-fire'
+            detected = [other for other in self.__class__.all()
+                        if other.id != self.id and not
+                        other.is_dead and self.weapon.in_vision(other)]
 
-        detected = [other for other in self.__class__.all()
-                    if other.id != self.id and not
-                    other.is_dead and self.weapon.in_vision(other)]
+            if detected:
+                logging.info('Found users: %s', detected)
+                self.weapon.shoot(detected)
 
-        if detected:
-            logging.info('Found users: %s', detected)
-            self.weapon.shoot(detected)
-
-        self._delayed_command(self.weapon.w.SHOOT_TIME, 'stop')
-        self._delayed_command(1, 'restore_AP')
+            self._delayed_command(self.weapon.w.SHOOT_TIME, 'stop')
+            self._delayed_command(1, 'restore_AP')
 
     @property
     def weapon_in_hands(self):
@@ -294,14 +296,18 @@ class UserModel(object):
 
     def restore_AP(self):
         x = 0
-        self.AP_stats.setdefault(self.id, [])
-        if self.AP_stats[self.id]:
-            gevent.killall(self.AP_stats[self.id])
-            self.AP_stats[self.id] = []
+        UserModel._kill_AP_threads(self.id)
         for _ in range(MAX_AP - self.AP):
             thread = self._delayed_command(x, 'incr_AP')
             self.AP_stats[self.id].append(thread)
             x += 1
+
+    @classmethod
+    def _kill_AP_threads(cls, id):
+        cls.AP_stats.setdefault(id, [])
+        if cls.AP_stats[id]:
+            gevent.killall(cls.AP_stats[id])
+            cls.AP_stats[id] = []
 
     @autosave
     def incr_AP(self):
@@ -321,7 +327,11 @@ class UserModel(object):
 
     @autosave
     def heal(self, target=None):
-        if not self.is_full_health and not self.operations_blocked and self.AP - 2 >= 0:
+        if all([
+            not self.is_full_health,
+            not self.operations_blocked,
+            self.AP - HEAL_AP >= 0
+        ]):
             if target is not None and target != self:
                 raise NotImplementedError()
             else:
@@ -334,7 +344,7 @@ class UserModel(object):
 
                 self.action = ActionType.HEAL
                 self.block_operation('heal')
-                self.use_AP(2)
+                self.use_AP(HEAL_AP)
 
                 if self.health > self.max_health:
                     self.health = self.max_health
@@ -344,6 +354,7 @@ class UserModel(object):
 
     @autosave
     def kill(self):
+        UserModel._kill_AP_threads(self.id)
         death_actions = [ActionType.DEATH_FROM_ABOVE]
         self.action = random.choice(death_actions)
         self.extra_data['resurection_time'] = RESURECTION_TIME
@@ -358,6 +369,7 @@ class UserModel(object):
         self.y = random.randint(0, local_db['map_size']['height'] - 100)
         self.action = ActionType.IDLE
         self.direction = DirectionType.LEFT
+        self.AP = MAX_AP
 
         try:
             del self.extra_data['resurection_time']

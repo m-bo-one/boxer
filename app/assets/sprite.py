@@ -351,7 +351,6 @@ for wp_type in WeaponType.__slots__:
                 'armor': ArmorType.ENCLAVE_POWER_ARMOR,
                 'weapon': WeaponType.NO_WEAPON,
                 'count': 11,
-                'speed': 0.2
             },
             {
                 'direction': DirectionType.RIGHT,
@@ -359,7 +358,6 @@ for wp_type in WeaponType.__slots__:
                 'armor': ArmorType.ENCLAVE_POWER_ARMOR,
                 'weapon': WeaponType.NO_WEAPON,
                 'count': 11,
-                'speed': 0.2
             },
             {
                 'direction': DirectionType.TOP,
@@ -367,7 +365,6 @@ for wp_type in WeaponType.__slots__:
                 'armor': ArmorType.ENCLAVE_POWER_ARMOR,
                 'weapon': WeaponType.NO_WEAPON,
                 'count': 11,
-                'speed': 0.2
             },
             {
                 'direction': DirectionType.BOTTOM,
@@ -375,7 +372,6 @@ for wp_type in WeaponType.__slots__:
                 'armor': ArmorType.ENCLAVE_POWER_ARMOR,
                 'weapon': WeaponType.NO_WEAPON,
                 'count': 11,
-                'speed': 0.2
             }
 
         ]))

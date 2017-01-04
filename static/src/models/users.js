@@ -97,7 +97,7 @@ var app = app || {},
             app.ws.send(data);
         },
         shoot: function () {
-            if (this.operationsBlocked || !this.equipedByWeapon()) return;
+            if (this.operationsBlocked || !this.equipedByWeapon() || this.AP < 4) return;
             var data = JSON.stringify({
                 msg_type: 'player_shoot',
                 data: {}
@@ -105,7 +105,7 @@ var app = app || {},
             app.ws.send(data);
         },
         heal: function () {
-            if (this.operationsBlocked || this.isDead() || this.isFullHealth()) return;
+            if (this.operationsBlocked || this.isDead() || this.isFullHealth()  || this.AP < 3) return;
             var data = JSON.stringify({
                 msg_type: 'player_heal',
                 data: {}

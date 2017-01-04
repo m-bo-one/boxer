@@ -34,6 +34,21 @@
                     ws.on('render_map', function(data) {
                         app.canvas.width = data.width;
                         app.canvas.height = data.height;
+                        app.canvas.addEventListener("mousewheel", function(e) {
+                            var zoom;
+                            if (Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)))>0)
+                                zoom = 1.1;
+                            else
+                                zoom = 1 / 1.1;
+                                var local = app.stage.globalToLocal(app.stage.mouseX, app.stage.mouseY);
+                            app.stage.regX = local.x;
+                            app.stage.regY = local.y;
+                            app.stage.x = app.stage.mouseX;
+                            app.stage.y = app.stage.mouseY;   
+                            app.stage.scaleX = app.stage.scaleY *= zoom;
+
+                            app.stage.update();
+                        }, false);
                     });
                     ws.on('register_user', function(data) {
                         app.user = new app.UserModel(data);
@@ -109,26 +124,17 @@
 
                 function onPreloadComplete(evt) {
                     Stream.init(app);
-                    createjs.Sound.muted = false;
+                    createjs.Sound.muted = true;
                 }
                 delete queue, ss, s;
             })();
         </script>
-        <style type="text/css">
-            #gameBoard {
-/*                position:fixed;
-                left:0;
-                top:0;
-                width:100%;
-                height:100%;*/
-            }
-        </style>
     </head>
     <body>
         <div id="conn_status">Not Connected</div>
         <div class="container">
-            <canvas id="gameBoard" style="border:1px solid #d3d3d3; float: left">Your browser does not support the HTML5 canvas tag.</canvas>
-            <canvas id="gameHUD" style="border:1px solid #d3d3d3; float: left">Your browser does not support the HTML5 canvas tag.</canvas>
+            <canvas id="gameBoard" style="border:1px solid #d3d3d3;">Your browser does not support the HTML5 canvas tag.</canvas>
+            <canvas id="gameHUD" style="border:1px solid #d3d3d3;">Your browser does not support the HTML5 canvas tag.</canvas>
         </div>
 
         <script type="text/javascript" src="{{ STATIC_URL }}src/helpers.js?updated={{ FILE_VERSION }}"></script>

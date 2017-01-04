@@ -36,7 +36,7 @@ var app = app || {},
         changeSprite: function() {
             if (this.model.currentSprite) app.stage.removeChild(this.model.currentSprite);
 
-            this.model.currentSprite = _.clone(app.baseSprites[this.model.animation.compound]);
+            this.model.currentSprite = app.baseSprites[this.model.animation.compound].clone();
             this.model.currentSprite.x = this.model.x;
             this.model.currentSprite.y = this.model.y;
 

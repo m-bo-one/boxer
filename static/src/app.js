@@ -48,6 +48,20 @@ $(function () {
     app.user = {};
     app.sprites = {};
     app.stage = new createjs.Stage(app.canvas);
+    app.stage.addEventListener("stagemousedown", function(e) {
+        var offset = {
+            x: app.stage.x - e.stageX,
+            y: app.stage.y - e.stageY
+        };
+        app.stage.addEventListener("stagemousemove", function(ev) {
+            app.stage.x = ev.stageX + offset.x;
+            app.stage.y = ev.stageY + offset.y;
+            app.stage.update();
+        });
+        app.stage.addEventListener("stagemouseup", function() {
+            app.stage.removeAllEventListeners("stagemousemove");
+        });
+    }); 
 
     // createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
     createjs.Ticker.setFPS(app.config.FPS);

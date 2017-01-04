@@ -3,6 +3,9 @@ RESURECTION_TIME = 5
 HUMAN_HEALTH = 100
 MAX_AP = 10
 
+HEAL_AP = 3
+FIRE_AP = 4
+
 
 class StatusType(dict):
 
