@@ -1,5 +1,6 @@
 """Main collision logic
 """
+from db import local_db
 
 
 class SpatialHash(object):
@@ -49,4 +50,39 @@ class SpatialHash(object):
 
 
 class CollisionManager(object):
-    pass
+
+    def __init__(self, obj, pipelines=None):
+        self.obj = obj
+        self.pipelines = (pipelines
+                          if isinstance(pipelines, (tuple, list)) else [])
+
+    @property
+    def is_collide(self):
+        result = False
+        for col_func in self.pipelines:
+            coll_func = getattr(self, col_func, None)
+            if callable(coll_func):
+                result = coll_func()
+                if result:
+                    break
+
+        return result
+
+    def map_collision(self):
+        if (
+            self.obj.x > local_db['map_size']['width'] - 100 or
+            self.obj.x < 0 or
+            self.obj.y > local_db['map_size']['height'] - 100 or
+            self.obj.y < 0
+        ):
+            return True
+        return False
+
+    def user_collision(self):
+        # for other in self.__class__.all():
+        #     if (self.id != other.id and self.x < other.x + other.width and
+        #        self.x + self.width > other.x and
+        #        self.y < other.y + other.height and
+        #        self.height + self.y > other.y):
+        #         return True
+        return False

@@ -13,6 +13,7 @@ from constants import (
     RESURECTION_TIME, HEAL_TIME, HUMAN_HEALTH, MAX_AP, FIRE_AP, HEAL_AP)
 from app.assets.sprite import sprite_proto
 from .weapon import Weapon
+from .collider import CollisionManager
 
 
 class UserModel(object):
@@ -61,6 +62,7 @@ class UserModel(object):
         if not extra_data:
             extra_data = {}
         self.extra_data = extra_data
+        self.cm = CollisionManager(pipelines=self.collision_pipeline)
 
     def save(self):
         return redis_db.hset('users', self.id, self.to_json())
@@ -183,33 +185,6 @@ class UserModel(object):
     @property
     def is_full_health(self):
         return self.health == HUMAN_HEALTH
-
-    @property
-    def is_collide(self):
-        result = False
-        for col_func in self.collision_pipeline:
-            coll_func = getattr(self, col_func, None)
-            if callable(coll_func):
-                result = coll_func()
-                if result:
-                    break
-
-        return result
-
-    def map_collision(self):
-        if (self.x > local_db['map_size']['width'] - 100 or self.x < 0 or
-           self.y > local_db['map_size']['height'] - 100 or self.y < 0):
-            return True
-        return False
-
-    def user_collision(self):
-        for other in self.__class__.all():
-            if (self.id != other.id and self.x < other.x + other.width and
-               self.x + self.width > other.x and
-               self.y < other.y + other.height and
-               self.height + self.y > other.y):
-                return True
-        return False
 
     def autosave(func):
         def wrapper(self, *args, **kwargs):
@@ -412,6 +387,6 @@ class UserModel(object):
         elif way == 'walk_left':
             self.x -= self.speed[0]
 
-        if self.is_collide:
+        if self.cm.is_collide:
             self.x = x
             self.y = y
