@@ -13,7 +13,7 @@ from constants import (
     RESURECTION_TIME, HEAL_TIME, HUMAN_HEALTH, MAX_AP, FIRE_AP, HEAL_AP)
 from app.assets.sprite import sprite_proto
 from .weapon import Weapon
-from .collider import CollisionManager
+from ..collider import CollisionManager
 
 
 class UserModel(object):
@@ -38,7 +38,11 @@ class UserModel(object):
                  scores=0,
                  AP=10,
                  *args, **kwargs):
+        self._update(id, x, y, speed, action, direction, armor, weapon,
+                     health, extra_data, scores, AP, *args, **kwargs)
 
+    def _update(self, id, x, y, speed, action, direction, armor, weapon,
+                health, extra_data, scores, AP, *args, **kwargs):
         self.id = id
         self.username = 'Enclave#%s' % id
         self.x = x
@@ -62,10 +66,13 @@ class UserModel(object):
         if not extra_data:
             extra_data = {}
         self.extra_data = extra_data
-        self.cm = CollisionManager(pipelines=self.collision_pipeline)
+        self.cm = CollisionManager(self, pipelines=self.collision_pipeline)
 
     def save(self):
         return redis_db.hset('users', self.id, self.to_json())
+
+    def update(self):
+        self._update(**json.loads(redis_db.hget('users', self.id)))
 
     @classmethod
     def get(cls, id):
@@ -123,6 +130,13 @@ class UserModel(object):
         return _sprite['frames']['width'], _sprite['frames']['height']
 
     @property
+    def box(self):
+        return {
+            'min': (self.x, self.y),
+            'max': (self.x + self.width, self.y + self.height)
+        }
+
+    @property
     def animation(self):
         return {
             'way': "_".join([self.action, self.direction]),
@@ -146,24 +160,20 @@ class UserModel(object):
         return redis_db.incr('users:uids')
 
     @classmethod
-    def register_user(cls, socket, **kwargs):
+    def create(cls, **kwargs):
         user = cls(
             id=cls.generate_id(),
             x=random.randint(0, local_db['map_size']['width'] - 100),
             y=random.randint(0, local_db['map_size']['height'] - 100),
         )
         user.save()
-        local_db['socket2uid'][socket] = user.id
-        local_db['uid2socket'][user.id] = socket
         return user
 
-    @classmethod
-    def unregister_user(cls, socket):
+    def remove(self):
         try:
-            user_id = local_db['socket2uid'][socket]
-            del local_db['socket2uid'][socket]
-            del local_db['uid2socket'][user_id]
-            cls.delete(user_id)
+            user_id = self.id
+            del self
+            UserModel.delete(user_id)
         except KeyError:
             user_id = None
 
@@ -190,6 +200,7 @@ class UserModel(object):
         def wrapper(self, *args, **kwargs):
             result = func(self, *args, **kwargs)
             self.save()
+            self.update()
             return result
         return wrapper
 
@@ -219,8 +230,8 @@ class UserModel(object):
     def _delayed_command(self, delay, fname):
 
         def _callback():
-            user = UserModel.get(self.id)
-            getattr(user, fname)()
+            self.update()
+            getattr(self, fname)()
 
         return gevent.spawn_later(delay, _callback)
 

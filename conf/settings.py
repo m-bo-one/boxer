@@ -1,6 +1,6 @@
 import os
 
-DEBUG = True
+DEBUG = False
 TEMPLATE_DEBUG = False
 
 SITE_ADDRESS = ('0.0.0.0', 8080)

@@ -16,6 +16,7 @@ from conf import settings
 from utils import setup_logging
 from db import local_db
 from app.models import UserModel
+from app.collider import spatial_hash
 
 
 ws_event = EventEmitter()
@@ -33,15 +34,17 @@ class GameApplication(WebSocketApplication):
 
     @staticmethod
     def broadcast_all(clients, msg_type, data):
-        for client in clients:
-            GameApplication.broadcast(client, msg_type, data)
+        gevent.joinall([
+            gevent.spawn(GameApplication.broadcast, client, msg_type, data)
+            for client in clients
+        ])
 
     def get_user_from_ws(self, ws=None):
-        # self.user = UserModel.get(self.id)
-        ws = self.ws if not ws else ws
-        user = UserModel.get(local_db['socket2uid'][ws])
-        if user and not user.is_dead and not user.operations_blocked:
-            return user
+        self.user.update()
+        if all([
+            self.user, not self.user.is_dead, not self.user.operations_blocked
+        ]):
+            return self.user
 
     def on_open(self):
         logging.info("Connection opened")
@@ -70,13 +73,14 @@ class GameApplication(WebSocketApplication):
 
     @ws_event.on('register_user')
     def register_user(self, message):
-        self.user = UserModel.register_user(self.ws)
+        self.user = UserModel.create()
         self.broadcast(self, 'register_user', self.user.to_dict())
 
     @ws_event.on('unregister_user')
     def unregister_user(self, message):
-        user_id = UserModel.unregister_user(self.ws)
-        main_queue.put_nowait(user_id)
+        user_id = self.remove()
+        if user_id is not None:
+            main_queue.put_nowait(user_id)
 
     @ws_event.on('player_move')
     def player_move(self, message):

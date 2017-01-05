@@ -22,31 +22,52 @@ class SpatialHash(object):
         self.contents.setdefault(point, []).append(obj)
 
     def insert_object_for_box(self, box, obj):
-        # hash the minimum and maximum points
-        min, max = self._hash(box.min), self._hash(box.max)
-        # iterate over the rectangular region
-        for i in range(min[0], max[0] + 1):
-            for j in range(min[1], max[1] + 1):
-                # append to each intersecting cell
-                self.contents.setdefault((i, j), []).append(obj)
+        for cell in self._get_cells(box):
+            # append to each intersecting cell
+            self.contents.setdefault(cell, []).append(obj)
 
-    def remove_obj_by_point(self, point):
+    def _get_cells(self, box):
+        # hash the minimum and maximum points
+        min, max = self._hash(box['min']), self._hash(box['max'])
+        return ((i, j) for j in range(min[1], max[1] + 1)
+                for i in range(min[0], max[0] + 1))
+
+    def remove_obj_by_point(self, point, obj):
+        from .models import UserModel
         try:
-            del self.contents[point]
+            cell = self.contents[point]
+            for i, el in enumerate(cell):
+                if isinstance(el, UserModel) and el.id == obj.id or el == obj:
+                    del cell[i]
         except KeyError:
             pass
 
-    def remove_obj_by_box(self, box):
-        # hash the minimum and maximum points
-        min, max = self._hash(box.min), self._hash(box.max)
-        # iterate over the rectangular region
-        for i in range(min[0], max[0] + 1):
-            for j in range(min[1], max[1] + 1):
-                # remove each intersecting cell
-                try:
-                    del self.contents[(i, j)]
-                except KeyError:
-                    pass
+    def remove_obj_by_box(self, box, obj):
+        from .models import UserModel
+        for cell in self._get_cells(box):
+            # remove each intersecting cell
+            try:
+                cell = self.contents[cell]
+                for i, el in enumerate(cell):
+                    if (isinstance(el, UserModel) and el.id == obj.id or
+                       el == obj):
+                        del cell[i]
+            except KeyError:
+                pass
+
+    def collides(self, box, obj):
+        potensial_collisions = set()
+        for cell in self._get_cells(box):
+            try:
+                for el in self.contents[cell]:
+                    if obj.id != el.id:
+                        potensial_collisions.add(el)
+            except KeyError:
+                pass
+        return potensial_collisions
+
+
+spatial_hash = SpatialHash()
 
 
 class CollisionManager(object):
@@ -55,6 +76,8 @@ class CollisionManager(object):
         self.obj = obj
         self.pipelines = (pipelines
                           if isinstance(pipelines, (tuple, list)) else [])
+        # spatial_hash.insert_object_for_box(obj.box, obj)
+        # print(spatial_hash.contents)
 
     @property
     def is_collide(self):
@@ -79,10 +102,16 @@ class CollisionManager(object):
         return False
 
     def user_collision(self):
-        # for other in self.__class__.all():
-        #     if (self.id != other.id and self.x < other.x + other.width and
-        #        self.x + self.width > other.x and
-        #        self.y < other.y + other.height and
-        #        self.height + self.y > other.y):
-        #         return True
-        return False
+        from .models import UserModel
+        users = (user for user in spatial_hash.collides(self.obj.box, self.obj)
+                 if isinstance(self.obj, UserModel))
+        for other in users:
+            if all([
+                self.obj.id != other.id, self.obj.x < other.x + other.width,
+                self.obj.x + self.obj.width > other.x,
+                self.obj.y < other.y + other.height,
+                self.obj.height + self.obj.y > other.y
+            ]):
+                return True
+        else:
+            return False
