@@ -41,10 +41,13 @@ class UserModel(object):
         print('Init %s' % id)
         self._update(id, x, y, speed, action, direction, armor, weapon,
                      health, extra_data, scores, AP, *args, **kwargs)
-        spatial_hash.insert_object_for_box(self.box, self)
 
     def _update(self, id, x, y, speed, action, direction, armor, weapon,
                 health, extra_data, scores, AP, *args, **kwargs):
+        try:
+            spatial_hash.remove_obj_by_box(self.box, self)
+        except AttributeError:
+            pass
         self.id = id
         self.username = 'Enclave#%s' % id
         self.x = x
@@ -69,14 +72,13 @@ class UserModel(object):
             extra_data = {}
         self.extra_data = extra_data
         self.cm = CollisionManager(self, pipelines=self.collision_pipeline)
+        spatial_hash.insert_object_for_box(self.box, self)
 
     def save(self):
         return redis_db.hset('users', self.id, self.to_json())
 
     def update(self):
-        spatial_hash.remove_obj_by_box(self.box, self)
         self._update(**json.loads(redis_db.hget('users', self.id)))
-        spatial_hash.insert_object_for_box(self.box, self)
 
     @classmethod
     def get(cls, id):

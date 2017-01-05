@@ -24,7 +24,7 @@ class SpatialHash(object):
     def insert_object_for_box(self, box, obj):
         for cell in self._get_cells(box):
             # append to each intersecting cell
-            self.contents.setdefault(cell, set()).add(obj)
+            self.insert_object_for_point(cell, obj)
 
     def _get_cells(self, box):
         # hash the minimum and maximum points
