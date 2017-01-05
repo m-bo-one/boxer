@@ -1,5 +1,7 @@
 """Main collision logic
 """
+from contextlib import contextmanager
+
 from db import local_db
 
 
@@ -60,6 +62,16 @@ class SpatialHash(object):
 
 
 spatial_hash = SpatialHash()
+
+
+@contextmanager
+def obj_update(obj):
+    try:
+        spatial_hash.remove_obj_by_box(obj.box, obj)
+    except AttributeError:
+        pass
+    yield
+    spatial_hash.insert_object_for_box(obj.box, obj)
 
 
 class CollisionManager(object):

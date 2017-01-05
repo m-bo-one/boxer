@@ -13,7 +13,7 @@ from constants import (
     RESURECTION_TIME, HEAL_TIME, HUMAN_HEALTH, MAX_AP, FIRE_AP, HEAL_AP)
 from app.assets.sprite import sprite_proto
 from .weapon import Weapon
-from ..collider import spatial_hash, CollisionManager
+from ..collider import obj_update, spatial_hash, CollisionManager
 
 
 class UserModel(object):
@@ -38,16 +38,11 @@ class UserModel(object):
                  scores=0,
                  AP=10,
                  *args, **kwargs):
-        print('Init %s' % id)
         self._update(id, x, y, speed, action, direction, armor, weapon,
                      health, extra_data, scores, AP, *args, **kwargs)
 
     def _update(self, id, x, y, speed, action, direction, armor, weapon,
                 health, extra_data, scores, AP, *args, **kwargs):
-        try:
-            spatial_hash.remove_obj_by_box(self.box, self)
-        except AttributeError:
-            pass
         self.id = id
         self.username = 'Enclave#%s' % id
         self.x = x
@@ -72,20 +67,19 @@ class UserModel(object):
             extra_data = {}
         self.extra_data = extra_data
         self.cm = CollisionManager(self, pipelines=self.collision_pipeline)
-        spatial_hash.insert_object_for_box(self.box, self)
 
     def save(self):
         return redis_db.hset('users', self.id, self.to_json())
 
     def update(self):
-        self._update(**json.loads(redis_db.hget('users', self.id)))
+        with obj_update(self):
+            self._update(**json.loads(redis_db.hget('users', self.id)))
 
     @classmethod
-    def get(cls, id):
-        try:
+    def get(cls, id, to_obj=True):
+        if to_obj:
             return cls(**json.loads(redis_db.hget('users', id)))
-        except TypeError:
-            import ipdb; ipdb.set_trace()
+        return json.loads(redis_db.hget('users', id))
 
     @classmethod
     def delete(cls, id=None):
@@ -173,11 +167,14 @@ class UserModel(object):
             y=random.randint(0, local_db['map_size']['height'] - 100),
         )
         user.save()
+        spatial_hash.insert_object_for_box(user.box, user)
+        print('Init %s' % user.id)
         return user
 
     def remove(self):
         try:
             user_id = self.id
+            spatial_hash.remove_obj_by_box(self.box, self)
             del self
             UserModel.delete(user_id)
         except KeyError:
@@ -190,9 +187,6 @@ class UserModel(object):
             'type': type,
             'blocked_at': time.time()
         })
-
-    def reg_map(self, size):
-        local_db['map_size'][self.id] = size
 
     @property
     def coords(self):
@@ -253,7 +247,7 @@ class UserModel(object):
             self.use_AP(FIRE_AP)
             self.extra_data['sound_to_play'] = 'm60-fire'
 
-            detected = [other for other in self.__class__.all()
+            detected = [other for other in UserModel.all()
                         if other.id != self.id and not
                         other.is_dead and self.weapon.in_vision(other)]
 
@@ -270,7 +264,8 @@ class UserModel(object):
 
     def attr_from_db(self, value):
         logging.info('Update attr: %s', value)
-        return getattr(UserModel.get(self.id), value)
+        user_dict = UserModel.get(self.id, False)
+        return user_dict.get(value)
 
     @autosave
     def equip(self, type):
@@ -353,6 +348,8 @@ class UserModel(object):
         death_actions = [ActionType.DEATH_FROM_ABOVE]
         self.action = random.choice(death_actions)
         self.extra_data['resurection_time'] = RESURECTION_TIME
+
+        spatial_hash.remove_obj_by_box(self.box, self)
 
         self._delayed_command(RESURECTION_TIME, 'resurect')
 

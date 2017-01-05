@@ -93,16 +93,8 @@
         <script type="text/javascript">
             (function () {
                 var queue, ss, s;
-                
-                queue = new createjs.LoadQueue(true);
-                queue.setMaxConnections(20);
-                queue.installPlugin(createjs.Sound);
-                queue.on("fileload", onPreloadFile, this);
-                // queue.on("progress", onLoadProgress, this);
-                queue.on("complete", onPreloadComplete, this);
-                queue.loadManifest('manifest.json');
 
-                function onPreloadFile(evt) {
+                var onPreloadFile = function(evt) {
                     switch (evt.item.type) {
                         case createjs.AbstractLoader.SPRITESHEET:
                             ss = evt.result;
@@ -122,11 +114,21 @@
                     }
                 }
 
-                function onPreloadComplete(evt) {
+                var onPreloadComplete = function(evt) {
                     Stream.init(app);
                     createjs.Sound.muted = true;
+
+                    app.stage.addChildAt(app.baseImages['map'], 0);
                 }
-                delete queue, ss, s;
+
+                queue = new createjs.LoadQueue(true);
+                queue.setMaxConnections(20);
+                queue.installPlugin(createjs.Sound);
+                queue.on("fileload", onPreloadFile, this);
+                // queue.on("progress", onLoadProgress, this);
+                queue.on("complete", onPreloadComplete, this);
+                queue.loadManifest('manifest.json');
+
             })();
         </script>
     </head>

@@ -78,7 +78,7 @@ class GameApplication(WebSocketApplication):
 
     @ws_event.on('unregister_user')
     def unregister_user(self, message):
-        user_id = self.remove()
+        user_id = self.user.remove()
         if user_id is not None:
             main_queue.put_nowait(user_id)
 
