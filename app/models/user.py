@@ -13,14 +13,14 @@ from constants import (
     RESURECTION_TIME, HEAL_TIME, HUMAN_HEALTH, MAX_AP, FIRE_AP, HEAL_AP)
 from app.assets.sprite import sprite_proto
 from .weapon import Weapon
-from ..collider import CollisionManager
+from ..collider import spatial_hash, CollisionManager
 
 
 class UserModel(object):
 
     collision_pipeline = (
         'map_collision',
-        # 'user_collision',
+        'user_collision',
     )
     AP_stats = {}
 
@@ -38,8 +38,10 @@ class UserModel(object):
                  scores=0,
                  AP=10,
                  *args, **kwargs):
+        print('Init %s' % id)
         self._update(id, x, y, speed, action, direction, armor, weapon,
                      health, extra_data, scores, AP, *args, **kwargs)
+        spatial_hash.insert_object_for_box(self.box, self)
 
     def _update(self, id, x, y, speed, action, direction, armor, weapon,
                 health, extra_data, scores, AP, *args, **kwargs):
@@ -72,7 +74,9 @@ class UserModel(object):
         return redis_db.hset('users', self.id, self.to_json())
 
     def update(self):
+        spatial_hash.remove_obj_by_box(self.box, self)
         self._update(**json.loads(redis_db.hget('users', self.id)))
+        spatial_hash.insert_object_for_box(self.box, self)
 
     @classmethod
     def get(cls, id):
