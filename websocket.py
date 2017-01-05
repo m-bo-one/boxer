@@ -30,6 +30,7 @@ class GameApplication(WebSocketApplication):
         try:
             client.ws.send(json.dumps({'msg_type': msg_type, 'data': data}))
         except WebSocketError as e:
+            spatial_hash.remove_obj_by_box(client.user.box, client.user)
             logging.error(e)
 
     @staticmethod

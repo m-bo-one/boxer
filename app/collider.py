@@ -81,7 +81,7 @@ class CollisionManager(object):
         self.pipelines = (pipelines
                           if isinstance(pipelines, (tuple, list)) else [])
         # spatial_hash.insert_object_for_box(obj.box, obj)
-        # print(spatial_hash.contents)
+        print(spatial_hash.contents)
 
     @property
     def is_collide(self):

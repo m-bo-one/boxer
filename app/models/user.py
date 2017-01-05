@@ -174,6 +174,8 @@ class UserModel(object):
     def remove(self):
         try:
             user_id = self.id
+            UserModel._kill_AP_threads(user_id)
+            self.update()
             spatial_hash.remove_obj_by_box(self.box, self)
             del self
             UserModel.delete(user_id)
