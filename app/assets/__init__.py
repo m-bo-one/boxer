@@ -3,6 +3,7 @@ import os
 
 from .sprite import sprite_proto
 from .sound import sound_proto
+from .tile import TiledReader
 
 from conf import settings
 
@@ -32,3 +33,6 @@ with open(
         'type': 'image'
     })
     json.dump(data, outfile, indent=4)
+
+TiledReader.read_and_add_collision(
+    os.path.join(settings.PROJECT_PATH, 'map.tmx'))

@@ -81,7 +81,7 @@ class CollisionManager(object):
         self.pipelines = (pipelines
                           if isinstance(pipelines, (tuple, list)) else [])
         # spatial_hash.insert_object_for_box(obj.box, obj)
-        print(spatial_hash.contents)
+        # print(spatial_hash.contents)
 
     @property
     def is_collide(self):
@@ -100,21 +100,19 @@ class CollisionManager(object):
             self.obj.x > local_db['map_size']['width'] - 100 or
             self.obj.x < 0 or
             self.obj.y > local_db['map_size']['height'] - 100 or
-            self.obj.y < 0
+            self.obj.y + self.obj.height / 1.2 < 0
         ):
             return True
         return False
 
     def user_collision(self):
-        from .models import UserModel
-        users = (user for user in spatial_hash.collides(self.obj.box, self.obj)
-                 if isinstance(user, UserModel))
-        for other in users:
+        for other in spatial_hash.collides(self.obj.box, self.obj):
             if all([
-                self.obj.id != other.id, self.obj.x < other.x + other.width,
+                self.obj != other,
+                self.obj.x < other.x + other.width,
+                self.obj.y + self.obj.height / 1.2 < other.y + other.height,
                 self.obj.x + self.obj.width > other.x,
-                self.obj.y < other.y + other.height,
-                self.obj.height + self.obj.y > other.y
+                self.obj.y + self.obj.height > other.y
             ]):
                 return True
         else:

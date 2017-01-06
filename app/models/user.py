@@ -351,8 +351,6 @@ class UserModel(object):
         self.action = random.choice(death_actions)
         self.extra_data['resurection_time'] = RESURECTION_TIME
 
-        spatial_hash.remove_obj_by_box(self.box, self)
-
         self._delayed_command(RESURECTION_TIME, 'resurect')
 
     @autosave
