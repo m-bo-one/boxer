@@ -92,6 +92,7 @@ class Weapon(object):
             name = name['name']
         self.name = name
         self.w = _weapons[name]()
+        self.w.user = user
         self.user = user
         self.vision = WeaponVision(
             R=self.w.RANGE,
@@ -139,6 +140,9 @@ class M60Weapon(object):
     CRIT_CHANCE = 10  # persent
     CRIT_MULTIPLIER = 4
     SHOOT_TIME = 1
+    SOUNDS = {
+        'fire': 'm60-fire'
+    }
 
     @property
     def damage(self):
@@ -153,4 +157,5 @@ class M60Weapon(object):
             calc_damage = self.CRIT_MULTIPLIER * calc_damage
 
         for other in detected:
-            other.got_hit(calc_damage)
+            if other.got_hit(calc_damage):  # killed
+                self.user._delayed_command(0, 'update_scores')

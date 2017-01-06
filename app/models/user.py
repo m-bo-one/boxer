@@ -242,7 +242,7 @@ class UserModel(object):
             self.action = ActionType.FIRE
             self.block_operation('shoot')
             self.use_AP(FIRE_AP)
-            self.extra_data['sound_to_play'] = 'm60-fire'
+            self.extra_data['sound_to_play'] = self.weapon.w.SOUNDS['fire']
 
             detected = [other for other in local_db['users']
                         if other.id != self.id and not
@@ -311,6 +311,8 @@ class UserModel(object):
         logging.info('Health after hit: %s', self.health)
         if self.is_dead:
             self.kill()
+            return 1
+        return 0
 
     @autosave
     def heal(self, target=None):
@@ -347,6 +349,10 @@ class UserModel(object):
         self.extra_data['resurection_time'] = RESURECTION_TIME
 
         self._delayed_command(RESURECTION_TIME, 'resurect')
+
+    @autosave
+    def update_scores(self):
+        self.scores = self.attr_from_db('scores') + 1
 
     @autosave
     def resurect(self):
