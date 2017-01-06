@@ -6,6 +6,8 @@ MAX_AP = 10
 HEAL_AP = 3
 FIRE_AP = 4
 
+HUMAN_SIZE = (40, 75)
+
 
 class StatusType(dict):
 

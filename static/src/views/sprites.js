@@ -114,44 +114,46 @@ var app = app || {},
 
             this.initHP.color = _hpColor;
 
-            // if (this.model == app.user) {
+            if (this.model == app.user) {
                 this.initHP.text = this.model.health + '/' + this.model.maxHealth;
                 this.initHP.x = this.model.x + size - this.initHP.text.length;
                 this.initHP.y = this.model.y - 2 * size;
-            // } else {
-            //     this.initHP.text = _stars;
-            //     this.initHP.x = this.model.x + size - this.initHP.text.length;
-            //     this.initHP.y = this.model.y - 2 * size;
-            // }
-            // if (!this.prevHP) {
-            //     this.prevHP = this.model.health;
-            //     this.trigger('player_hit', 10);
-            // }
+            } else {
+                this.initHP.text = _stars;
+                this.initHP.x = this.model.x + size - this.initHP.text.length;
+                this.initHP.y = this.model.y - 2 * size;
+            }
+            if (!this.prevHP || this.prevHP !== this.model.health) {
+                var diff = this.model.health - this.prevHP;
+                var color = (diff < 0) ? '#990000': '#156526';
+                this.prevHP = this.model.health;
+                this.trigger('player_hit', diff, color);
+            }
         },
-        // updateDmgDisplay: function(dmg) {
-        //     var self = this;
-        //     var _run = function(dmg) {
-        //         var size = 20;
-        //         var x = 100;
-        //         var y = 100;
-        //         var textDmg = new createjs.Text();
-        //         textDmg.font = '20 px Arial';
-        //         textDmg.text = dmg;
-        //         textDmg.color = 'red';
-        //         textDmg.x = self.model.x;
-        //         textDmg.y = self.model.y;
-        //         textDmg.alpha = 0;
-        //         app.stage.addChild(textDmg);
-        //         createjs.Tween.get(textDmg)
-        //             .wait(100)
-        //             .to({y: textDmg.y - size, alpha: 1}, 333)
-        //             .to({y: textDmg.y - 2 * size, alpha: 0}, 333)
-        //             .call(function() {
-        //                 app.stage.removeChild(textDmg);
-        //             });
-        //     }
-        //     _run(dmg);
-        // },
+        updateDmgDisplay: function(dmg, color) {
+            var self = this;
+            var _run = function(dmg, color) {
+                var size = 20;
+                var x = 100;
+                var y = 100;
+                var textDmg = new createjs.Text();
+                textDmg.font = '20 px Arial';
+                textDmg.text = dmg;
+                textDmg.color = color;
+                textDmg.x = self.model.x;
+                textDmg.y = self.model.y;
+                textDmg.alpha = 0;
+                app.stage.addChild(textDmg);
+                createjs.Tween.get(textDmg)
+                    .wait(100)
+                    .to({y: textDmg.y - size, alpha: 1}, 333)
+                    .to({y: textDmg.y - 2 * size, alpha: 0}, 333)
+                    .call(function() {
+                        app.stage.removeChild(textDmg);
+                    });
+            }
+            _run(dmg, color);
+        },
         destroy: function() {
             app.stage.removeChild(this.textUsername);
             app.stage.removeChild(this.initHP);

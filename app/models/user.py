@@ -10,7 +10,8 @@ import gevent
 from db import redis_db, local_db
 from constants import (
     ActionType, DirectionType, WeaponType, ArmorType,
-    RESURECTION_TIME, HEAL_TIME, HUMAN_HEALTH, MAX_AP, FIRE_AP, HEAL_AP)
+    RESURECTION_TIME, HEAL_TIME, HUMAN_HEALTH, MAX_AP, FIRE_AP, HEAL_AP,
+    HUMAN_SIZE)
 from app.assets.sprite import sprite_proto
 from .weapon import Weapon
 from ..collider import obj_update, spatial_hash, CollisionManager
@@ -124,10 +125,7 @@ class UserModel(object):
 
     @property
     def size(self):
-        _sprite = sprite_proto.get((self.armor,
-                                    self.weapon.name,
-                                    self.action))
-        return _sprite['frames']['width'], _sprite['frames']['height']
+        return HUMAN_SIZE
 
     @property
     def box(self):
@@ -161,11 +159,8 @@ class UserModel(object):
 
     @classmethod
     def create(cls, **kwargs):
-        user = cls(
-            id=cls.generate_id(),
-            x=random.randint(0, local_db['map_size']['width'] - 100),
-            y=random.randint(0, local_db['map_size']['height'] - 100),
-        )
+        user = cls(id=cls.generate_id())
+        user.x, user.y = user.cm.get_random_coords()
         user.save()
         spatial_hash.insert_object_for_box(user.box, user)
         print('Init %s' % user.id)
@@ -249,7 +244,7 @@ class UserModel(object):
             self.use_AP(FIRE_AP)
             self.extra_data['sound_to_play'] = 'm60-fire'
 
-            detected = [other for other in UserModel.all()
+            detected = [other for other in local_db['users']
                         if other.id != self.id and not
                         other.is_dead and self.weapon.in_vision(other)]
 

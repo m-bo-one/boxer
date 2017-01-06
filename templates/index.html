@@ -42,6 +42,8 @@
 
                         app.hud = new app.HudView({ model: app.user });
                         app.weaponVision = new app.WeaponVisionView({ model: app.user });
+                        $("#gameBoard").show();
+                        $("#gameHUD").show();
                     });
                     ws.on('users_map', function(data) {
                         if (app.hud) app.hud.trigger('updateOnline', data.count);
@@ -120,8 +122,8 @@
     <body>
         <div id="conn_status">Not Connected</div>
         <div class="container">
-            <canvas id="gameBoard" style="border:1px solid #d3d3d3;">Your browser does not support the HTML5 canvas tag.</canvas>
-            <canvas id="gameHUD" style="border:1px solid #d3d3d3;">Your browser does not support the HTML5 canvas tag.</canvas>
+            <canvas id="gameBoard" style="border:1px solid #d3d3d3; display: none;">Your browser does not support the HTML5 canvas tag.</canvas>
+            <canvas id="gameHUD" style="border:1px solid #d3d3d3; display: none;">Your browser does not support the HTML5 canvas tag.</canvas>
         </div>
 
         <script type="text/javascript" src="{{ STATIC_URL }}src/helpers.js?updated={{ FILE_VERSION }}"></script>

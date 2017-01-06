@@ -1,5 +1,6 @@
 """Main collision logic
 """
+import random
 from contextlib import contextmanager
 
 from db import local_db
@@ -49,13 +50,12 @@ class SpatialHash(object):
             except KeyError:
                 pass
 
-    def collides(self, box, obj):
+    def pottential_collisions(self, box):
         potensial_collisions = set()
         for cell in self._get_cells(box):
             try:
                 for el in self.contents[cell]:
-                    if obj != el:
-                        potensial_collisions.add(el)
+                    potensial_collisions.add(el)
             except KeyError:
                 pass
         return potensial_collisions
@@ -83,6 +83,22 @@ class CollisionManager(object):
         # spatial_hash.insert_object_for_box(obj.box, obj)
         # print(spatial_hash.contents)
 
+    @staticmethod
+    def get_random_coords():
+        x = random.randint(0, local_db['map_size']['width'] - 100)
+        y = random.randint(0, local_db['map_size']['height'] - 100)
+        try:
+            colls = spatial_hash.pottential_collisions({
+                'min': (x, y),
+                'max': (x, y)
+            })
+            if colls:
+                return CollisionManager.get_random_coords()
+        except KeyError:
+            pass
+        finally:
+            return (x, y)
+
     @property
     def is_collide(self):
         result = False
@@ -106,14 +122,29 @@ class CollisionManager(object):
         return False
 
     def user_collision(self):
-        for other in spatial_hash.collides(self.obj.box, self.obj):
-            if all([
+        colliders = spatial_hash.pottential_collisions(self.obj.box)
+        colliders.remove(self.obj)
+        for other in colliders:
+            if self._is_collide(other):
+                return True
+        else:
+            return False
+
+    def _is_collide(self, other):
+        from .models import UserModel
+        if isinstance(other, UserModel):
+            return all([
+                self.obj != other,
+                self.obj.x < other.x + other.width,
+                self.obj.y + self.obj.height / 1.2 < other.y + other.height,
+                self.obj.x + self.obj.width > other.x,
+                self.obj.y + self.obj.height > other.y + other.height / 1.2
+            ])
+        else:
+            return all([
                 self.obj != other,
                 self.obj.x < other.x + other.width,
                 self.obj.y + self.obj.height / 1.2 < other.y + other.height,
                 self.obj.x + self.obj.width > other.x,
                 self.obj.y + self.obj.height > other.y
-            ]):
-                return True
-        else:
-            return False
+            ])

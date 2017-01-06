@@ -26,11 +26,20 @@ main_queue = Queue()
 class GameApplication(WebSocketApplication):
 
     @staticmethod
+    def _g_cleaner(client):
+        user = client.user
+        spatial_hash.remove_obj_by_box(user.box, user)
+        try:
+            local_db['users'].remove(user)
+        except KeyError:
+            pass
+
+    @staticmethod
     def broadcast(client, msg_type, data):
         try:
             client.ws.send(json.dumps({'msg_type': msg_type, 'data': data}))
         except WebSocketError as e:
-            spatial_hash.remove_obj_by_box(client.user.box, client.user)
+            GameApplication._g_cleaner(client)
             logging.error(e)
 
     @staticmethod
@@ -40,12 +49,23 @@ class GameApplication(WebSocketApplication):
             for client in clients
         ])
 
-    def get_user_from_ws(self, ws=None):
+    @property
+    def user(self):
+        return self.ws.handler.active_client.user
+
+    def get_user_from_ws(self):
         self.user.update()
-        if all([
-            self.user, not self.user.is_dead, not self.user.operations_blocked
-        ]):
+        if all([self.user, not self.user.is_dead,
+                not self.user.operations_blocked]):
             return self.user
+
+    @user.setter
+    def user(self, obj):
+        self.ws.handler.active_client.user = obj
+
+    @user.deleter
+    def user(self, obj):
+        del self.ws.handler.active_client.user
 
     def on_open(self):
         logging.info("Connection opened")
@@ -75,12 +95,18 @@ class GameApplication(WebSocketApplication):
     @ws_event.on('register_user')
     def register_user(self, message):
         self.user = UserModel.create()
+        local_db.setdefault('users', set())
+        local_db['users'].add(self.user)
         self.broadcast(self, 'register_user', self.user.to_dict())
 
     @ws_event.on('unregister_user')
     def unregister_user(self, message):
-        user_id = self.user.remove()
+        user = self.get_user_from_ws()
+        if not user:
+            return
+        user_id = user.remove()
         if user_id is not None:
+            self._g_cleaner(self.ws.handler.active_client)
             main_queue.put_nowait(user_id)
 
     @ws_event.on('player_move')
