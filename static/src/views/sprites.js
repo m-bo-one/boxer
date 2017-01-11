@@ -21,15 +21,15 @@ var app = app || {},
             this.model.currentSprite.y = this.model.y;
 
             if (
-                this.model.prevWeapon.name != this.model.weapon.name ||
+                this.model.prevWeapon != this.model.weapon ||
                 this.model.currentSprite.currentAnimation != this.model.animation.way
             ) {
                 this.changeSprite();
             }
-            // if (app.config.DEBUG) {
-                // this._debugBorder();
-            // }
-            this.renderPivot();
+            if (app.config.DEBUG) {
+                this._debugBorder();
+                this.renderPivot();
+            }
             this.updateUsername();
             this.updateHP();
             return this;
@@ -95,7 +95,7 @@ var app = app || {},
         },
         initUsername: function() {
             this.textUsername = new createjs.Text();
-            this.textUsername.font = size + ' px Arial';
+            this.textUsername.font = size + ' px Russo One';
             this.updateUsername();
             app.stage.addChild(this.textUsername);
         },
@@ -106,7 +106,7 @@ var app = app || {},
         },
         initHP: function() {
             this.initHP = new createjs.Text();
-            this.initHP.font = size + ' px Arial';
+            this.initHP.font = size + ' px Russo One';
             this.updateHP();
             app.stage.addChild(this.initHP);
         },
@@ -153,7 +153,7 @@ var app = app || {},
                 var x = 100;
                 var y = 100;
                 var textDmg = new createjs.Text();
-                textDmg.font = '20 px Arial';
+                textDmg.font = '20 px Russo One';
                 textDmg.text = dmg;
                 textDmg.color = color;
                 textDmg.x = self.model.x;

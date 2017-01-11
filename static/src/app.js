@@ -19,7 +19,7 @@ $(function () {
 
         app.stage.update();
         // FOR FUTURE GRID SYSTEM
-        utils.drawBoard();
+        if (app.config.DEBUG) utils.drawBoard();
         if (app.hud) app.hud.trigger('updateFPS', createjs.Ticker.getMeasuredFPS());
 
         if (_.isEmpty(app.user) || app.commandsBlocked || app.keys[38] && app.keys[87] || app.keys[40] && app.keys[83] ||

@@ -135,7 +135,7 @@ class NoWeapon(object):
 
 class M60Weapon(object):
 
-    DMG = (40, 60)
+    DMG = (60, 95)
     RANGE = 210  # px
     SPECTRE = 30  # degree
     CRIT_CHANCE = 15  # persent

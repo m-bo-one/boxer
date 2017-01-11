@@ -1,6 +1,7 @@
 <html>
     <head>
-        <title>Minimal websocket application</title>
+        <title>Boxer 2D - game</title>
+        <link href="https://fonts.googleapis.com/css?family=Russo+One" rel="stylesheet">
         <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
         <script src="//code.createjs.com/createjs-2015.11.26.min.js"></script>
         <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
@@ -43,7 +44,6 @@
                         app.hud = new app.HudView({ model: app.user });
                         app.weaponVision = new app.WeaponVisionView({ model: app.user });
                         $("#gameBoard").show();
-                        $("#gameHUD").show();
                     });
                     ws.on('users_map', function(data) {
                         if (app.hud) app.hud.trigger('updateOnline', data.count);
@@ -123,7 +123,6 @@
         <div id="conn_status">Not Connected</div>
         <div class="container">
             <canvas id="gameBoard" style="border:1px solid #d3d3d3; display: none;">Your browser does not support the HTML5 canvas tag.</canvas>
-            <canvas id="gameHUD" style="border:1px solid #d3d3d3; display: none;">Your browser does not support the HTML5 canvas tag.</canvas>
         </div>
 
         <script type="text/javascript" src="{{ STATIC_URL }}src/helpers.js?updated={{ FILE_VERSION }}"></script>
