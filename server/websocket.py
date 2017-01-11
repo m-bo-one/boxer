@@ -10,16 +10,14 @@ from gevent import monkey; monkey.patch_all()  # noqa
 from gevent.queue import Queue
 from geventwebsocket import (
     WebSocketServer, WebSocketApplication, Resource, WebSocketError)
-from eventemitter import EventEmitter
 
 from conf import settings
 from utils import setup_logging
 from db import local_db
 from app.models import UserModel
-from app.collider import spatial_hash
+from app.colliders import spatial_hash
 
 
-ws_event = EventEmitter()
 main_queue = Queue()
 
 
@@ -68,7 +66,7 @@ class GameApplication(WebSocketApplication):
         del self.ws.handler.active_client.user
 
     def on_open(self):
-        logging.info("Connection opened")
+        logging.debug("Connection opened")
         self.broadcast(self, 'render_map', local_db['map_size'])
         getattr(self, 'register_user')({})
 
@@ -141,8 +139,7 @@ def main_ticker(server):
 if __name__ == '__main__':
     try:
         UserModel.delete()
-        loglevel = logging.ERROR if not settings.DEBUG else logging.INFO
-        setup_logging(default_level=loglevel)
+        setup_logging()
         logging.info('Starting server...\n')
         server = WebSocketServer(
             settings.WEBSOCKET_ADDRESS, Resource(OrderedDict({

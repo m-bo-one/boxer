@@ -5,7 +5,7 @@ import os
 import copy
 import json
 from conf import settings
-from utils import await_greenlet, get_image, clear_dir
+from utils import await_greenlet, get_image
 from constants import ActionType, DirectionType, WeaponType, ArmorType, \
     StatusType
 
@@ -20,7 +20,6 @@ class SpritePrototype(object):
         if not os.path.exists(settings.ASSETS_SPRITE_PATH):
             os.mkdir(settings.ASSETS_PATH)
             os.mkdir(settings.ASSETS_SPRITE_PATH)
-        clear_dir(settings.ASSETS_SPRITE_PATH)
 
     def register_object(self, name, obj):
         """Register an object"""
@@ -81,7 +80,7 @@ class AnimatedSprite(object):
         self.speed = speed
 
         self.image = await_greenlet(get_image, self.image_name)
-        self.image_url = os.path.join(settings.MEDIA_URL, self.image_name)
+        self.image_url = os.path.join(settings.ASSETS_URL, self.image_name)
         self.height = self.image.height
         # width calculated dynamicaly through count
         self.width = self.image.width / float(count)

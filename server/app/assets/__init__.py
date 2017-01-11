@@ -8,7 +8,7 @@ from .tiles import TiledReader
 from conf import settings
 
 with open(
-    os.path.join(settings.PROJECT_PATH, 'manifest.json'), 'w+'
+    os.path.join(settings.ASSETS_PATH, 'manifest.json'), 'w+'
 ) as outfile:
     data = {}
     data.setdefault('path', '')
@@ -24,12 +24,12 @@ with open(
     # HARDCODED REPLACE IN FUTURE
     data['manifest'].append({
         'id': 'active-AP',
-        'src': os.path.join(settings.MEDIA_URL, 'active_AP.png'),
+        'src': os.path.join(settings.ASSETS_URL, 'active_AP.png'),
         'type': 'image'
     })
     data['manifest'].append({
         'id': 'map',
-        'src': os.path.join(settings.MEDIA_URL, 'map.png'),
+        'src': os.path.join(settings.ASSETS_URL, 'map.png'),
         'type': 'image'
     })
     json.dump(data, outfile, indent=4)

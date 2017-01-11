@@ -12,10 +12,10 @@ from constants import (
     ActionType, DirectionType, WeaponType, ArmorType,
     RESURECTION_TIME, HEAL_TIME, HUMAN_HEALTH, MAX_AP, FIRE_AP, HEAL_AP,
     HUMAN_SIZE)
-from app.assets.sprite import sprite_proto
 from .weapons import Weapon
 from .armors import Armor
-from ..collider import obj_update, spatial_hash, CollisionManager
+from ..assets.sprites import sprite_proto
+from ..colliders import obj_update, spatial_hash, CollisionManager
 
 
 class UserModel(object):

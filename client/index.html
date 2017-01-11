@@ -15,7 +15,7 @@
 
             var Stream = {
                 init: function (app) {
-                    var ws = new WebSocket("ws://" + app.config.WEBSOCKET_ADDRESS + "/game");
+                    var ws = new WebSocket("ws://" + window.location.hostname + ':9999' + "/game");
                     _.extend(ws, Backbone.Events);
 
                     ws.onmessage = function(evt) {
@@ -114,7 +114,7 @@
                 queue.on("fileload", onPreloadFile, this);
                 // queue.on("progress", onLoadProgress, this);
                 queue.on("complete", onPreloadComplete, this);
-                queue.loadManifest('manifest.json');
+                queue.loadManifest('assets/manifest.json');
 
             })();
         </script>
@@ -125,11 +125,11 @@
             <canvas id="gameBoard" style="border:1px solid #d3d3d3; display: none;">Your browser does not support the HTML5 canvas tag.</canvas>
         </div>
 
-        <script type="text/javascript" src="{{ STATIC_URL }}src/helpers.js?updated={{ FILE_VERSION }}"></script>
-        <script type="text/javascript" src="{{ STATIC_URL }}src/app.js?updated={{ FILE_VERSION }}"></script>
-        <script type="text/javascript" src="{{ STATIC_URL }}src/models/users.js?updated={{ FILE_VERSION }}"></script>
-        <script type="text/javascript" src="{{ STATIC_URL }}src/views/hud.js?updated={{ FILE_VERSION }}"></script>
-        <script type="text/javascript" src="{{ STATIC_URL }}src/views/weaponVision.js?updated={{ FILE_VERSION }}"></script>
-        <script type="text/javascript" src="{{ STATIC_URL }}src/views/sprites.js?updated={{ FILE_VERSION }}"></script>
+        <script type="text/javascript" src="{{ SRC_URL }}helpers.js?updated={{ FILE_VERSION }}"></script>
+        <script type="text/javascript" src="{{ SRC_URL }}app.js?updated={{ FILE_VERSION }}"></script>
+        <script type="text/javascript" src="{{ SRC_URL }}models/users.js?updated={{ FILE_VERSION }}"></script>
+        <script type="text/javascript" src="{{ SRC_URL }}views/hud.js?updated={{ FILE_VERSION }}"></script>
+        <script type="text/javascript" src="{{ SRC_URL }}views/weaponVision.js?updated={{ FILE_VERSION }}"></script>
+        <script type="text/javascript" src="{{ SRC_URL }}views/sprites.js?updated={{ FILE_VERSION }}"></script>
     </body>
 </html>

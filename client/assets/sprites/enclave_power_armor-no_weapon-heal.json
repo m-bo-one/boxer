@@ -1,0 +1,79 @@
+{
+    "images": [
+        "/assets/equipment/enclave_power_armor/no_weapon/heal/left.png", 
+        "/assets/equipment/enclave_power_armor/no_weapon/heal/right.png", 
+        "/assets/equipment/enclave_power_armor/no_weapon/heal/top.png", 
+        "/assets/equipment/enclave_power_armor/no_weapon/heal/bottom.png"
+    ], 
+    "frames": {
+        "count": 44, 
+        "width": 46.90909090909091, 
+        "height": 92
+    }, 
+    "animations": {
+        "heal_bottom": {
+            "frames": [
+                33, 
+                34, 
+                35, 
+                36, 
+                37, 
+                38, 
+                39, 
+                40, 
+                41, 
+                42, 
+                43
+            ], 
+            "speed": 0.2
+        }, 
+        "heal_top": {
+            "frames": [
+                22, 
+                23, 
+                24, 
+                25, 
+                26, 
+                27, 
+                28, 
+                29, 
+                30, 
+                31, 
+                32
+            ], 
+            "speed": 0.2
+        }, 
+        "heal_left": {
+            "frames": [
+                0, 
+                1, 
+                2, 
+                3, 
+                4, 
+                5, 
+                6, 
+                7, 
+                8, 
+                9, 
+                10
+            ], 
+            "speed": 0.2
+        }, 
+        "heal_right": {
+            "frames": [
+                11, 
+                12, 
+                13, 
+                14, 
+                15, 
+                16, 
+                17, 
+                18, 
+                19, 
+                20, 
+                21
+            ], 
+            "speed": 0.2
+        }
+    }
+}

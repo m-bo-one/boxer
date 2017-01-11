@@ -28,13 +28,13 @@ class BaseHttpRunner(object):
         self._port = address[1]
         self._debug = settings.DEBUG
 
-        bottle.TEMPLATE_PATH.insert(0, settings.TEMPLATES_PATH)
+        bottle.TEMPLATE_PATH.insert(0, settings.PROJECT_PATH)
         self._register_routes()
 
     def template_with_context(self, template_name, **extra):
         context = {
-            'STATIC_URL': settings.STATIC_URL,
-            'MEDIA_URL': settings.MEDIA_URL,
+            'SRC_URL': settings.SRC_URL,
+            'ASSETS_URL': settings.ASSETS_URL,
             # 'FILE_VERSION': (hashlib.md5(str(time.time())).hexdigest()
             #                  if not settings.TEMPLATE_DEBUG else ''),
             'FILE_VERSION': '',
@@ -48,7 +48,6 @@ class BaseHttpRunner(object):
     @property
     def app_settings(self):
         return {
-            'WEBSOCKET_ADDRESS': "%s:%s" % settings.WEBSOCKET_ADDRESS,
             'DEBUG': settings.TEMPLATE_DEBUG,
             'FPS': settings.FPS
         }
@@ -64,33 +63,34 @@ class BaseHttpRunner(object):
         """
         self._app.route('/', method="GET",
                         callback=self.handler_index)
-        self._app.route('/manifest.json', method="GET",
-                        callback=self.handler_index)
-        self._app.route('/media/<filename:re:.*\.(jpg|png|gif|ico|svg)>',
+        self._app.route('/assets/<filename:re:.*\.(jpg|png|gif|ico|svg)>',
                         callback=self.handler_image)
-        self._app.route('/media/<filename:re:.*\.(ogg|mp3)>',
+        self._app.route('/assets/<filename:re:.*\.(ogg|mp3)>',
                         callback=self.handler_music)
-        self._app.route('/static/<filename:path>',
-                        callback=self.handler_static)
+        self._app.route('/assets/<filename:path>',
+                        callback=self.handler_asset)
+        self._app.route('/src/<filename:path>',
+                        callback=self.handler_src)
 
     def handler_music(self, filename):
         return bottle.static_file(filename,
-                                  root=settings.MEDIA_PATH)
+                                  root=settings.ASSETS_PATH)
 
     def handler_image(self, filename):
         return bottle.static_file(filename,
-                                  root=settings.MEDIA_PATH)
+                                  root=settings.ASSETS_PATH)
 
-    def handler_static(self, filename):
+    def handler_asset(self, filename):
         return bottle.static_file(filename,
-                                  root=settings.STATIC_PATH)
+                                  root=settings.ASSETS_PATH)
+
+    def handler_src(self, filename):
+        return bottle.static_file(filename,
+                                  root=settings.SRC_PATH)
 
     def handler_index(self):
         """Base index page
         """
-        if 'manifest.json' in self.request.path:
-            return bottle.static_file('manifest.json',
-                                      root=settings.PROJECT_PATH)
         return self.template_with_context('index.html')
 
     def run_forever(self):

@@ -1,5 +1,4 @@
 import os
-import shutil
 import sys
 import logging.config
 
@@ -58,7 +57,7 @@ def await_greenlet(func, *args, **kwargs):
     return thread.get()
 
 
-def get_image(image_name, root_path=settings.MEDIA_PATH, with_close=True):
+def get_image(image_name, root_path=settings.ASSETS_PATH, with_close=True):
     image = Image.open(os.path.join(root_path, image_name))
     if with_close:
         image.close()

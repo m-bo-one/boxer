@@ -1,0 +1,67 @@
+{
+    "images": [
+        "/assets/equipment/enclave_power_armor/m60/fire/left.png", 
+        "/assets/equipment/enclave_power_armor/m60/fire/right.png", 
+        "/assets/equipment/enclave_power_armor/m60/fire/top.png", 
+        "/assets/equipment/enclave_power_armor/m60/fire/bottom.png"
+    ], 
+    "frames": {
+        "count": 32, 
+        "width": 68.875, 
+        "height": 92
+    }, 
+    "animations": {
+        "fire_top": {
+            "frames": [
+                16, 
+                17, 
+                18, 
+                19, 
+                20, 
+                21, 
+                22, 
+                23
+            ], 
+            "speed": 0.2
+        }, 
+        "fire_right": {
+            "frames": [
+                8, 
+                9, 
+                10, 
+                11, 
+                12, 
+                13, 
+                14, 
+                15
+            ], 
+            "speed": 0.2
+        }, 
+        "fire_left": {
+            "frames": [
+                0, 
+                1, 
+                2, 
+                3, 
+                4, 
+                5, 
+                6, 
+                7
+            ], 
+            "speed": 0.2
+        }, 
+        "fire_bottom": {
+            "frames": [
+                24, 
+                25, 
+                26, 
+                27, 
+                28, 
+                29, 
+                30, 
+                31
+            ], 
+            "speed": 0.2
+        }
+    }
+}

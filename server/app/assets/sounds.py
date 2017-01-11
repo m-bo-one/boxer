@@ -43,7 +43,7 @@ class Sound(object):
         self.tname = tname
         self.aname = aname
 
-        self.sound_url = os.path.join(settings.MEDIA_URL, self.sound_name)
+        self.sound_url = os.path.join(settings.ASSETS_URL, self.sound_name)
 
     @classmethod
     def prepare_easeljs_data(cls, sound_info):

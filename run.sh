@@ -1,7 +1,10 @@
 #!/bin/bash
 WORKSPACE_DIR=$HOME/boxer
 PROJ_DIR=$HOME/boxer
-ENV_DIR=$PROJ_DIR/.env
+CLIENT_DIR=$PROJ_DIR/client
+SERVER_DIR=$PROJ_DIR/server
+CLIENT_ENV_DIR=$CLIENT_DIR/.env
+SERVER_ENV_DIR=$SERVER_DIR/.env
 PROJECT=boxer
 
 tmux new-session -d -s $PROJECT
@@ -21,10 +24,10 @@ tmux split-window -d -t 0 -v
 tmux split-window -d -t 1 -h
 
 # client
-tmux send-keys -t 1 $ENV_DIR'/bin/python '$PROJ_DIR'/server.py' enter
+tmux send-keys -t 1 $CLIENT_ENV_DIR'/bin/python '$CLIENT_DIR'/server.py' enter
 
 # websocket
-tmux send-keys -t 2 $ENV_DIR'/bin/python '$PROJ_DIR'/websocket.py' enter
+tmux send-keys -t 2 $SERVER_ENV_DIR'/bin/python '$SERVER_DIR'/websocket.py' enter
 
 tmux select-pane -t 0
 

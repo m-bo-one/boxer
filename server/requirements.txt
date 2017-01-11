@@ -1,0 +1,10 @@
+colorlog==2.10.0
+gevent==1.2.0
+gevent-websocket==0.9.5
+greenlet==0.4.11
+olefile==0.44
+Pillow==4.0.0
+PyTMX==3.20.16
+PyYAML==3.12
+redis==2.10.5
+six==1.10.0

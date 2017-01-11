@@ -1,6 +1,6 @@
 import pytmx
 
-from ..collider import spatial_hash
+from ..colliders import spatial_hash
 
 
 class TiledReader(object):
