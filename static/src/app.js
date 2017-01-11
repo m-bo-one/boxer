@@ -19,8 +19,7 @@ $(function () {
 
         app.stage.update();
         // FOR FUTURE GRID SYSTEM
-        // utils.drawBoard();
-        // utils._LOG('Current FPS: ' + createjs.Ticker.getMeasuredFPS());
+        utils.drawBoard();
         if (app.hud) app.hud.trigger('updateFPS', createjs.Ticker.getMeasuredFPS());
 
         if (_.isEmpty(app.user) || app.commandsBlocked || app.keys[38] && app.keys[87] || app.keys[40] && app.keys[83] ||
@@ -43,50 +42,12 @@ $(function () {
 
     app.canvas = document.getElementById("gameBoard");
     app.canvas.style.backgroundColor = "black";
-    // app.canvas.addEventListener("mousewheel", function(e) {
-    //     var zoom, local;
-    //     if (Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)))>0)
-    //         zoom = 1.1;
-    //     else
-    //         zoom = 1 / 1.1;
-    //     local = app.stage.globalToLocal(app.stage.mouseX, app.stage.mouseY);
-    //     app.stage.regX = local.x;
-    //     app.stage.regY = local.y;
-    //     app.stage.x = app.stage.mouseX;
-    //     app.stage.y = app.stage.mouseY;
-    //     if (app.stage.scaleX * zoom >= 1) {
-    //         app.stage.scaleX *= zoom;
-    //     }
-    //     if (app.stage.scaleY * zoom >= 1) {
-    //         app.stage.scaleY *= zoom;
-    //     }
-    //     // app.stage.scaleX = app.stage.scaleY *= zoom;
-    //     console.log(app.stage.scaleX);
-    //     console.log(app.stage.scaleY);
-
-    //     app.stage.update();
-    // }, false);
     app.ctx = app.canvas.getContext("2d");
     app.keys = {};
     app.users = {};
     app.user = {};
     app.sprites = {};
     app.stage = new createjs.Stage(app.canvas);
-    // app.stage.addEventListener("stagemousedown", function(e) {
-    //     var offset = {
-    //         x: app.stage.x - e.stageX,
-    //         y: app.stage.y - e.stageY
-    //     };
-    //     app.stage.addEventListener("stagemousemove", function(ev) {
-    //         app.stage.x = ev.stageX + offset.x;
-    //         app.stage.y = ev.stageY + offset.y;
-    //         app.stage.update();
-    //     });
-    //     app.stage.addEventListener("stagemouseup", function() {
-    //         app.stage.removeAllEventListeners("stagemousemove");
-    //     });
-    // }); 
-
     // createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
     createjs.Ticker.setFPS(app.config.FPS);
     createjs.Ticker.addEventListener("tick", gameLoop);

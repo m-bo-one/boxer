@@ -28,7 +28,7 @@ class GameApplication(WebSocketApplication):
     @staticmethod
     def _g_cleaner(client):
         user = client.user
-        spatial_hash.remove_obj_by_box(user.box, user)
+        spatial_hash.remove_obj_by_point(user.pivot, user)
         try:
             local_db['users'].remove(user)
         except KeyError:
@@ -70,36 +70,32 @@ class GameApplication(WebSocketApplication):
     def on_open(self):
         logging.info("Connection opened")
         self.broadcast(self, 'render_map', local_db['map_size'])
-        ws_event.emit('register_user', self, {})
+        getattr(self, 'register_user')({})
 
     def on_message(self, message):
         if message:
             message = json.loads(message)
             logging.info('Evaluate msg %s' % message['msg_type'])
-            ws_event.emit(message['msg_type'], self, message)
+            getattr(self, message['msg_type'])(message)
 
-    @ws_event.on('player_equip')
     def player_equip(self, message):
         user = self.get_user_from_ws()
         if not user:
             return
         user.equip(message['data']['equipment'])
 
-    @ws_event.on('player_heal')
     def player_heal(self, message):
         user = self.get_user_from_ws()
         if not user:
             return
         user.heal()
 
-    @ws_event.on('register_user')
     def register_user(self, message):
         self.user = UserModel.create()
         local_db.setdefault('users', set())
         local_db['users'].add(self.user)
         self.broadcast(self, 'register_user', self.user.to_dict())
 
-    @ws_event.on('unregister_user')
     def unregister_user(self, message):
         user = self.get_user_from_ws()
         if not user:
@@ -109,14 +105,12 @@ class GameApplication(WebSocketApplication):
             self._g_cleaner(self.ws.handler.active_client)
             main_queue.put_nowait(user_id)
 
-    @ws_event.on('player_move')
     def player_move(self, message):
         user = self.get_user_from_ws()
         if not user:
             return
         user.move(message['data']['action'], message['data']['direction'])
 
-    @ws_event.on('player_shoot')
     def player_shoot(self, message):
         user = self.get_user_from_ws()
         if not user:

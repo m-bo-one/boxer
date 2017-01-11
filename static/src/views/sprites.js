@@ -29,6 +29,7 @@ var app = app || {},
             // if (app.config.DEBUG) {
                 // this._debugBorder();
             // }
+            this.renderPivot();
             this.updateUsername();
             this.updateHP();
             return this;
@@ -39,6 +40,7 @@ var app = app || {},
             this.model.currentSprite = app.baseSprites[this.model.animation.compound].clone();
             this.model.currentSprite.x = this.model.x;
             this.model.currentSprite.y = this.model.y;
+            // this.model.currentSprite.scaleX = this.model.currentSprite.scaleY = 0.5;
 
             if (this.model.isDead()) {
                 // play one time, hack
@@ -76,6 +78,20 @@ var app = app || {},
             this.sshape.graphics.endFill();
             // this.sshape.graphics.drawRect(0, 0, this.model.width, this.model.height);
             app.stage.addChild(this.sshape);
+        },
+        renderPivot: function() {
+            if (this.pv) {
+                app.stage.removeChild(this.pv);
+            }
+            this.pv = new createjs.Shape().set({
+                x: this.model.pivot.x,
+                y: this.model.pivot.y
+            });
+            this.pv.graphics.clear();
+            this.pv.graphics.beginFill("red");
+            this.pv.graphics.drawCircle(0, 0, 5);
+            this.pv.graphics.endFill();
+            app.stage.addChild(this.pv);
         },
         initUsername: function() {
             this.textUsername = new createjs.Text();

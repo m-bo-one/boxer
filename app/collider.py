@@ -1,6 +1,7 @@
 """Main collision logic
 """
 import random
+import logging
 from contextlib import contextmanager
 
 from db import local_db
@@ -17,27 +18,31 @@ class SpatialHash(object):
             px = point[0]
             py = point[1]
         else:
-            px = point.x
-            py = point.y
+            px = point['x']
+            py = point['y']
         return int(px / self.cell_size), int(py / self.cell_size)
 
     def insert_object_for_point(self, point, obj):
-        self.contents.setdefault(point, set()).add(obj)
+        self.contents.setdefault(self._hash(point), set()).add(obj)
 
     def insert_object_for_box(self, box, obj):
         for cell in self._get_cells(box):
             # append to each intersecting cell
-            self.insert_object_for_point(cell, obj)
+            self.contents.setdefault(cell, set()).add(obj)
 
     def _get_cells(self, box):
         # hash the minimum and maximum points
+        box['min'] = (box['min'] if isinstance(box['min'], (list, tuple))
+                      else (box['min']['x'], box['min']['y']))
+        box['max'] = (box['max'] if isinstance(box['max'], (list, tuple))
+                      else (box['max']['x'], box['max']['y']))
         min, max = self._hash(box['min']), self._hash(box['max'])
         return ((i, j) for j in range(min[1], max[1] + 1)
                 for i in range(min[0], max[0] + 1))
 
     def remove_obj_by_point(self, point, obj):
         try:
-            cell = self.contents[point]
+            cell = self.contents[self._hash(point)]
             cell.remove(obj)
         except KeyError:
             pass
@@ -50,14 +55,25 @@ class SpatialHash(object):
             except KeyError:
                 pass
 
-    def pottential_collisions(self, box):
+    def pottential_collisions(self, box, obj, single=False):
         potensial_collisions = set()
-        for cell in self._get_cells(box):
+        if single:
+            cells = [self._hash(box)]
+        else:
+            cells = self._get_cells(box)
+
+        for cell in cells:
             try:
                 for el in self.contents[cell]:
                     potensial_collisions.add(el)
             except KeyError:
                 pass
+
+        try:
+            potensial_collisions.remove(obj)
+        except KeyError:
+            pass
+        logging.debug(potensial_collisions)
         return potensial_collisions
 
 
@@ -67,11 +83,11 @@ spatial_hash = SpatialHash()
 @contextmanager
 def obj_update(obj):
     try:
-        spatial_hash.remove_obj_by_box(obj.box, obj)
+        spatial_hash.remove_obj_by_point(obj.pivot, obj)
     except AttributeError:
         pass
     yield
-    spatial_hash.insert_object_for_box(obj.box, obj)
+    spatial_hash.insert_object_for_point(obj.pivot, obj)
 
 
 class CollisionManager(object):
@@ -80,24 +96,13 @@ class CollisionManager(object):
         self.obj = obj
         self.pipelines = (pipelines
                           if isinstance(pipelines, (tuple, list)) else [])
-        # spatial_hash.insert_object_for_box(obj.box, obj)
-        # print(spatial_hash.contents)
+        logging.debug(spatial_hash.contents)
 
     @staticmethod
     def get_random_coords():
         x = random.randint(0, local_db['map_size']['width'] - 100)
         y = random.randint(0, local_db['map_size']['height'] - 100)
-        try:
-            colls = spatial_hash.pottential_collisions({
-                'min': (x, y),
-                'max': (x, y)
-            })
-            if colls:
-                return CollisionManager.get_random_coords()
-        except KeyError:
-            pass
-        finally:
-            return (x, y)
+        return (x, y)
 
     @property
     def is_collide(self):
@@ -122,8 +127,8 @@ class CollisionManager(object):
         return False
 
     def user_collision(self):
-        colliders = spatial_hash.pottential_collisions(self.obj.box)
-        colliders.remove(self.obj)
+        colliders = spatial_hash.pottential_collisions(
+            self.obj.pivot, self.obj, True)
         for other in colliders:
             if self._is_collide(other):
                 return True
@@ -133,18 +138,8 @@ class CollisionManager(object):
     def _is_collide(self, other):
         from .models import UserModel
         if isinstance(other, UserModel):
-            return all([
-                self.obj != other,
-                self.obj.x < other.x + other.width,
-                self.obj.y + self.obj.height / 1.2 < other.y + other.height,
-                self.obj.x + self.obj.width > other.x,
-                self.obj.y + self.obj.height > other.y + other.height / 1.2
-            ])
-        else:
-            return all([
-                self.obj != other,
-                self.obj.x < other.x + other.width,
-                self.obj.y + self.obj.height / 1.2 < other.y + other.height,
-                self.obj.x + self.obj.width > other.x,
-                self.obj.y + self.obj.height > other.y
-            ])
+            return False
+        return bool(self.obj.pivot['x'] < other.x + other.width and
+                    self.obj.pivot['x'] >= other.x and
+                    self.obj.pivot['y'] < other.y + other.height and
+                    self.obj.pivot['y'] >= other.y)

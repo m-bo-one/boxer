@@ -15,12 +15,12 @@ var utils = (function() {
         },
         drawBoard() {
             app.ctx.beginPath();
-            for (var x = 0; x <= app.canvas.width; x += app.canvas.width / 4) {
+            for (var x = 0; x <= app.canvas.width; x += 32) {
                 app.ctx.moveTo(x, 0);
                 app.ctx.lineTo(x, app.canvas.height);
             }
 
-            for (var x = 0; x <= app.canvas.height; x += app.canvas.height / 4) {
+            for (var x = 0; x <= app.canvas.height; x += 32) {
                 app.ctx.moveTo(0, x);
                 app.ctx.lineTo(app.canvas.width, x);
             }

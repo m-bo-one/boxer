@@ -27,9 +27,9 @@ class UserModel(object):
 
     def __init__(self,
                  id=None,
-                 x=0,
-                 y=0,
-                 speed=(3, 3),
+                 x=16,
+                 y=16,
+                 speed=(2, 2),
                  action=ActionType.IDLE,
                  direction=DirectionType.LEFT,
                  armor=ArmorType.ENCLAVE_POWER_ARMOR,
@@ -46,9 +46,9 @@ class UserModel(object):
                 health, extra_data, scores, AP, *args, **kwargs):
         self.id = id
         self.username = 'Enclave#%s' % id
+        self.speed = speed
         self.x = x
         self.y = y
-        self.speed = speed
         self.action = action
         self.direction = direction
         self.armor = armor
@@ -108,6 +108,7 @@ class UserModel(object):
             'width': self.width,
             'height': self.height,
             'speed': self.speed,
+            'pivot': self.pivot,
             'action': self.action,
             'direction': self.direction,
             'armor': self.armor,
@@ -125,13 +126,16 @@ class UserModel(object):
 
     @property
     def size(self):
-        return HUMAN_SIZE
+        _sprite = sprite_proto.get((self.armor,
+                                    self.weapon.name,
+                                    self.action))
+        return _sprite['frames']['width'], _sprite['frames']['height']
 
     @property
-    def box(self):
+    def pivot(self):
         return {
-            'min': (self.x, self.y),
-            'max': (self.x + self.width, self.y + self.height)
+            "x": self.x + self.width / 2,
+            "y": (self.y + 2 * self.height / 3 + 10)
         }
 
     @property
@@ -160,9 +164,8 @@ class UserModel(object):
     @classmethod
     def create(cls, **kwargs):
         user = cls(id=cls.generate_id())
-        user.x, user.y = user.cm.get_random_coords()
+        spatial_hash.insert_object_for_point(user.pivot, user)
         user.save()
-        spatial_hash.insert_object_for_box(user.box, user)
         print('Init %s' % user.id)
         return user
 
@@ -171,7 +174,7 @@ class UserModel(object):
             user_id = self.id
             UserModel._kill_AP_threads(user_id)
             self.update()
-            spatial_hash.remove_obj_by_box(self.box, self)
+            spatial_hash.remove_obj_by_point(self.pivot, self)
             del self
             UserModel.delete(user_id)
         except KeyError:
