@@ -13,7 +13,8 @@ from constants import (
     RESURECTION_TIME, HEAL_TIME, HUMAN_HEALTH, MAX_AP, FIRE_AP, HEAL_AP,
     HUMAN_SIZE)
 from app.assets.sprite import sprite_proto
-from .weapon import Weapon
+from .weapons import Weapon
+from .armors import Armor
 from ..collider import obj_update, spatial_hash, CollisionManager
 
 
@@ -51,12 +52,12 @@ class UserModel(object):
         self.y = y
         self.action = action
         self.direction = direction
-        self.armor = armor
+        self.armor = Armor(armor, self)
         self.weapon = Weapon(weapon, self)
         self.health = health
         self.max_health = HUMAN_HEALTH
         self.scores = scores
-        self._armors = [ArmorType.ENCLAVE_POWER_ARMOR]
+        self._armors = [Armor(ArmorType.ENCLAVE_POWER_ARMOR, self)]
         self._weapons = [Weapon(WeaponType.NO_WEAPON, self),
                          Weapon(WeaponType.M60, self)]
 
@@ -111,8 +112,8 @@ class UserModel(object):
             'pivot': self.pivot,
             'action': self.action,
             'direction': self.direction,
-            'armor': self.armor,
-            'weapon': self.weapon.to_dict(),
+            'armor': self.armor.name,
+            'weapon': self.weapon.name,
             'health': self.health,
             'operations_blocked': self.operations_blocked,
             'animation': self.animation,
@@ -126,7 +127,7 @@ class UserModel(object):
 
     @property
     def size(self):
-        _sprite = sprite_proto.get((self.armor,
+        _sprite = sprite_proto.get((self.armor.name,
                                     self.weapon.name,
                                     self.action))
         return _sprite['frames']['width'], _sprite['frames']['height']
@@ -142,7 +143,7 @@ class UserModel(object):
     def animation(self):
         return {
             'way': "_".join([self.action, self.direction]),
-            'compound': sprite_proto.sp_key_builder(self.armor,
+            'compound': sprite_proto.sp_key_builder(self.armor.name,
                                                     self.weapon.name,
                                                     self.action),
         }
@@ -308,9 +309,10 @@ class UserModel(object):
         logging.info("ID: %s- AP: %s" % (self.id, self.AP))
 
     @autosave
-    def got_hit(self, dmg):
+    def got_hit(self, weapon, dmg):
         logging.info('Health before hit: %s', self.health)
-        self.health = self.attr_from_db('health') - dmg
+        rdmg = self.armor.reduce_damage(weapon, dmg)
+        self.health = self.attr_from_db('health') - rdmg
         logging.info('Health after hit: %s', self.health)
         if self.is_dead:
             self.kill()

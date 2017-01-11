@@ -1,9 +1,9 @@
 import json
 import os
 
-from .sprite import sprite_proto
-from .sound import sound_proto
-from .tile import TiledReader
+from .sprites import sprite_proto
+from .sounds import sound_proto
+from .tiles import TiledReader
 
 from conf import settings
 

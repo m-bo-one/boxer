@@ -127,6 +127,7 @@ class NoWeapon(object):
     CRIT_CHANCE = 1
     CRIT_MULTIPLIER = 1
     SHOOT_TIME = 1
+    CHARGE_TYPE = ''
 
     def shoot(self, detected):
         raise NotImplementedError()
@@ -134,15 +135,16 @@ class NoWeapon(object):
 
 class M60Weapon(object):
 
-    DMG = (15, 25)
+    DMG = (40, 60)
     RANGE = 210  # px
     SPECTRE = 30  # degree
-    CRIT_CHANCE = 10  # persent
-    CRIT_MULTIPLIER = 4
+    CRIT_CHANCE = 15  # persent
+    CRIT_MULTIPLIER = 3
     SHOOT_TIME = 1
     SOUNDS = {
         'fire': 'm60-fire'
     }
+    CHARGE_TYPE = 'bullet'
 
     @property
     def damage(self):
@@ -157,5 +159,5 @@ class M60Weapon(object):
             calc_damage = self.CRIT_MULTIPLIER * calc_damage
 
         for other in detected:
-            if other.got_hit(calc_damage):  # killed
+            if other.got_hit(self.user.weapon, calc_damage):  # killed
                 self.user._delayed_command(0, 'update_scores')
