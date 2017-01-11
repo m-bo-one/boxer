@@ -363,8 +363,8 @@ class UserModel(object):
     def resurect(self):
         self.health = self.max_health
         self.weapon = self._weapons[0]
-        self.x = random.randint(0, local_db['map_size']['width'] - 100)
-        self.y = random.randint(0, local_db['map_size']['height'] - 100)
+        self.x = random.randint(0, 1280 - 100)
+        self.y = random.randint(0, 768 - 100)
         self.action = ActionType.IDLE
         self.direction = DirectionType.LEFT
         self.AP = MAX_AP

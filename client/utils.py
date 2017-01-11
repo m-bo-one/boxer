@@ -8,7 +8,7 @@ from conf import settings
 
 
 def setup_logging(default_path=os.path.join(
-                    settings.PROJECT_PATH, 'conf/logging.yaml'),
+                    settings.PROJECT_PATH, 'logging.yaml'),
                   default_level=logging.INFO,
                   env_key='LOG_CFG'):
     """Setup logging configuration

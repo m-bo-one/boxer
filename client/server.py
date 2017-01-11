@@ -28,15 +28,15 @@ class BaseHttpRunner(object):
         self._port = address[1]
         self._debug = settings.DEBUG
 
-        bottle.TEMPLATE_PATH.insert(0, settings.PROJECT_PATH)
+        bottle.TEMPLATE_PATH.insert(0, settings.CLIENT_PATH)
         self._register_routes()
 
     def template_with_context(self, template_name, **extra):
         context = {
             'SRC_URL': settings.SRC_URL,
             'ASSETS_URL': settings.ASSETS_URL,
-            # 'FILE_VERSION': (hashlib.md5(str(time.time())).hexdigest()
-            #                  if not settings.TEMPLATE_DEBUG else ''),
+            'FILE_VERSION': (hashlib.md5(str(time.time())).hexdigest()
+                             if not settings.TEMPLATE_DEBUG else ''),
             'FILE_VERSION': '',
             'APP_SETTINGS': json.dumps(self.app_settings)
         }
@@ -58,6 +58,13 @@ class BaseHttpRunner(object):
         """
         return bottle.request
 
+    @staticmethod
+    def json_response(data, status_code=200):
+        response = bottle.response
+        response.content_type = 'application/json'
+        response.status = status_code
+        return json.dumps(data)
+
     def _register_routes(self):
         """Assign routes here
         """
@@ -71,6 +78,9 @@ class BaseHttpRunner(object):
                         callback=self.handler_asset)
         self._app.route('/src/<filename:path>',
                         callback=self.handler_src)
+
+        self._app.route('/api/login', method='POST',
+                        callback=self.api_login)
 
     def handler_music(self, filename):
         return bottle.static_file(filename,
@@ -92,6 +102,21 @@ class BaseHttpRunner(object):
         """Base index page
         """
         return self.template_with_context('index.html')
+
+    def api_login(self):
+        try:
+            pdata = self.request.json
+        except Exception as e:
+            logging.error('API: %s', e)
+            return self.json_response({
+                'status': 'error',
+                'message': 'Inavalid json'
+            }, 400)
+        return self.json_response({
+            'status': 'ok',
+            'message': 'Succeed',
+            'data': pdata
+        })
 
     def run_forever(self):
         """Start gevent server here

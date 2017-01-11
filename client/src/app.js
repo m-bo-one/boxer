@@ -41,6 +41,8 @@ $(function () {
     };
 
     app.canvas = document.getElementById("gameBoard");
+    app.canvas.width = 1280;
+    app.canvas.height = 768;
     app.canvas.style.backgroundColor = "black";
     app.ctx = app.canvas.getContext("2d");
     app.keys = {};

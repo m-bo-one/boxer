@@ -1,0 +1,23 @@
+body {
+    background-image: url("../desert-oasis-lake-palm-polygon.jpg");
+}
+canvas {
+    padding: 0;
+    margin: auto;
+    display: block;
+}
+.login {
+    height:110px;
+    width:190px;
+    border:1px #CCC solid;
+    padding:10px;
+    float: left;
+    display: none;
+} 
+.login input {
+    padding:5px;
+    margin:5px
+}
+.login-error {
+    color: red;
+}
