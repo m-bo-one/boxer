@@ -83,7 +83,7 @@ class UserModel(object):
             self._update(**json.loads(redis_db.hget('users', self.id)))
 
     @classmethod
-    def get(cls, id, to_obj=True):
+    def get(cls, id, to_obj=True, **kwargs):
         if to_obj:
             return cls(**json.loads(redis_db.hget('users', id)))
         return json.loads(redis_db.hget('users', id))

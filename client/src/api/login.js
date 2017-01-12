@@ -1,3 +1,6 @@
+var app = app || {};
+
+
 (function() {
     window.onload = function() {
         $('#quickLogin').on('submit', function(e) {
@@ -20,6 +23,9 @@
             }).done(function(data) {
                 $('.login-error').css('color', 'green');
                 $('.login-error').html(data.message);
+                localStorage.setItem("uid", data.data.uid);
+                localStorage.setItem("token", data.data.token);
+                Stream.init(app);
                 console.log(data);
             }).fail(function(response) {
                 var data = JSON.parse(response.responseText);

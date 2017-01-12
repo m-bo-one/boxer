@@ -87,10 +87,11 @@ class GameApplication(WebSocketApplication):
         user.heal()
 
     def register_user(self, message):
-        self.user = UserModel.get(uid=message['uid'], token=message['token'])
+        msg = message['data']
+        self.user = UserModel.get(msg['uid'], token=msg['token'])
         if not self.user:
             logging.info('User not found: uid - %s, token - %s',
-                         message['uid'], message['token'])
+                         msg['uid'], msg['token'])
             return
         local_db.setdefault('users', set())
         local_db['users'].add(self.user)

@@ -4,23 +4,23 @@ var Stream = function(app) {
     this.app = app;
 };
 
-Stream.prototype = {
-
-    send: function(msgType, data) {
-        var jData = JSON.stringify({
-            'msg_type': msgType,
-            'data': data
-        });
-        this.app.ws.send(jData);
-    }
+Stream.send = function(msgType, data) {
+    var jData = JSON.stringify({
+        'msg_type': msgType,
+        'data': data
+    });
+    app.ws.send(jData);
 };
-Stream.prototype.constructor = Stream;
 Stream.init = function() {
     var ws = new WebSocket("ws://" + window.location.hostname + ':9999' + "/game");
     _.extend(ws, Backbone.Events);
 
     ws.onopen = function(evt) {
         $('#conn_status').html('<b>WS Connected</b>');
+
+        Stream.send('register_user',
+                    {'uid': localStorage.getItem('uid'),
+                     'token': localStorage.getItem('token')})
 
         ws.onmessage = function(evt) {
             var answer = JSON.parse(evt.data);
