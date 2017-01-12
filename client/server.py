@@ -11,7 +11,11 @@ import json
 import gevent
 import gevent.pool
 
+import zmq.green as zmq
+
 import bottle
+
+from eventemitter import EventEmitter
 
 from utils import setup_logging
 from conf import settings
@@ -27,9 +31,39 @@ class BaseHttpRunner(object):
         self._host = address[0]
         self._port = address[1]
         self._debug = settings.DEBUG
+        self.evt = EventEmitter()
+
+        self._connect_zmq()
 
         bottle.TEMPLATE_PATH.insert(0, settings.CLIENT_PATH)
         self._register_routes()
+
+    def _connect_zmq(self):
+        self._context = zmq.Context()
+        self.zmq_socket = self._context.socket(zmq.PAIR)
+        logging.info('ZMQ: Binding address (%s, %s)', *settings.ZMQ_ADDRESS)
+        self.zmq_socket.connect("tcp://%s:%s" % settings.ZMQ_ADDRESS)
+        logging.info('ZMQ: Client PAIR starting...')
+        self._pool.spawn(self._zmq_run)
+
+    def _zmq_send(self, type, data):
+        self.zmq_socket.send_json({
+            'type': type,
+            'time': time.time(),
+            'data': data
+        })
+
+    def _zmq_run(self):
+        def _callback(msg):
+            return msg
+        while True:
+            msg = self.zmq_socket.recv_json()
+            logging.info('ZMQ: received msg - %s', msg)
+            self.evt.once(msg['type'], _callback)
+            self.evt.emit(msg['type'], msg['data'])
+
+    def wait_zmq(self, event, timeout=None, raises=False):
+        return self.evt.wait_event(event, timeout, raises)
 
     def template_with_context(self, template_name, **extra):
         context = {
@@ -105,17 +139,18 @@ class BaseHttpRunner(object):
 
     def api_login(self):
         try:
-            pdata = self.request.json
+            self._zmq_send('login', self.request.json)
+            result = self.wait_zmq('login', timeout=5)
         except Exception as e:
             logging.error('API: %s', e)
             return self.json_response({
                 'status': 'error',
-                'message': 'Inavalid json'
-            }, 400)
+                'message': 'Unexpected error: %s' % e.message
+            }, 500)
         return self.json_response({
             'status': 'ok',
             'message': 'Succeed',
-            'data': pdata
+            'data': result[0]
         })
 
     def run_forever(self):

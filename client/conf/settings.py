@@ -4,6 +4,7 @@ DEBUG = True
 TEMPLATE_DEBUG = False
 
 SITE_ADDRESS = ('0.0.0.0', 8080)
+ZMQ_ADDRESS = ('127.0.0.1', 5560)
 
 PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 

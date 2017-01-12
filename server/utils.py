@@ -1,5 +1,6 @@
 import os
 import sys
+import hashlib
 import logging.config
 
 import yaml
@@ -12,6 +13,14 @@ from conf import settings
 
 PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] == 3
+
+
+def generate_temp_password(password, secret_key=settings.SECRET_KEY):
+    return hashlib.md5("".join([password, secret_key])).hexdigest()
+
+
+def check_temp_password(password, hashed):
+    return bool(generate_temp_password(password) == hashed)
 
 
 def enum_convert(enum_type, search_type):

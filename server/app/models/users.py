@@ -27,7 +27,9 @@ class UserModel(object):
     AP_stats = {}
 
     def __init__(self,
-                 id=None,
+                 id,
+                 username,
+                 password,
                  x=16,
                  y=16,
                  speed=(2, 2),
@@ -42,11 +44,12 @@ class UserModel(object):
                  *args, **kwargs):
         self._update(id, x, y, speed, action, direction, armor, weapon,
                      health, extra_data, scores, AP, *args, **kwargs)
+        self.username = username
+        self.password = password
 
     def _update(self, id, x, y, speed, action, direction, armor, weapon,
                 health, extra_data, scores, AP, *args, **kwargs):
         self.id = id
-        self.username = 'Enclave#%s' % id
         self.speed = speed
         self.x = x
         self.y = y
@@ -164,7 +167,13 @@ class UserModel(object):
 
     @classmethod
     def create(cls, **kwargs):
-        user = cls(id=cls.generate_id())
+        from utils import generate_temp_password
+        username = kwargs.get('username', 'TestUsername')
+        password = kwargs.get('password', 'TestPass')
+        user = cls(
+            id=cls.generate_id(),
+            username=username,
+            password=generate_temp_password(password))
         spatial_hash.insert_object_for_point(user.pivot, user)
         user.save()
         print('Init %s' % user.id)

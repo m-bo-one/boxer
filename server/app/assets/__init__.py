@@ -35,4 +35,4 @@ with open(
     json.dump(data, outfile, indent=4)
 
 TiledReader.read_and_add_collision(
-    os.path.join(settings.PROJECT_PATH, 'map.tmx'))
+    os.path.join(settings.SERVER_PATH, 'map.tmx'))

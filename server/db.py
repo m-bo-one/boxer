@@ -13,7 +13,7 @@ __all__ = [
 class DBClient(object):
 
     shared_state = {}
-    max_connections = 20
+    max_connections = 200
 
     def __init__(self):
         self.__dict__ = self.shared_state
@@ -30,7 +30,12 @@ class DBClient(object):
                     max_connections=self.max_connections)
                 self.shared_state[name] = redis.Redis(connection_pool=pool)
             elif name == 'local':
-                self.shared_state[name] = {}
+                self.shared_state[name] = {
+                    'map_size': {
+                        'width': 1280,
+                        'height': 768
+                    }
+                }
             else:
                 raise Exception('Connector not found.')
 
