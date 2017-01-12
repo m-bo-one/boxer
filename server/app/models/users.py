@@ -10,8 +10,8 @@ import gevent
 from db import redis_db, local_db
 from constants import (
     ActionType, DirectionType, WeaponType, ArmorType,
-    RESURECTION_TIME, HEAL_TIME, HUMAN_HEALTH, MAX_AP, FIRE_AP, HEAL_AP,
-    HUMAN_SIZE)
+    RESURECTION_TIME, HEAL_TIME, HUMAN_HEALTH, MAX_AP, FIRE_AP, HEAL_AP)
+from utils import generate_temp_password, generate_id, generate_token
 from .weapons import Weapon
 from .armors import Armor
 from ..assets.sprites import sprite_proto
@@ -30,6 +30,7 @@ class UserModel(object):
                  id,
                  username,
                  password,
+                 token,
                  x=16,
                  y=16,
                  speed=(2, 2),
@@ -42,14 +43,15 @@ class UserModel(object):
                  scores=0,
                  AP=10,
                  *args, **kwargs):
-        self._update(id, x, y, speed, action, direction, armor, weapon,
-                     health, extra_data, scores, AP, *args, **kwargs)
+        self.id = id
         self.username = username
         self.password = password
+        self.token = token
+        self._update(x, y, speed, action, direction, armor, weapon,
+                     health, extra_data, scores, AP, *args, **kwargs)
 
-    def _update(self, id, x, y, speed, action, direction, armor, weapon,
+    def _update(self, x, y, speed, action, direction, armor, weapon,
                 health, extra_data, scores, AP, *args, **kwargs):
-        self.id = id
         self.speed = speed
         self.x = x
         self.y = y
@@ -97,13 +99,40 @@ class UserModel(object):
         users = redis_db.hgetall('users')
         if to_obj:
             return (cls(**json.loads(user)) for user in users.itervalues())
-        return users
+        return (json.loads(user) for user in users.itervalues())
 
     @classmethod
     def get_users_map(cls):
-        return cls.all(False)
+        return redis_db.hgetall('users')
 
     def to_dict(self):
+        return {
+            'id': self.id,
+            'username': self.username,
+            'password': self.password,
+            'token': self.token,
+            'x': self.x,
+            'y': self.y,
+            'width': self.width,
+            'height': self.height,
+            'speed': self.speed,
+            'pivot': self.pivot,
+            'action': self.action,
+            'direction': self.direction,
+            'armor': self.armor.name,
+            'weapon': self.weapon.name,
+            'health': self.health,
+            'operations_blocked': self.operations_blocked,
+            'animation': self.animation,
+            'extra_data': self.extra_data,
+            'updated_at': time.time(),
+            'scores': self.scores,
+            'max_health': self.max_health,
+            'operations': self.operations,
+            'AP': self.AP
+        }
+
+    def cmd_dict(self):
         return {
             'id': self.id,
             'username': self.username,
@@ -161,22 +190,19 @@ class UserModel(object):
     def is_dead(self):
         return bool(self.health <= 0)
 
-    @staticmethod
-    def generate_id():
-        return redis_db.incr('users:uids')
+    def put_on_map(self):
+        spatial_hash.insert_object_for_point(self.pivot, self)
 
     @classmethod
     def create(cls, **kwargs):
-        from utils import generate_temp_password
-        username = kwargs.get('username', 'TestUsername')
-        password = kwargs.get('password', 'TestPass')
+        username = kwargs['username']
+        password = kwargs['password']
         user = cls(
-            id=cls.generate_id(),
+            id=generate_id(),
+            token=generate_token(),
             username=username,
             password=generate_temp_password(password))
-        spatial_hash.insert_object_for_point(user.pivot, user)
         user.save()
-        print('Init %s' % user.id)
         return user
 
     def remove(self):
@@ -186,7 +212,7 @@ class UserModel(object):
             self.update()
             spatial_hash.remove_obj_by_point(self.pivot, self)
             del self
-            UserModel.delete(user_id)
+            # UserModel.delete(user_id)
         except KeyError:
             user_id = None
 

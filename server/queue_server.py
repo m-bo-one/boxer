@@ -6,7 +6,7 @@ import time
 import logging
 
 from conf import settings
-from utils import setup_logging, generate_temp_password, check_temp_password
+from utils import setup_logging, check_temp_password
 
 from app.models import UserModel
 
@@ -15,12 +15,12 @@ class EventDispatcherZMQ(object):
 
     def __init__(self):
         self._context = zmq.Context()
-        self.socket = self._context.socket(zmq.PAIR)
+        self.socket = self._context.socket(zmq.REP)
         logging.info('ZMQ: Binding address (%s, %s)', *settings.ZMQ_ADDRESS)
         self.socket.bind("tcp://%s:%s" % settings.ZMQ_ADDRESS)
 
     def start(self):
-        logging.info('ZMQ: Server PAIR starting...')
+        logging.info('ZMQ: Server REP starting...')
         gevent.spawn(self._run).join()
 
     def _run(self):
@@ -42,27 +42,30 @@ class EventDispatcherZMQ(object):
 
         if len(username) < 4:
             self.send('login',
-                      {'status': 'fail',
+                      {'status': 'error',
                        'message': 'Username must be not less than 4 symbols.'})
             return
 
         if len(password) < 8:
             self.send('login',
-                      {'status': 'fail',
+                      {'status': 'error',
                        'message': 'Password must be not less than 8 symbols.'})
             return
 
         try:
             user = filter(lambda user: user['username'] == username,
                           UserModel.all(to_obj=False))[0]
-            if not check_temp_password(password, user.password):
-                self.send('login', {'status': 'fail',
-                                    'message': 'Passwords not equal'})
+            if not check_temp_password(password, user['password']):
+                self.send('login', {'status': 'error',
+                                    'message': 'Invalid password'})
                 return
         except IndexError:
-            user = UserModel.create(password=generate_temp_password(password))
+            user = UserModel.create(username=username, password=password) \
+                .to_dict()
 
-        self.send('login', {'status': 'ok', 'uid': user.id})
+        self.send('login',
+                  {'status': 'ok', 'message': 'success', 'data':
+                   {'uid': user['id'], 'token': user['token']}})
 
 
 if __name__ == '__main__':

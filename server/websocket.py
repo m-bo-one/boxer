@@ -67,7 +67,6 @@ class GameApplication(WebSocketApplication):
 
     def on_open(self):
         logging.debug("Connection opened")
-        getattr(self, 'register_user')({})
 
     def on_message(self, message):
         if message:
@@ -88,16 +87,18 @@ class GameApplication(WebSocketApplication):
         user.heal()
 
     def register_user(self, message):
-        self.user = UserModel.create()
+        self.user = UserModel.get(uid=message['uid'], token=message['token'])
+        if not self.user:
+            logging.info('User not found: uid - %s, token - %s',
+                         message['uid'], message['token'])
+            return
         local_db.setdefault('users', set())
         local_db['users'].add(self.user)
         self.broadcast(self, 'register_user', self.user.to_dict())
 
     def unregister_user(self, message):
-        user = self.get_user_from_ws()
-        if not user:
-            return
-        user_id = user.remove()
+        self.user.update()
+        user_id = self.user.remove()
         if user_id is not None:
             self._g_cleaner(self.ws.handler.active_client)
             main_queue.put_nowait(user_id)
@@ -137,7 +138,7 @@ def main_ticker(server):
 
 if __name__ == '__main__':
     try:
-        UserModel.delete()
+        # UserModel.delete()
         setup_logging()
         logging.info('Starting server...\n')
         server = WebSocketServer(

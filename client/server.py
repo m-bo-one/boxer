@@ -40,30 +40,21 @@ class BaseHttpRunner(object):
 
     def _connect_zmq(self):
         self._context = zmq.Context()
-        self.zmq_socket = self._context.socket(zmq.PAIR)
+        self.zmq_socket = self._context.socket(zmq.REQ)
         logging.info('ZMQ: Binding address (%s, %s)', *settings.ZMQ_ADDRESS)
         self.zmq_socket.connect("tcp://%s:%s" % settings.ZMQ_ADDRESS)
-        logging.info('ZMQ: Client PAIR starting...')
-        self._pool.spawn(self._zmq_run)
 
-    def _zmq_send(self, type, data):
-        self.zmq_socket.send_json({
+    def _zmq_request(self, type, data):
+        return {
             'type': type,
             'time': time.time(),
             'data': data
-        })
+        }
 
-    def _zmq_run(self):
-        def _callback(msg):
-            return msg
-        while True:
-            msg = self.zmq_socket.recv_json()
-            logging.info('ZMQ: received msg - %s', msg)
-            self.evt.once(msg['type'], _callback)
-            self.evt.emit(msg['type'], msg['data'])
-
-    def wait_zmq(self, event, timeout=None, raises=False):
-        return self.evt.wait_event(event, timeout, raises)
+    def _zmq_response(self, request):
+        self.zmq_socket.send_json(request)
+        resp = self.zmq_socket.recv_json()
+        return resp['data']
 
     def template_with_context(self, template_name, **extra):
         context = {
@@ -138,20 +129,24 @@ class BaseHttpRunner(object):
         return self.template_with_context('index.html')
 
     def api_login(self):
-        try:
-            self._zmq_send('login', self.request.json)
-            result = self.wait_zmq('login', timeout=5)
-        except Exception as e:
-            logging.error('API: %s', e)
+        request = self._zmq_request('login', self.request.json)
+        result = self._zmq_response(request)
+        if not result:
             return self.json_response({
                 'status': 'error',
-                'message': 'Unexpected error: %s' % e.message
+                'message': 'Server error'
             }, 500)
-        return self.json_response({
-            'status': 'ok',
-            'message': 'Succeed',
-            'data': result[0]
-        })
+        elif result['status'] == 'error':
+            return self.json_response({
+                'status': 'error',
+                'message': result['message']
+            }, 400)
+        elif result['status'] == 'ok':
+            return self.json_response({
+                'status': 'ok',
+                'message': result['message'],
+                'data': result['data']
+            })
 
     def run_forever(self):
         """Start gevent server here

@@ -27,7 +27,7 @@ var app = app || {};
     }
 
     var onPreloadComplete = function(evt) {
-        Stream.init(app);
+        // Stream.init(app);
         createjs.Sound.muted = true;
 
         app.stage.addChildAt(app.baseImages['map'], 0);

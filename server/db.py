@@ -24,7 +24,10 @@ class DBClient(object):
         except KeyError:
             logging.info('Perform new connection to %s', name)
             if name == 'redis':
-                redis.connection.socket = gevent.socket
+                try:
+                    redis.connection.socket = gevent.socket
+                except Exception:
+                    pass
                 pool = redis.ConnectionPool.from_url(
                     url='redis://127.0.0.1:6379?db=0',
                     max_connections=self.max_connections)

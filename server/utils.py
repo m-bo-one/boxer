@@ -2,6 +2,8 @@ import os
 import sys
 import hashlib
 import logging.config
+import uuid
+import time
 
 import yaml
 import gevent
@@ -9,10 +11,19 @@ import gevent
 from PIL import Image
 
 from conf import settings
+from db import redis_db
 
 
 PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] == 3
+
+
+def generate_id():
+    return redis_db.incr('users:uids')
+
+
+def generate_token():
+    return hashlib.md5(uuid.uuid4().hex + str(time.time())).hexdigest()
 
 
 def generate_temp_password(password, secret_key=settings.SECRET_KEY):

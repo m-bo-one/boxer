@@ -22,12 +22,16 @@ tmux bind-key -n C-y run "xclip -o | tmux load-buffer - ; tmux paste-buffer"
 
 tmux split-window -d -t 0 -v
 tmux split-window -d -t 1 -h
+tmux split-window -d -t 0 -h
+
+# zmq pair
+tmux send-keys -t 1 $SERVER_ENV_DIR'/bin/python '$SERVER_DIR'/queue_server.py' enter
 
 # client
-tmux send-keys -t 1 $CLIENT_ENV_DIR'/bin/python '$CLIENT_DIR'/server.py' enter
+tmux send-keys -t 0 $CLIENT_ENV_DIR'/bin/python '$CLIENT_DIR'/server.py' enter
 
 # websocket
-tmux send-keys -t 2 $SERVER_ENV_DIR'/bin/python '$SERVER_DIR'/websocket.py' enter
+tmux send-keys -t 3 $SERVER_ENV_DIR'/bin/python '$SERVER_DIR'/websocket.py' enter
 
 tmux select-pane -t 0
 
