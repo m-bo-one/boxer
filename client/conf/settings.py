@@ -3,10 +3,10 @@ import os
 DEBUG = True
 TEMPLATE_DEBUG = False
 
+PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+
 SITE_ADDRESS = ('0.0.0.0', 8080)
 ZMQ_ADDRESS = ('127.0.0.1', 5560)
-
-PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 CLIENT_PATH = os.path.join(PROJECT_PATH, 'client')
 

@@ -38,20 +38,19 @@ Stream.init = function() {
         ws.on('users_map', function(data) {
             if (app.hud) app.hud.trigger('updateOnline', data.count);
 
-            for (var user_id in data.users.update) {
-                user_id = parseInt(user_id, 0);
+            for (var j = 0; j < data.users.update.length; j++) {
+                var charId = data.users.update[j].id;
+                var updateData = data.users.update[j];
 
-                var updateData = data.users.update[user_id];
-                updateData = (typeof updateData === 'string') ? JSON.parse(updateData) : updateData;
-                if (app.users.hasOwnProperty(user_id)) {
-                    app.users[user_id].refreshData(updateData);
+                if (app.users.hasOwnProperty(charId)) {
+                    app.users[charId].refreshData(updateData);
                 } else {
-                    app.users[user_id] = new app.UserModel(updateData);
-                    app.sprites[user_id] = new app.SpriteView({ model: app.users[user_id] });  
+                    app.users[charId] = new app.UserModel(updateData);
+                    app.sprites[charId] = new app.SpriteView({ model: app.users[charId] });  
                 }
             }
             for (var i = 0; i < data.users.remove.length; i++) {
-                var removeId = data.users.remove[0];
+                var removeId = data.users.remove[i];
                 if (app.users.hasOwnProperty(removeId)) {
                     app.sprites[removeId].destroy();
                     app.users[removeId].destroy();

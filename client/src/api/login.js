@@ -25,7 +25,7 @@ var app = app || {};
                 $('.login-error').html(data.message);
                 localStorage.setItem("uid", data.data.uid);
                 localStorage.setItem("token", data.data.token);
-                Stream.init(app);
+                // Stream.init(app);
                 console.log(data);
             }).fail(function(response) {
                 var data = JSON.parse(response.responseText);

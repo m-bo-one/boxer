@@ -41,7 +41,8 @@ class BaseHttpRunner(object):
     def _connect_zmq(self):
         self._context = zmq.Context()
         self.zmq_socket = self._context.socket(zmq.REQ)
-        logging.info('ZMQ: Binding address (%s, %s)', *settings.ZMQ_ADDRESS)
+        logging.info('ZMQ: Conneting to address (%s, %s)',
+                     *settings.ZMQ_ADDRESS)
         self.zmq_socket.connect("tcp://%s:%s" % settings.ZMQ_ADDRESS)
 
     def _zmq_request(self, type, data):
@@ -51,10 +52,13 @@ class BaseHttpRunner(object):
             'data': data
         }
 
-    def _zmq_response(self, request):
-        self.zmq_socket.send_json(request)
-        resp = self.zmq_socket.recv_json()
-        return resp['data']
+    def _zmq_response(self, req):
+        def _callback(req):
+            self.zmq_socket.send_json(req)
+            resp = self.zmq_socket.recv_json()
+            return resp['data']
+        thread = self._pool.spawn(_callback, req)
+        return thread.get()
 
     def template_with_context(self, template_name, **extra):
         context = {

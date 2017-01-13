@@ -11,7 +11,7 @@ var app = app || {},
             this.x = options.x;
             this.y = options.y;
             this.speed = options.speed;
-            this.username = options.username;
+            this.name = options.name;
             this.action = options.action;
             this.direction = options.direction;
             this.armor = options.armor;
@@ -53,7 +53,7 @@ var app = app || {},
             this._options = options;
             this.x = options.x;
             this.y = options.y;
-            this.username = options.username;
+            this.name = options.name;
             this.detected = options.detected;
             this.updatedAt = options.updated_at;
             this.scores = options.scores;
@@ -62,7 +62,7 @@ var app = app || {},
             this.action = options.action;
             this.direction = options.direction;
 
-            if (options.extra_data.sound_to_play && !this.operationsBlocked) {
+            if (!this.operationsBlocked && options.hasOwnProperty('extra_data') && options.extra_data.sound_to_play) {
                 createjs.Sound.play(options.extra_data.sound_to_play);
             }
             this.operationsBlocked = options.operations_blocked;

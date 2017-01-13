@@ -100,8 +100,8 @@ var app = app || {},
             app.stage.addChild(this.textUsername);
         },
         updateUsername: function() {
-            this.textUsername.text = this.model.username;
-            this.textUsername.x = this.model.x + size / 1.5 - this.model.username.length;
+            this.textUsername.text = this.model.name;
+            this.textUsername.x = this.model.x + size / 1.5 - this.model.name.length;
             this.textUsername.y = this.model.y - size;
         },
         initHP: function() {

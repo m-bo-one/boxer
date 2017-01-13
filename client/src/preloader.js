@@ -34,6 +34,7 @@ var app = app || {};
         $('#conn_status').show();
         $('.login').show();
         $('.cssload-preloader').hide();
+        Stream.init(app);
     }
 
     queue = new createjs.LoadQueue(true);
