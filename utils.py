@@ -49,8 +49,7 @@ def decode_enum(enum_type, search_str):
         return 0
 
 
-def setup_logging(default_path=os.path.join(
-                    settings.PROJECT_PATH, 'logging.yaml'),
+def setup_logging(default_path='logging.yaml',
                   default_level=logging.INFO,
                   env_key='LOG_CFG'):
     """Setup logging configuration

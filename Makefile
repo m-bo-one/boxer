@@ -18,6 +18,7 @@ clean:
 
 .PHONY: run
 run:
+	make clean
 	sh run.sh
 
 stop:

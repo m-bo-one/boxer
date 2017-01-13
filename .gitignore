@@ -6,3 +6,4 @@ __pycache__/
 bower_components/
 static/assets/
 manifest.json
+tmp/

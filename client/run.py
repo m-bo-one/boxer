@@ -16,9 +16,8 @@ import zmq.green as zmq
 import bottle
 
 from eventemitter import EventEmitter
-
-from utils import setup_logging
 from conf import settings
+from utils import setup_logging
 
 
 class BaseHttpRunner(object):

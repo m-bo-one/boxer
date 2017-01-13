@@ -1,19 +1,23 @@
 import os
 
-DEBUG = True
+DEBUG = False
+TEMPLATE_DEBUG = False
+FPS = 60
 
-PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 SERVER_PATH = os.path.join(PROJECT_PATH, 'server')
+CLIENT_PATH = os.path.join(PROJECT_PATH, 'client')
 
 SECRET_KEY = '12ddassdakfji234hf2hfh2iuhfi23hf2'
 
-WEBSOCKET_ADDRESS = ('0.0.0.0', 9999)
+SITE_ADDRESS = ('127.0.0.1', 8080)
+WEBSOCKET_ADDRESS = ('127.0.0.1', 9999)
 ZMQ_ADDRESS = ('127.0.0.1', 5560)
 
-ASSETS_PATH = os.path.join(PROJECT_PATH, 'client/assets')
+ASSETS_PATH = os.path.join(CLIENT_PATH, 'assets')
 ASSETS_URL = '/assets/'
 
-SRC_PATH = os.path.join(PROJECT_PATH, 'client/src')
+SRC_PATH = os.path.join(CLIENT_PATH, 'src')
 SRC_URL = '/src/'
 
 ASSETS_SPRITE_PATH = os.path.join(ASSETS_PATH, 'sprites')
