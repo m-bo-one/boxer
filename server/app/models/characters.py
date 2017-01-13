@@ -20,8 +20,7 @@ from ..colliders import CollisionManager
 
 class CharacterModel(ModelMixin):
 
-    fields = ('id', 'name', 'health', 'weapon', 'armor',
-              'scores', 'inventory', 'AP')
+    fields = ('id', 'name', 'health', 'weapon', 'armor', 'scores', 'inventory')
 
     collision_pipeline = (
         'map_collision',
@@ -30,22 +29,23 @@ class CharacterModel(ModelMixin):
 
     AP_stats = {}
 
-    def __init__(self, id, name, health, weapon, armor, scores, inventory, AP):
-        self.id = id
+    def __init__(self, id, name, health, weapon, armor, scores, inventory):
+        self.id = int(id) if id else None
         self.name = name
-        self.health = health
-        self.weapon = weapon
+        self.health = int(health)
+        self.weapon = Weapon(weapon, self)
         self.armor = Armor(armor, self)
-        self.scores = Weapon(weapon, self)
+        self.scores = int(scores)
         self.inventory = inventory
-        self.AP = AP
+        self.AP = MAX_AP
 
-        self.cm = CollisionManager(self, pipelines=self.collision_pipeline)
         self.operations = []
         self.extra_data = {}
         self.max_health = HUMAN_HEALTH
+        self.speed = [3, 3]
         if self.id:
             self.cmd = CmdModel.get_last_or_create(self.id)
+            self.cm = CollisionManager(self, pipelines=self.collision_pipeline)
 
     @staticmethod
     def model_key():
@@ -57,20 +57,21 @@ class CharacterModel(ModelMixin):
                weapon=WeaponType.NO_WEAPON,
                armor=ArmorType.ENCLAVE_POWER_ARMOR):
         char = cls(id=None, name=name, health=health, weapon=weapon,
-                   armor=armor, scores=0, inventory=[], AP=MAX_AP)
+                   armor=armor, scores=0, inventory=[])
         char.save()
         char.cmd = CmdModel.get_last_or_create(char.id)
+        char.cm = CollisionManager(char, pipelines=char.collision_pipeline)
         return char
 
     def to_dict(self):
-        return {
+        data = {
             'id': self.id,
             'name': self.name,
             'x': self.cmd.x,
             'y': self.cmd.y,
-            'width': self.size.width,
-            'height': self.size.height,
-            'speed': self.cmd.speed,
+            'width': self.width,
+            'height': self.height,
+            'speed': self.speed,
             'pivot': self.pivot,
             'action': self.cmd.action,
             'direction': self.cmd.direction,
@@ -86,6 +87,8 @@ class CharacterModel(ModelMixin):
             'operations': self.operations,
             'AP': self.AP
         }
+        # print(data)
+        return data
 
     @property
     def size(self):
@@ -97,8 +100,8 @@ class CharacterModel(ModelMixin):
     @property
     def pivot(self):
         return {
-            "x": self.cmd.x + self.size.width / 2,
-            "y": (self.cmd.y + 2 * self.size.height / 3 + 10)
+            "x": self.cmd.x + self.size[0] / 2,
+            "y": (self.cmd.y + 2 * self.size[1] / 3 + 10)
         }
 
     @property
@@ -125,7 +128,23 @@ class CharacterModel(ModelMixin):
 
     @property
     def coords(self):
-        return (self.cmd.x, self.cmd.y)
+        return (self.x, self.y)
+
+    @property
+    def x(self):
+        return self.cmd.x
+
+    @property
+    def y(self):
+        return self.cmd.y
+
+    @property
+    def width(self):
+        return self.size[0]
+
+    @property
+    def height(self):
+        return self.size[1]
 
     @property
     def is_full_health(self):
@@ -133,9 +152,10 @@ class CharacterModel(ModelMixin):
 
     def autosave(func):
         def wrapper(self, *args, **kwargs):
-            result = func(self, *args, **kwargs)
-            self.cmd = CmdModel.create(self.cmd.x, self.cmd.y,
-                                       self.cmd.action, self.cmd.direction)
+            with self.cm.obj_update():
+                result = func(self, *args, **kwargs)
+                self.cmd = CmdModel.create(self.id, self.cmd.x, self.cmd.y,
+                                           self.cmd.action, self.cmd.direction)
             self.save()
             return result
         return wrapper
@@ -345,10 +365,10 @@ class CmdModel(object):
     fields = ('id', 'x', 'y', 'action', 'direction')
 
     def __init__(self, id, character_id, x, y, action, direction):
-        self.id = id
-        self.character_id = character_id
-        self.x = x
-        self.y = y
+        self.id = int(id) if id else None
+        self.character_id = int(character_id)
+        self.x = int(x)
+        self.y = int(y)
         self.action = action
         self.direction = direction
 
@@ -384,8 +404,7 @@ class CmdModel(object):
     def last(cls, character_id):
         cmd = redis_db.lrange('cmd:%s' % character_id, 0, 0)
         if cmd:
-            cmd = cmd[0]
-            return cls(**json.loads(cmd))
+            return cls(character_id=character_id, **json.loads(cmd[0]))
 
     @classmethod
     def get_last_or_create(cls, character_id):

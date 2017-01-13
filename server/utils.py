@@ -11,15 +11,10 @@ import gevent
 from PIL import Image
 
 from conf import settings
-from db import redis_db
 
 
 PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] == 3
-
-
-def generate_id():
-    return redis_db.incr('users:uids')
 
 
 def generate_token():

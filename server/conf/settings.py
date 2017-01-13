@@ -21,3 +21,17 @@ ASSETS_SPRITE_URL = os.path.join(ASSETS_URL, 'sprites/')
 
 ASSETS_SOUND_PATH = os.path.join(ASSETS_PATH, 'sounds')
 ASSETS_SOUND_URL = os.path.join(ASSETS_URL, 'sounds/')
+
+
+DATABASES = {
+    'redis': {
+        'HOST': '127.0.0.1',
+        'PORT': 6379,
+        'NAME': 0
+    },
+    'mongo': {
+        'HOST': '127.0.0.1',
+        'PORT': 27017,
+        'NAME': 'boxer'
+    }
+}

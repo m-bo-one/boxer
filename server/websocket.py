@@ -14,7 +14,7 @@ from geventwebsocket import (
 from conf import settings
 from utils import setup_logging
 from db import local_db
-from app.models import UserModel
+from app.models import CharacterModel
 from app.colliders import spatial_hash
 
 
@@ -28,7 +28,7 @@ class GameApplication(WebSocketApplication):
         user = client.user
         spatial_hash.remove_obj_by_point(user.pivot, user)
         try:
-            local_db['users'].remove(user)
+            local_db['characters'].remove(user)
         except KeyError:
             pass
 
@@ -51,12 +51,6 @@ class GameApplication(WebSocketApplication):
     def user(self):
         return self.ws.handler.active_client.user
 
-    def get_user_from_ws(self):
-        self.user.update()
-        if all([self.user, not self.user.is_dead,
-                not self.user.operations_blocked]):
-            return self.user
-
     @user.setter
     def user(self, obj):
         self.ws.handler.active_client.user = obj
@@ -75,56 +69,38 @@ class GameApplication(WebSocketApplication):
             getattr(self, message['msg_type'])(message)
 
     def player_equip(self, message):
-        user = self.get_user_from_ws()
-        if not user:
-            return
-        user.equip(message['data']['equipment'])
+        self.user.equip(message['data']['equipment'])
 
     def player_heal(self, message):
-        user = self.get_user_from_ws()
-        if not user:
-            return
-        user.heal()
+        self.user.heal()
 
     def register_user(self, message):
-        msg = message['data']
-        self.user = UserModel.get(msg['uid'], token=msg['token'])
-        if not self.user:
-            logging.info('User not found: uid - %s, token - %s',
-                         msg['uid'], msg['token'])
-            return
-        self.user.put_on_map()
-        local_db.setdefault('users', set())
-        local_db['users'].add(self.user)
+        self.user = CharacterModel.create('hello')
+        local_db['characters'].add(self.user)
         self.broadcast(self, 'register_user', self.user.to_dict())
 
     def unregister_user(self, message):
-        self.user.update()
-        user_id = self.user.remove()
-        if user_id is not None:
+        char_id = self.user.id
+        if char_id is not None:
             self._g_cleaner(self.ws.handler.active_client)
-            main_queue.put_nowait(user_id)
+            main_queue.put_nowait(char_id)
 
     def player_move(self, message):
-        user = self.get_user_from_ws()
-        if not user:
-            return
-        user.move(message['data']['action'], message['data']['direction'])
+        self.user.move(message['data']['action'], message['data']['direction'])
 
     def player_shoot(self, message):
-        user = self.get_user_from_ws()
-        if not user:
-            return
-        user.shoot()
+        self.user.shoot()
 
 
 def main_ticker(server):
-
+    local_db.setdefault('characters', set())
     while True:
         gevent.sleep(0.01)
         data = {
             'users': {
-                'update': UserModel.get_users_map(),
+                'update': [
+                    char.to_dict() for char in local_db['characters']
+                ],
                 'remove': []
             },
             'count': len(server.clients),
@@ -140,7 +116,7 @@ def main_ticker(server):
 
 if __name__ == '__main__':
     try:
-        # UserModel.delete()
+        CharacterModel.delete()
         setup_logging()
         logging.info('Starting server...\n')
         server = WebSocketServer(

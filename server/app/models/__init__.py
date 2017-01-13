@@ -16,14 +16,25 @@ class ModelMixin(object):
             ufield = getattr(self, field)
             if hasattr(ufield, 'name'):
                 ufield = ufield.name
-                data[field] = ufield
+            data[field] = ufield
         return redis_db.hmset('%s:%s' % (self.model_key(), self.id), data)
 
     @classmethod
     def get(cls, id):
         data = redis_db.hgetall('%s:%s' % (cls.model_key(), id))
         if data:
+            if not data.get('id'):
+                data['id'] = id
             return cls(**data)
+
+    @classmethod
+    def delete(cls, id=None):
+        if not id:
+            keys = redis_db.keys('%s:*' % cls.model_key())
+            if keys:
+                return redis_db.delete(*keys)
+            return
+        return redis_db.delete('%s:%s' % (cls.model_key(), id))
 
 
 from .users import UserModel

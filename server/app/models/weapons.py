@@ -33,8 +33,8 @@ class WeaponVision(object):
         ]
         center = (user.x + (user.width / 2), user.y + (user.height / 2))
         radius = self.R
-        angle1 = self._get_alphas(user.direction)
-        angle2 = self._get_alphae(user.direction)
+        angle1 = self._get_alphas(user.cmd.direction)
+        angle2 = self._get_alphae(user.cmd.direction)
 
         # logging.debug('Points: %s', points)
         # logging.debug('Width: %s', other.width)
@@ -102,7 +102,7 @@ class Weapon(object):
     def to_dict(self):
         return {
             'name': self.name,
-            'vision': self.get_vision_params(self.user.direction)
+            'vision': self.get_vision_params(self.user.cmd.direction)
         }
 
     def in_vision(self, other):

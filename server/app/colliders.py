@@ -99,6 +99,15 @@ class CollisionManager(object):
         logging.debug(spatial_hash.contents)
         spatial_hash.insert_object_for_point(obj.pivot, obj)
 
+    @contextmanager
+    def obj_update(self):
+        try:
+            spatial_hash.remove_obj_by_point(self.obj.pivot, self.obj)
+        except AttributeError:
+            pass
+        yield
+        spatial_hash.insert_object_for_point(self.obj.pivot, self.obj)
+
     @staticmethod
     def get_random_coords():
         x = random.randint(0, local_db['map_size']['width'] - 100)
