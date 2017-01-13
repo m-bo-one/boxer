@@ -93,6 +93,7 @@ class GameApplication(WebSocketApplication):
             logging.info('User not found: uid - %s, token - %s',
                          msg['uid'], msg['token'])
             return
+        self.user.put_on_map()
         local_db.setdefault('users', set())
         local_db['users'].add(self.user)
         self.broadcast(self, 'register_user', self.user.to_dict())

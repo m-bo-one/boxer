@@ -97,6 +97,7 @@ class CollisionManager(object):
         self.pipelines = (pipelines
                           if isinstance(pipelines, (tuple, list)) else [])
         logging.debug(spatial_hash.contents)
+        spatial_hash.insert_object_for_point(obj.pivot, obj)
 
     @staticmethod
     def get_random_coords():
