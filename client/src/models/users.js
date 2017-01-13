@@ -67,7 +67,7 @@ var app = app || {},
             }
             this.operationsBlocked = options.operations_blocked;
 
-            utils._LOG('Receive update: direction - ' + options.direction + '; action - ' + options.action + '; status - ' + options.status);
+            utils._LOG('Receive update: direction - ' + options.direction + '; action - ' + options.action + ';');
 
             this.vision = options.vision;
             this.prevWeapon = this.weapon;

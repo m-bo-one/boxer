@@ -255,7 +255,7 @@ class CharacterModel(ModelMixin):
         if self.AP > MAX_AP:
             self.AP = MAX_AP
 
-        logging.info("ID: %s- AP: %s" % (self.id, self.AP))
+        logging.info("ID: %s - AP: %s" % (self.id, self.AP))
 
     @autosave
     def got_hit(self, weapon, dmg):
@@ -328,6 +328,8 @@ class CharacterModel(ModelMixin):
 
     @autosave
     def move(self, action, direction):
+        if self.operations_blocked or self.is_dead:
+            return
         way = '_'.join([action, direction])
         logging.info('Current way: %s', way)
         logging.info('Current coords: %s', self.coords)
@@ -404,7 +406,7 @@ class CmdModel(object):
     def last(cls, character_id):
         try:
             cmd = redis_db.lrange('cmd:%s' % character_id, 0, 0)[0]
-            return cls(character_id=character_id, **json.loads(cmd[0]))
+            return cls(character_id=character_id, **json.loads(cmd))
         except IndexError:
             pass
 

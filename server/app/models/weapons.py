@@ -2,7 +2,6 @@ import logging
 import math
 import random
 
-import gevent
 
 from constants import WeaponType
 
@@ -24,34 +23,20 @@ class WeaponVision(object):
         points = [
             (other.x + (other.width / 2), other.y + (other.height / 2)),
             (other.x + (other.width / 2), other.y),
-            # (other.x + other.width, other.y),
-            # (other.x, other.y + (other.height / 2)),
-            # (other.x, other.y + other.height),
             (other.x + (other.width / 2), other.y + other.height),
-            # (other.x + other.width, other.y + other.height),
-            # (other.x + other.width, other.y + (other.height / 2)),
         ]
         center = (user.x + (user.width / 2), user.y + (user.height / 2))
         radius = self.R
         angle1 = self._get_alphas(user.cmd.direction)
         angle2 = self._get_alphae(user.cmd.direction)
 
-        # logging.debug('Points: %s', points)
-        # logging.debug('Width: %s', other.width)
-        # logging.debug('Height: %s', other.height)
+        logging.debug('Points: %s', points)
+        logging.debug('Direction: %s', user.cmd.direction)
+        logging.debug('Width: %s', other.width)
+        logging.debug('Height: %s', other.height)
 
         for point in points:
             rel_point = (point[0] - center[0], point[1] - center[1])
-
-            # logging.debug('--------------')
-            # logging.debug('Search point - x:%s, y:%s' % point)
-            # logging.debug('Radius center - x:%s, y:%s' % center)
-            # logging.debug('Radius length - %s' % radius)
-            # logging.debug('Angle start - %s' % angle1)
-            # logging.debug('Angle end - %s' % angle2)
-            # logging.debug('Point diff - x:%s, y:%s' % rel_point)
-            # logging.debug('--------------')
-
             is_detected = bool(
                 not are_clockwise(center, radius, angle1, rel_point) and
                 are_clockwise(center, radius, angle2, rel_point) and
@@ -62,23 +47,18 @@ class WeaponVision(object):
             return False
 
     def _get_alphas(self, direction):
-        if not hasattr(self, '_alphas'):
-            alpha = self.alpha / 2
-            if direction == 'left':
-                self._alphas = 180 - alpha
-            elif direction == 'right':
-                self._alphas = -alpha
-            elif direction == 'top':
-                self._alphas = -90 - alpha
-            elif direction == 'bottom':
-                self._alphas = 90 - alpha
-
-        return self._alphas
+        alpha = self.alpha / 2
+        if direction == 'left':
+            return 180 - alpha
+        elif direction == 'right':
+            return -alpha
+        elif direction == 'top':
+            return -90 - alpha
+        elif direction == 'bottom':
+            return 90 - alpha
 
     def _get_alphae(self, direction):
-        if not hasattr(self, '_alphae'):
-            self._alphae = self._get_alphas(direction) + self.alpha
-        return self._alphae
+        return self._get_alphas(direction) + self.alpha
 
 
 class Weapon(object):
@@ -99,24 +79,11 @@ class Weapon(object):
             alpha=self.w.SPECTRE
         )
 
-    def to_dict(self):
-        return {
-            'name': self.name,
-            'vision': self.get_vision_params(self.user.cmd.direction)
-        }
-
     def in_vision(self, other):
         return self.vision.in_sector(self.user, other)
 
     def shoot(self, detected):
         return self.w.shoot(detected)
-
-    def get_vision_params(self, direction):
-        return {
-            'radius': self.vision.R,
-            'alphas': self.vision._get_alphas(direction),
-            'alphae': self.vision._get_alphae(direction),
-        }
 
 
 class NoWeapon(object):
