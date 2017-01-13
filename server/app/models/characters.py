@@ -72,8 +72,8 @@ class CharacterModel(ModelMixin):
             'height': self.size.height,
             'speed': self.cmd.speed,
             'pivot': self.pivot,
-            'action': self.action,
-            'direction': self.direction,
+            'action': self.cmd.action,
+            'direction': self.cmd.direction,
             'armor': self.armor.name,
             'weapon': self.weapon.name,
             'health': self.health,
@@ -177,7 +177,7 @@ class CharacterModel(ModelMixin):
             not self.operations_blocked,
             self.AP - FIRE_AP >= 0
         ]):
-            self.action = ActionType.FIRE
+            self.cmd.action = ActionType.FIRE
             self.block_operation('shoot')
             self.use_AP(FIRE_AP)
             self.extra_data['sound_to_play'] = self.weapon.w.SOUNDS['fire']
@@ -264,7 +264,7 @@ class CharacterModel(ModelMixin):
                 self.health += random.randrange(10, 20, 1)
                 logging.info('Health before heal: %s', self.health)
 
-                self.action = ActionType.HEAL
+                self.cmd.action = ActionType.HEAL
                 self.block_operation('heal')
                 self.use_AP(HEAL_AP)
 
@@ -278,7 +278,7 @@ class CharacterModel(ModelMixin):
     def kill(self):
         CharacterModel._kill_AP_threads(self.id)
         death_actions = [ActionType.DEATH_FROM_ABOVE]
-        self.action = random.choice(death_actions)
+        self.cmd.action = random.choice(death_actions)
         self.extra_data['resurection_time'] = RESURECTION_TIME
 
         self._delayed_command(RESURECTION_TIME, 'resurect')
@@ -291,10 +291,10 @@ class CharacterModel(ModelMixin):
     def resurect(self):
         self.health = self.max_health
         self.weapon = Weapon(WeaponType.NO_WEAPON, self)
-        self.x = random.randint(0, 1280 - 100)
-        self.y = random.randint(0, 768 - 100)
-        self.action = ActionType.IDLE
-        self.direction = DirectionType.LEFT
+        self.cmd.x = random.randint(0, 1280 - 100)
+        self.cmd.y = random.randint(0, 768 - 100)
+        self.cmd.action = ActionType.IDLE
+        self.cmd.direction = DirectionType.LEFT
         self.AP = MAX_AP
 
         try:
@@ -304,7 +304,7 @@ class CharacterModel(ModelMixin):
 
     @autosave
     def stop(self):
-        self.move('idle', self.direction)
+        self.move('idle', self.cmd.direction)
 
     @autosave
     def move(self, action, direction):
@@ -314,30 +314,30 @@ class CharacterModel(ModelMixin):
 
         x, y = self.coords
 
-        self.action = action
-        self.direction = direction
+        self.cmd.action = action
+        self.cmd.direction = direction
 
         logging.info('\n'
                      'Direction: %s\n'
                      'Action: %s\n'
                      'Weapon: %s\n',
-                     self.direction, self.action, self.weapon.name)
+                     self.cmd.direction, self.cmd.action, self.weapon.name)
 
         if way == 'walk_top':
-            self.y -= self.speed[1]
+            self.cmd.y -= self.speed[1]
 
         elif way == 'walk_bottom':
-            self.y += self.speed[1]
+            self.cmd.y += self.speed[1]
 
         elif way == 'walk_right':
-            self.x += self.speed[0]
+            self.cmd.x += self.speed[0]
 
         elif way == 'walk_left':
-            self.x -= self.speed[0]
+            self.cmd.x -= self.speed[0]
 
         if self.cm.is_collide:
-            self.x = x
-            self.y = y
+            self.cmd.x = x
+            self.cmd.y = y
 
 
 class CmdModel(object):
