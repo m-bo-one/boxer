@@ -11,7 +11,7 @@ from db import redis_db, local_db
 from constants import (
     ActionType, DirectionType, WeaponType, ArmorType,
     RESURECTION_TIME, HEAL_TIME, HUMAN_HEALTH, MAX_AP, FIRE_AP, HEAL_AP)
-from . import ModelMixin
+from . import RedisModelMixin as ModelMixin
 from .weapons import Weapon
 from .armors import Armor
 from ..assets.sprites import sprite_proto
@@ -402,9 +402,19 @@ class CmdModel(object):
 
     @classmethod
     def last(cls, character_id):
-        cmd = redis_db.lrange('cmd:%s' % character_id, 0, 0)
-        if cmd:
+        try:
+            cmd = redis_db.lrange('cmd:%s' % character_id, 0, 0)[0]
             return cls(character_id=character_id, **json.loads(cmd[0]))
+        except IndexError:
+            pass
+
+    @classmethod
+    def delete(cls):
+        keys = redis_db.keys('cmd:*')
+        for key in keys:
+            if key == 'ids':
+                continue
+            redis_db.delete(key)
 
     @classmethod
     def get_last_or_create(cls, character_id):

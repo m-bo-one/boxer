@@ -6,7 +6,7 @@ import time
 import logging
 
 from conf import settings
-from utils import setup_logging, check_temp_password
+from utils import setup_logging
 
 from app.models import UserModel
 
@@ -52,20 +52,24 @@ class EventDispatcherZMQ(object):
                        'message': 'Password must be not less than 8 symbols.'})
             return
 
+        logging.info('ZMQ: Got password - %s' % password)
         try:
-            user = filter(lambda user: user['username'] == username,
-                          UserModel.all(to_obj=False))[0]
-            if not check_temp_password(password, user['password']):
+            user = filter(lambda user: user.username == username,
+                          UserModel.all())[0]
+            logging.info('ZMQ: User password - %s' % user.password)
+            if not user.check_password(password):
                 self.send('login', {'status': 'error',
                                     'message': 'Invalid password'})
                 return
         except IndexError:
-            user = UserModel.create(username=username, password=password) \
-                .to_dict()
+            user = UserModel(username=username)
+            user.hash_password(password)
+            user.save()
+            logging.info('ZMQ: User hased password as - %s' % user.password)
 
         self.send('login',
-                  {'status': 'ok', 'message': 'success', 'data':
-                   {'uid': user['id'], 'token': user['token']}})
+                  {'status': 'ok', 'message': 'success',
+                   'data': user.to_dict()})
 
 
 if __name__ == '__main__':
