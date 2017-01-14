@@ -39,31 +39,6 @@ class GameApplication(WebSocketApplication):
             GameApplication._g_cleaner(self.user)
             logging.error(e)
 
-    # def broadcast_all(self, msg_type, data):
-    #     for client in self.ws.handler.server.clients.values():
-    #         GameApplication.broadcast(client, msg_type, data)
-
-    # @property
-    # def user(self):
-    #     return self.ws.handler.active_client.user
-
-    # @user.setter
-    # def user(self, obj):
-    #     self.ws.handler.active_client.user = obj
-
-    # @user.deleter
-    # def user(self, obj):
-    #     del self.ws.handler.active_client.user
-
-    # def update_state(self):
-    #     self.broadcast('users_map', {
-    #         'users': {
-    #             'update': [
-    #                 char.to_dict() for char in local_db['characters']],
-    #             'remove': []
-    #         }
-    #     })
-
     def on_open(self):
         local_db.setdefault('characters', set())
         logging.debug("Connection opened")
@@ -101,9 +76,11 @@ class GameApplication(WebSocketApplication):
 
 def main_ticker(server):
     local_db.setdefault('characters', set())
+    # counter = 0
     while True:
         gevent.sleep(0.01)
-        print('--------')
+        # print(counter)
+        # counter += 1
         data = {
             'users': {
                 'update': [

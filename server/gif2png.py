@@ -83,12 +83,12 @@ def main():
             counter = 0
             while 1:
                 im.seek(im.tell()+1)
-                pixdata = im.load()
+                # pixdata = im.load()
 
-                for y in range(im.size[1]):
-                    for x in range(im.size[0]):
-                        if pixdata[x, y] == (255, 255, 255, 255):
-                            pixdata[x, y] = (255, 255, 255, 0)
+                # for y in range(im.size[1]):
+                #     for x in range(im.size[0]):
+                #         if pixdata[x, y] == (255, 255, 255, 255):
+                #             pixdata[x, y] = (255, 255, 255, 0)
                 im.save(
                     os.path.join(fpath, '%s_%s.png' % (key, counter)), 'PNG')
                 counter += 1

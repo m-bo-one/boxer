@@ -100,7 +100,7 @@ var app = app || {},
         },
         updateUsername: function() {
             this.textUsername.text = this.model.name;
-            this.textUsername.x = this.model.x + size / 1.5 - this.model.name.length;
+            this.textUsername.x = this.model.x + 2 * this.model.name.length;
             this.textUsername.y = this.model.y - size;
         },
         initHP: function() {

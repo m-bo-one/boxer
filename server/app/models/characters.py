@@ -55,7 +55,11 @@ class CharacterModel(ModelMixin):
     def create(cls, name,
                health=100,
                weapon=const.Weapon.Heavy,
-               armor=const.Armor.GhoulArmour):
+               armor='random'):
+        if armor == 'random':
+            armor = random.choice([const.Armor.MutantArmour,
+                                   const.Armor.GhoulArmour,
+                                   const.Armor.Mutant])
         char = cls(id=None, name=name, health=health, weapon=weapon,
                    armor=armor, scores=0, inventory=[])
         char.save()
@@ -211,8 +215,8 @@ class CharacterModel(ModelMixin):
         ]):
             self.cmd.action = const.Action.Attack
             self.block_operation('shoot')
-            # self.use_AP(const.FIRE_AP)
-            # self.extra_data['sound_to_play'] = self.weapon.w.SOUNDS['fire']
+            self.use_AP(const.FIRE_AP)
+            self.extra_data['sound_to_play'] = self.weapon.w.SOUNDS['fire']
 
             # detected = [other for other in local_db['characters']
             #             if other.id != self.id and not
@@ -223,7 +227,7 @@ class CharacterModel(ModelMixin):
             #     self.weapon.shoot(detected)
 
             self._delayed_command(self.weapon.w.SHOOT_TIME, 'stop')
-            # self._delayed_command(1, 'restore_AP')
+            self._delayed_command(1, 'restore_AP')
 
     @property
     def weapon_in_hands(self):

@@ -59,7 +59,9 @@ var app = app || {},
             this.direction = options.direction;
 
             if (!this.operationsBlocked && options.hasOwnProperty('extra_data') && options.extra_data.sound_to_play) {
-                createjs.Sound.play(options.extra_data.sound_to_play);
+                setTimeout(function() {
+                    createjs.Sound.play(options.extra_data.sound_to_play);
+                }, 200);
             }
             this.operationsBlocked = options.operations_blocked;
 
