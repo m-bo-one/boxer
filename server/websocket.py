@@ -15,7 +15,7 @@ from conf import settings
 from utils import setup_logging
 from db import local_db
 from app.models import CharacterModel
-from app.colliders import spatial_hash
+from app.engine.colliders import spatial_hash
 
 
 main_queue = Queue()

@@ -17,6 +17,11 @@ PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] == 3
 
 
+def get_files_from_dir(path):
+    return [f for f in os.listdir(path)
+            if os.path.isfile(os.path.join(path, f))]
+
+
 def enum_names(enum, ignore=None):
     if ignore is None:
         ignore = []

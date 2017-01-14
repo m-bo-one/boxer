@@ -93,11 +93,11 @@ var app = app || {},
             });
         },
         shoot: function () {
-            if (this.operationsBlocked || !this.equipedByWeapon() || this.AP < 4) return;
+            if (this.operationsBlocked || !this.equipedByWeapon() || this.AP < 5) return;
             Stream.send('player_shoot');
         },
         heal: function () {
-            if (this.operationsBlocked || this.isDead() || this.isFullHealth()  || this.AP < 3) return;
+            if (this.operationsBlocked || this.isDead() || this.isFullHealth()  || this.AP < 4) return;
             Stream.send('player_heal');
         },
         stop: function() {

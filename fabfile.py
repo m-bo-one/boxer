@@ -1,8 +1,49 @@
 import os
 import json
+from itertools import chain
 
 
 from conf import settings
+from utils import get_files_from_dir
+
+
+def build_manifest():
+    manifest_path = os.path.join(settings.ASSETS_PATH, 'manifest.json')
+
+    def _image_builder():
+        jsons = (fname for fname in get_files_from_dir(
+                 settings.ASSETS_PATH) if '.png' in fname)
+        return ({
+            "id": fname.split('.')[0],
+            "type": "image",
+            "src": fname
+        } for fname in jsons)
+
+    def _spritesheet_builder():
+        jsons = (fname for fname in get_files_from_dir(
+                 settings.ASSETS_SPRITE_PATH) if '.json' in fname)
+        return ({
+            "id": fname.split('.')[0],
+            "type": "spritesheet",
+            "src": "sprites/%s" % fname
+        } for fname in jsons)
+
+    def _sound_builder():
+        jsons = (fname for fname in get_files_from_dir(
+                 settings.ASSETS_SOUND_PATH) if '.ogg' in fname)
+        return ({
+            "id": fname.split('.')[0],
+            "type": "sound",
+            "src": "sounds/%s" % fname
+        } for fname in jsons)
+
+    with open(manifest_path, 'w') as manifest:
+        json.dump({
+            "path": settings.ASSETS_URL,
+            "manifest": [data for data in chain(_spritesheet_builder(),
+                                                _sound_builder(),
+                                                _image_builder())]
+        }, manifest, indent=4)
 
 
 def update_asset_meta(fpath, speed=0.3):
@@ -19,11 +60,6 @@ def gif2png(folder_path):
     from gevent import monkey; monkey.patch_all()  # noqa
     import gevent
     from PIL import Image
-
-    def get_files_from_dir(path):
-        from os import listdir
-        from os.path import isfile, join
-        return [f for f in listdir(path) if isfile(join(path, f))]
 
     threads = []
     # files = get_files_from_dir(folder_path)

@@ -106,10 +106,11 @@ class Heavy(object):
     CRIT_CHANCE = 15  # persent
     CRIT_MULTIPLIER = 3
     SHOOT_TIME = 1
-    SOUNDS = {
-        'fire': 'm60-fire'
-    }
     CHARGE_TYPE = 'bullet'
+
+    @property
+    def SOUND(self):
+        return random.choice(['fire', 'fire2', 'fire3'])
 
     @property
     def damage(self):

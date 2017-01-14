@@ -7,13 +7,12 @@ import time
 
 import gevent
 
-from db import redis_db, local_db
+from db import redis_db
 import constants as const
 from .mixins import RedisModelMixin as ModelMixin, field_extractor
 from .weapons import Weapon
 from .armors import Armor
-from ..assets.sprites import sprite_proto
-from ..colliders import CollisionManager
+from ..engine.colliders import CollisionManager
 
 
 class CharacterModel(ModelMixin):
@@ -216,7 +215,7 @@ class CharacterModel(ModelMixin):
             self.cmd.action = const.Action.Attack
             self.block_operation('shoot')
             self.use_AP(const.FIRE_AP)
-            self.extra_data['sound_to_play'] = self.weapon.w.SOUNDS['fire']
+            self.extra_data['sound_to_play'] = self.weapon.w.SOUND
 
             # detected = [other for other in local_db['characters']
             #             if other.id != self.id and not
