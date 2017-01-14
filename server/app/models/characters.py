@@ -8,9 +8,8 @@ import time
 import gevent
 
 from db import redis_db, local_db
-from constants import (
-    ActionType, DirectionType, WeaponType, ArmorType,
-    RESURECTION_TIME, HEAL_TIME, HUMAN_HEALTH, MAX_AP, FIRE_AP, HEAL_AP)
+from utils import field_extractor
+import constants as const
 from . import RedisModelMixin as ModelMixin
 from .weapons import Weapon
 from .armors import Armor
@@ -20,7 +19,8 @@ from ..colliders import CollisionManager
 
 class CharacterModel(ModelMixin):
 
-    fields = ('id', 'name', 'health', 'weapon', 'armor', 'scores', 'inventory')
+    fields = ('id', 'name', 'health', 'weapon.name.value',
+              'armor.name.value', 'scores', 'inventory')
 
     collision_pipeline = (
         'map_collision',
@@ -37,11 +37,11 @@ class CharacterModel(ModelMixin):
         self.armor = Armor(armor, self)
         self.scores = int(scores)
         self.inventory = inventory
-        self.AP = MAX_AP
+        self.AP = const.MAX_AP
 
         self.operations = []
         self.extra_data = {}
-        self.max_health = HUMAN_HEALTH
+        self.max_health = const.HUMAN_HEALTH
         self.speed = [3, 3]
         if self.id:
             self.cmd = CmdModel.get_last_or_create(self.id)
@@ -54,8 +54,8 @@ class CharacterModel(ModelMixin):
     @classmethod
     def create(cls, name,
                health=100,
-               weapon=WeaponType.NO_WEAPON,
-               armor=ArmorType.ENCLAVE_POWER_ARMOR):
+               weapon=const.Weapon.Heavy,
+               armor=const.Armor.GhoulArmour):
         char = cls(id=None, name=name, health=health, weapon=weapon,
                    armor=armor, scores=0, inventory=[])
         char.save()
@@ -148,7 +148,7 @@ class CharacterModel(ModelMixin):
 
     @property
     def is_full_health(self):
-        return self.health == HUMAN_HEALTH
+        return self.health == const.HUMAN_HEALTH
 
     def autosave(func):
         def wrapper(self, *args, **kwargs):
@@ -172,7 +172,7 @@ class CharacterModel(ModelMixin):
                 if operation['type'] == 'shoot':
                     block_for = self.weapon.w.SHOOT_TIME
                 elif operation['type'] == 'heal':
-                    block_for = HEAL_TIME
+                    block_for = const.HEAL_TIME
                 if ct - operation['blocked_at'] <= block_for:
                     return True
                 else:
@@ -195,11 +195,11 @@ class CharacterModel(ModelMixin):
         if all([
             self.weapon_in_hands,
             not self.operations_blocked,
-            self.AP - FIRE_AP >= 0
+            self.AP - const.FIRE_AP >= 0
         ]):
-            self.cmd.action = ActionType.FIRE
+            self.cmd.action = int(const.BaseAction.Attack)
             self.block_operation('shoot')
-            self.use_AP(FIRE_AP)
+            self.use_AP(const.FIRE_AP)
             self.extra_data['sound_to_play'] = self.weapon.w.SOUNDS['fire']
 
             detected = [other for other in local_db['characters']
@@ -215,19 +215,19 @@ class CharacterModel(ModelMixin):
 
     @property
     def weapon_in_hands(self):
-        return self.weapon.name != WeaponType.NO_WEAPON
+        return self.weapon.name != const.Weapon.Unarmed
 
     @autosave
     def equip(self, type):
         logging.info('Current weapon: %s', self.weapon.name)
 
         if type == 'weapon' and self.weapon_in_hands:
-            self.weapon = Weapon(WeaponType.NO_WEAPON, self)
+            self.weapon = Weapon(const.Weapon.Unarmed, self)
         elif type == 'weapon':
-            self.weapon = Weapon(WeaponType.M60, self)
+            self.weapon = Weapon(const.Weapon.Heavy, self)
 
         if type == 'armor':
-            self.armor = Armor(WeaponType.ENCLAVE_POWER_ARMOR, self)
+            self.armor = Armor(const.Armor.GhoulArmour, self)
 
     def use_AP(self, p):
         self.AP -= p
@@ -237,7 +237,7 @@ class CharacterModel(ModelMixin):
     def restore_AP(self):
         x = 0
         CharacterModel._kill_AP_threads(self.id)
-        for _ in range(MAX_AP - self.AP):
+        for _ in range(const.MAX_AP - self.AP):
             thread = self._delayed_command(x, 'incr_AP')
             self.AP_stats[self.id].append(thread)
             x += 1
@@ -252,8 +252,8 @@ class CharacterModel(ModelMixin):
     @autosave
     def incr_AP(self):
         self.AP += 1
-        if self.AP > MAX_AP:
-            self.AP = MAX_AP
+        if self.AP > const.MAX_AP:
+            self.AP = const.MAX_AP
 
         logging.info("ID: %s - AP: %s" % (self.id, self.AP))
 
@@ -273,7 +273,7 @@ class CharacterModel(ModelMixin):
         if all([
             not self.is_full_health,
             not self.operations_blocked,
-            self.AP - HEAL_AP >= 0
+            self.AP - const.HEAL_AP >= 0
         ]):
             if target is not None and target != self:
                 raise NotImplementedError()
@@ -284,24 +284,24 @@ class CharacterModel(ModelMixin):
                 self.health += random.randrange(10, 20, 1)
                 logging.info('Health before heal: %s', self.health)
 
-                self.cmd.action = ActionType.HEAL
+                self.cmd.action = const.Action.Heal
                 self.block_operation('heal')
-                self.use_AP(HEAL_AP)
+                self.use_AP(const.HEAL_AP)
 
                 if self.health > self.max_health:
                     self.health = self.max_health
 
-                self._delayed_command(HEAL_TIME, 'stop')
+                self._delayed_command(const.HEAL_TIME, 'stop')
                 self._delayed_command(1, 'restore_AP')
 
     @autosave
     def kill(self):
         CharacterModel._kill_AP_threads(self.id)
-        death_actions = [ActionType.DEATH_FROM_ABOVE]
+        death_actions = [const.DeathAction.Melt]
         self.cmd.action = random.choice(death_actions)
-        self.extra_data['resurection_time'] = RESURECTION_TIME
+        self.extra_data['resurection_time'] = const.RESURECTION_TIME
 
-        self._delayed_command(RESURECTION_TIME, 'resurect')
+        self._delayed_command(const.RESURECTION_TIME, 'resurect')
 
     @autosave
     def update_scores(self):
@@ -310,12 +310,12 @@ class CharacterModel(ModelMixin):
     @autosave
     def resurect(self):
         self.health = self.max_health
-        self.weapon = Weapon(WeaponType.NO_WEAPON, self)
+        self.weapon = Weapon(const.Weapon.Unarmed, self)
         self.cmd.x = random.randint(0, 1280 - 100)
         self.cmd.y = random.randint(0, 768 - 100)
-        self.cmd.action = ActionType.IDLE
-        self.cmd.direction = DirectionType.LEFT
-        self.AP = MAX_AP
+        self.cmd.action = const.Action.Breathe
+        self.cmd.direction = const.Direction.W
+        self.AP = const.MAX_AP
 
         try:
             del self.extra_data['resurection_time']
@@ -336,14 +336,15 @@ class CharacterModel(ModelMixin):
 
         x, y = self.coords
 
-        self.cmd.action = action
-        self.cmd.direction = direction
+        self.cmd.action = const.BaseAction(action)
+        self.cmd.direction = const.Direction(direction)
 
         logging.info('\n'
                      'Direction: %s\n'
                      'Action: %s\n'
                      'Weapon: %s\n',
-                     self.cmd.direction, self.cmd.action, self.weapon.name)
+                     self.cmd.direction, self.cmd.action,
+                     self.weapon.name.value)
 
         if way == 'walk_top':
             self.cmd.y -= self.speed[1]
@@ -364,7 +365,7 @@ class CharacterModel(ModelMixin):
 
 class CmdModel(object):
 
-    fields = ('id', 'x', 'y', 'action', 'direction')
+    fields = ('id', 'x', 'y', 'action.name.value', 'direction.name.value')
 
     def __init__(self, id, character_id, x, y, action, direction):
         self.id = int(id) if id else None
@@ -377,8 +378,8 @@ class CmdModel(object):
     @classmethod
     def create(cls, character_id,
                x=0, y=0,
-               action=ActionType.IDLE,
-               direction=DirectionType.LEFT):
+               action=const.BaseAction.Breathe,
+               direction=const.Direction.W):
         cmd = cls(id=None, character_id=character_id, x=x, y=y,
                   action=action, direction=direction)
         cmd.save()
@@ -394,8 +395,7 @@ class CmdModel(object):
         }
 
     def to_json(self):
-        return json.dumps({
-            field: getattr(self, field) for field in self.fields})
+        return json.dumps(field_extractor(self))
 
     def save(self):
         if not self.id:

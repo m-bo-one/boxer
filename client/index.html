@@ -12,6 +12,11 @@
             var app = app || {};
             app.config = {{ !APP_SETTINGS }};
         </script>
+        <!-- API -->
+        <script type="text/javascript" src="{{ SRC_URL }}api/login.js?updated={{ FILE_VERSION }}"></script>
+        <script type="text/javascript" src="{{ SRC_URL }}api/constants.js?updated={{ FILE_VERSION }}"></script>
+
+        <!-- MAIN -->
         <script type="text/javascript" src="{{ SRC_URL }}helpers.js?updated={{ FILE_VERSION }}"></script>
         <script type="text/javascript" src="{{ SRC_URL }}preloader.js?updated={{ FILE_VERSION }}"></script>
         <script type="text/javascript" src="{{ SRC_URL }}app.js?updated={{ FILE_VERSION }}"></script>
@@ -24,9 +29,6 @@
         <script type="text/javascript" src="{{ SRC_URL }}views/hud.js?updated={{ FILE_VERSION }}"></script>
         <script type="text/javascript" src="{{ SRC_URL }}views/weaponVision.js?updated={{ FILE_VERSION }}"></script>
         <script type="text/javascript" src="{{ SRC_URL }}views/sprites.js?updated={{ FILE_VERSION }}"></script>
-
-        <!-- API -->
-        <script type="text/javascript" src="{{ SRC_URL }}api/login.js?updated={{ FILE_VERSION }}"></script>
     </head>
     <body>
         <div class="cssload-preloader">

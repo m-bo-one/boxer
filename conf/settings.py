@@ -1,7 +1,7 @@
 import os
 
-DEBUG = False
-TEMPLATE_DEBUG = False
+DEBUG = True
+TEMPLATE_DEBUG = True
 FPS = 60
 
 PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))

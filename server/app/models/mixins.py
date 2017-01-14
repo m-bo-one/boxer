@@ -1,6 +1,7 @@
 from bson.objectid import ObjectId
 
 from db import redis_db, mongo_db
+from utils import field_extractor
 
 
 class RedisModelMixin(object):
@@ -13,12 +14,7 @@ class RedisModelMixin(object):
         if not self.id:
             self.id = redis_db.incr('%s:ids' % self.model_key())
 
-        data = {}
-        for field in self.fields:
-            ufield = getattr(self, field)
-            if hasattr(ufield, 'name'):
-                ufield = ufield.name
-            data[field] = ufield
+        data = field_extractor(self)
         return redis_db.hmset('%s:%s' % (self.model_key(), self.id), data)
 
     @classmethod

@@ -1,3 +1,5 @@
+from enum import IntEnum
+
 HEAL_TIME = 1
 RESURECTION_TIME = 5
 HUMAN_HEALTH = 100
@@ -52,3 +54,73 @@ class ArmorType(dict):
     ENCLAVE_POWER_ARMOR = 'enclave_power_armor'
 
     __slots__ = [NO_ARMOR, ENCLAVE_POWER_ARMOR]
+
+
+class Position(IntEnum):
+
+    Crouch = 1
+    Prone = 2
+    Stand = 3
+    Death = 4
+
+
+class Direction(IntEnum):
+
+    N = 1
+    E = 2
+    S = 3
+    W = 4
+
+
+class Armor(IntEnum):
+
+    Ghoul = 1
+    GhoulArmour = 2
+    Mutant = 3
+    MutantArmour = 4
+
+
+class Weapon(IntEnum):
+
+    Unarmed = 1
+    Club = 2
+    Heavy = 3
+    Knife = 4
+    Minigun = 5
+    Pistol = 6
+    Rifle = 7
+    Rocket = 8
+    SMG = 9
+    Spear = 10
+
+
+class BaseAction(IntEnum):
+
+    Breathe = 1
+    Attack = 2
+    DodgeOne = 3
+    DodgeTwo = 4
+    Fallback = 5
+    Fallenback = 6
+    Fallforward = 7
+    Fallenforward = 8
+    Getupback = 9
+    Getupforward = 10
+    Magiclow = 11
+    Magichigh = 11
+    Pickup = 12
+    Recoil = 13
+    Heal = 14
+
+
+class DeathAction(IntEnum):
+
+    Bighole = 1
+    Cutinhalf = 2
+    Electrify = 3
+    ElectrifyOverlay = 4
+    Explode = 5
+    Fire = 6
+    FireOverlay = 7
+    Melt = 8
+    Riddled = 9

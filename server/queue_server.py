@@ -1,5 +1,6 @@
 from gevent import monkey; monkey.patch_all()  # noqa
 
+import re
 import gevent
 import zmq.green as zmq
 import time
@@ -9,6 +10,8 @@ from conf import settings
 from utils import setup_logging
 
 from app.models import UserModel
+from utils import enum_names
+import constants as const
 
 
 class EventDispatcherZMQ(object):
@@ -29,11 +32,15 @@ class EventDispatcherZMQ(object):
             logging.info('ZMQ: received msg - %s', msg)
             getattr(self, msg['type'])(msg['data'])
 
-    def send(self, type, data):
+    def send(self, type, status, message, data=None):
+        if data is None:
+            data = {}
         self.socket.send_json({
             'type': type,
             'time': time.time(),
-            'data': data
+            'data': data,
+            'status': status,
+            'message': message
         })
 
     def login(self, msg):
@@ -41,15 +48,13 @@ class EventDispatcherZMQ(object):
         password = msg.get('password')
 
         if len(username) < 4:
-            self.send('login',
-                      {'status': 'error',
-                       'message': 'Username must be not less than 4 symbols.'})
+            self.send('login', 'error',
+                      'Username must be not less than 4 symbols.')
             return
 
         if len(password) < 8:
-            self.send('login',
-                      {'status': 'error',
-                       'message': 'Password must be not less than 8 symbols.'})
+            self.send('login', 'error',
+                      'Password must be not less than 8 symbols.')
             return
 
         logging.info('ZMQ: Got password - %s' % password)
@@ -58,8 +63,7 @@ class EventDispatcherZMQ(object):
                           UserModel.all())[0]
             logging.info('ZMQ: User password - %s' % user.password)
             if not user.check_password(password):
-                self.send('login', {'status': 'error',
-                                    'message': 'Invalid password'})
+                self.send('login', 'error', 'Invalid password.')
                 return
         except IndexError:
             user = UserModel(username=username)
@@ -67,9 +71,19 @@ class EventDispatcherZMQ(object):
             user.save()
             logging.info('ZMQ: User hased password as - %s' % user.password)
 
-        self.send('login',
-                  {'status': 'ok', 'message': 'success',
-                   'data': user.to_dict()})
+        self.send('login', 'ok', 'Success', user.to_dict())
+
+    def constants(self, msg):
+        resp = {
+            re.search(r'\'(.*?)\'', str(typo)).group(1): {
+                name: getattr(typo, name).value
+                for name in enum_names(typo)
+            } for typo in [
+                const.Armor, const.Weapon, const.Direction,
+                const.Position, const.BaseAction, const.DeathAction
+            ]
+        }
+        self.send('constants', 'ok', 'Success', resp)
 
 
 if __name__ == '__main__':

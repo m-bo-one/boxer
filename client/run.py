@@ -10,12 +10,12 @@ import json
 
 import gevent
 import gevent.pool
+from gevent.pool import Semaphore
 
 import zmq.green as zmq
 
 import bottle
 
-from eventemitter import EventEmitter
 from conf import settings
 from utils import setup_logging
 
@@ -30,7 +30,7 @@ class BaseHttpRunner(object):
         self._host = address[0]
         self._port = address[1]
         self._debug = settings.DEBUG
-        self.evt = EventEmitter()
+        self._lock = Semaphore()
 
         self._connect_zmq()
 
@@ -44,7 +44,9 @@ class BaseHttpRunner(object):
                      *settings.ZMQ_ADDRESS)
         self.zmq_socket.connect("tcp://%s:%s" % settings.ZMQ_ADDRESS)
 
-    def _zmq_request(self, type, data):
+    def _zmq_request(self, type, data=None):
+        if data is None:
+            data = {}
         return {
             'type': type,
             'time': time.time(),
@@ -52,12 +54,9 @@ class BaseHttpRunner(object):
         }
 
     def _zmq_response(self, req):
-        def _callback(req):
+        with self._lock:
             self.zmq_socket.send_json(req)
-            resp = self.zmq_socket.recv_json()
-            return resp['data']
-        thread = self._pool.spawn(_callback, req)
-        return thread.get()
+            return self.zmq_socket.recv_json()
 
     def template_with_context(self, template_name, **extra):
         context = {
@@ -109,6 +108,8 @@ class BaseHttpRunner(object):
 
         self._app.route('/api/login', method='POST',
                         callback=self.api_login)
+        self._app.route('/api/constants', method='GET',
+                        callback=self.api_constants)
 
     def handler_music(self, filename):
         return bottle.static_file(filename,
@@ -131,25 +132,38 @@ class BaseHttpRunner(object):
         """
         return self.template_with_context('index.html')
 
+    def zmq_parse(f):
+        def wrapper(self, *args, **kwargs):
+            result = f(self, *args, **kwargs)
+            status, msg, data = (result['status'], result['message'],
+                                 result['data'])
+            if not status:
+                return self.json_response({
+                    'status': 'error',
+                    'message': 'Server error'
+                }, 500)
+            elif status == 'error':
+                return self.json_response({
+                    'status': 'error',
+                    'message': msg
+                }, 400)
+            elif status == 'ok':
+                return self.json_response({
+                    'status': 'ok',
+                    'message': msg,
+                    'data': data
+                })
+        return wrapper
+
+    @zmq_parse
     def api_login(self):
         request = self._zmq_request('login', self.request.json)
-        result = self._zmq_response(request)
-        if not result:
-            return self.json_response({
-                'status': 'error',
-                'message': 'Server error'
-            }, 500)
-        elif result['status'] == 'error':
-            return self.json_response({
-                'status': 'error',
-                'message': result['message']
-            }, 400)
-        elif result['status'] == 'ok':
-            return self.json_response({
-                'status': 'ok',
-                'message': result['message'],
-                'data': result['data']
-            })
+        return self._zmq_response(request)
+
+    @zmq_parse
+    def api_constants(self):
+        request = self._zmq_request('constants')
+        return self._zmq_response(request)
 
     def run_forever(self):
         """Start gevent server here

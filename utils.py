@@ -17,6 +17,30 @@ PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] == 3
 
 
+def field_extractor(inst):
+    data = {}
+    for field in inst.fields:
+        ifields = field.split('.')
+        if len(ifields) > 1:
+            nfield = inst
+            prevfield = None
+            for ufield in ifields[:]:
+                prevfield = nfield
+                nfield = getattr(nfield, ufield, None)
+                if not nfield:
+                    data[ifields[0]] = prevfield
+                    break
+        else:
+            data[field] = getattr(inst, field)
+    return data
+
+
+def enum_names(enum, ignore=None):
+    if ignore is None:
+        ignore = []
+    return [prop.name for prop in enum if prop.name not in ignore]
+
+
 def generate_token():
     return hashlib.md5(uuid.uuid4().hex + str(time.time())).hexdigest()
 

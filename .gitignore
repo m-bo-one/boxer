@@ -7,3 +7,4 @@ bower_components/
 static/assets/
 manifest.json
 tmp/
+server/extractor/assets/sprites/
