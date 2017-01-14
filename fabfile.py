@@ -1,42 +1,32 @@
-from gevent import monkey; monkey.patch_all()  # noqa
-
-import sys
 import os
 import json
 
-import gevent
-
-from PIL import Image
 
 from conf import settings
 
 
-def get_files_from_dir(path):
-    from os import listdir
-    from os.path import isfile, join
-    return [f for f in listdir(path) if isfile(join(path, f))]
-
-
-def set_frames_speed(speed=0.3):
-    path = sys.argv[1]
-    with open(path) as file:
+def update_asset_meta(fpath, speed=0.3):
+    with open(fpath) as file:
         data = json.load(file)
 
     for anim_key, value in data['animations'].iteritems():
         data['animations'][anim_key]['speed'] = speed
-    with open(path, 'w') as outfile:
+    with open(fpath, 'w') as outfile:
         json.dump(data, outfile)
 
 
-def main():
-    try:
-        folder = sys.argv[1]
-    except IndexError:
-        print('ERROR: Need specify folder for extraction.')
-        return
+def gif2png(folder_path):
+    from gevent import monkey; monkey.patch_all()  # noqa
+    import gevent
+    from PIL import Image
+
+    def get_files_from_dir(path):
+        from os import listdir
+        from os.path import isfile, join
+        return [f for f in listdir(path) if isfile(join(path, f))]
 
     threads = []
-    # files = get_files_from_dir(folder)
+    # files = get_files_from_dir(folder_path)
     files = [
         'StandAttackHeavyBurst_N.gif',
         'StandAttackHeavyBurst_E.gif',
@@ -66,13 +56,13 @@ def main():
 
     def gen_png(fname):
         try:
-            img_name = os.path.join(folder, fname)
+            img_name = os.path.join(folder_path, fname)
             im = Image.open(img_name)
         except IOError:
             print('ERROR: Gif %s not found.' % img_name)
             return
 
-        fdir = [fn for fn in folder.split('/') if fn][-1]
+        fdir = [fn for fn in folder_path.split('/') if fn][-1]
         fpath = os.path.join(settings.SERVER_PATH,
                              'extractor/assets/sprites/%s' % fdir)
         if not os.path.exists(fpath):
@@ -99,8 +89,3 @@ def main():
         thread = gevent.spawn(gen_png, fname)
         threads.append(thread)
     gevent.joinall(threads)
-
-
-if __name__ == '__main__':
-    set_frames_speed()
-    # main()
