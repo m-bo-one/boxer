@@ -1,15 +1,14 @@
-from constants import ArmorType
+import constants as const
 
 
 class Armor(object):
 
     def __init__(self, name, user):
         _armors = {
-            ArmorType.NO_ARMOR: NoArmor,
-            ArmorType.ENCLAVE_POWER_ARMOR: EnclavePowerArmor
+            const.Armor.GhoulArmour: GhoulArmour
         }
         self.name = name
-        self.a = _armors[name]()
+        self.a = _armors[const.Armor(name)]()
         self.a.user = user
         self.user = user
 
@@ -17,11 +16,11 @@ class Armor(object):
         return self.a.reduce_damage(weapon, dmg)
 
 
-class BaseArmor(object):
+class GhoulArmour(object):
 
     RESISTANCE = {
-        'bullet': 0.0,
-        'flame': 0.0
+        'bullet': 0.8,
+        'flame': 0.6
     }
 
     def reduce_damage(self, weapon, dmg):
@@ -29,15 +28,3 @@ class BaseArmor(object):
             return int(dmg * (1 - self.RESISTANCE[weapon.w.CHARGE_TYPE]))
         except KeyError:
             return dmg
-
-
-class NoArmor(BaseArmor):
-    pass
-
-
-class EnclavePowerArmor(BaseArmor):
-
-    RESISTANCE = {
-        'bullet': 0.8,
-        'flame': 0.6
-    }

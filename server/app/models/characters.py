@@ -8,9 +8,8 @@ import time
 import gevent
 
 from db import redis_db, local_db
-from utils import field_extractor
 import constants as const
-from . import RedisModelMixin as ModelMixin
+from .mixins import RedisModelMixin as ModelMixin, field_extractor
 from .weapons import Weapon
 from .armors import Armor
 from ..assets.sprites import sprite_proto
@@ -19,8 +18,8 @@ from ..colliders import CollisionManager
 
 class CharacterModel(ModelMixin):
 
-    fields = ('id', 'name', 'health', 'weapon.name.value',
-              'armor.name.value', 'scores', 'inventory')
+    fields = ('id', 'name', 'health', 'weapon',
+              'armor', 'scores', 'inventory')
 
     collision_pipeline = (
         'map_collision',
@@ -30,22 +29,23 @@ class CharacterModel(ModelMixin):
     AP_stats = {}
 
     def __init__(self, id, name, health, weapon, armor, scores, inventory):
-        self.id = int(id) if id else None
+        self.id = id
         self.name = name
-        self.health = int(health)
+        self.health = health
         self.weapon = Weapon(weapon, self)
         self.armor = Armor(armor, self)
-        self.scores = int(scores)
+        self.scores = scores
         self.inventory = inventory
         self.AP = const.MAX_AP
 
         self.operations = []
         self.extra_data = {}
         self.max_health = const.HUMAN_HEALTH
-        self.speed = [3, 3]
+        self.speed = [2, 2]
         if self.id:
             self.cmd = CmdModel.get_last_or_create(self.id)
-            self.cm = CollisionManager(self, pipelines=self.collision_pipeline)
+            # self.cm = CollisionManager(self,
+            #                            pipelines=self.collision_pipeline)
 
     @staticmethod
     def model_key():
@@ -60,7 +60,7 @@ class CharacterModel(ModelMixin):
                    armor=armor, scores=0, inventory=[])
         char.save()
         char.cmd = CmdModel.get_last_or_create(char.id)
-        char.cm = CollisionManager(char, pipelines=char.collision_pipeline)
+        # char.cm = CollisionManager(char, pipelines=char.collision_pipeline)
         return char
 
     def to_dict(self):
@@ -69,14 +69,14 @@ class CharacterModel(ModelMixin):
             'name': self.name,
             'x': self.cmd.x,
             'y': self.cmd.y,
-            'width': self.width,
-            'height': self.height,
+            # 'width': self.width,
+            # 'height': self.height,
             'speed': self.speed,
-            'pivot': self.pivot,
-            'action': self.cmd.action,
-            'direction': self.cmd.direction,
-            'armor': self.armor.name,
-            'weapon': self.weapon.name,
+            # 'pivot': self.pivot,
+            'action': self.cmd.action.value,
+            'direction': self.cmd.direction.value,
+            'armor': self.armor.name.value,
+            'weapon': self.weapon.name.value,
             'health': self.health,
             'operations_blocked': self.operations_blocked,
             'animation': self.animation,
@@ -90,27 +90,38 @@ class CharacterModel(ModelMixin):
         # print(data)
         return data
 
-    @property
-    def size(self):
-        _sprite = sprite_proto.get((self.armor.name,
-                                    self.weapon.name,
-                                    self.cmd.action))
-        return _sprite['frames']['width'], _sprite['frames']['height']
+    # @property
+    # def size(self):
+    #     _sprite = sprite_proto.get((self.armor.name,
+    #                                 self.weapon.name,
+    #                                 self.cmd.action))
+    #     return _sprite['frames']['width'], _sprite['frames']['height']
 
-    @property
-    def pivot(self):
-        return {
-            "x": self.cmd.x + self.size[0] / 2,
-            "y": (self.cmd.y + 2 * self.size[1] / 3 + 10)
-        }
+    # @property
+    # def pivot(self):
+    #     return {
+    #         "x": self.cmd.x + self.size[0] / 2,
+    #         "y": (self.cmd.y + 2 * self.size[1] / 3 + 10)
+    #     }
 
     @property
     def animation(self):
+        if self.weapon.name == const.Weapon.Unarmed:
+            weapon_key = ''
+        elif self.cmd.action == const.Action.Attack:
+            weapon_key = ''.join([self.weapon.name.name, 'Burst'])
+        else:
+            weapon_key = self.weapon.name.name
+
+        if self.cmd.action == const.Action.Heal:
+            action = const.Action.Magichigh.name
+        else:
+            action = self.cmd.action.name
+
         return {
-            'way': "_".join([self.cmd.action, self.cmd.direction]),
-            'compound': sprite_proto.sp_key_builder(self.armor.name,
-                                                    self.weapon.name,
-                                                    self.cmd.action),
+            "key": ''.join([
+                'Stand', action, weapon_key, '_', self.cmd.direction.name]),
+            "armor": self.armor.name.name
         }
 
     def __repr__(self):
@@ -138,13 +149,13 @@ class CharacterModel(ModelMixin):
     def y(self):
         return self.cmd.y
 
-    @property
-    def width(self):
-        return self.size[0]
+    # @property
+    # def width(self):
+    #     return self.size[0]
 
-    @property
-    def height(self):
-        return self.size[1]
+    # @property
+    # def height(self):
+    #     return self.size[1]
 
     @property
     def is_full_health(self):
@@ -152,10 +163,11 @@ class CharacterModel(ModelMixin):
 
     def autosave(func):
         def wrapper(self, *args, **kwargs):
-            with self.cm.obj_update():
-                result = func(self, *args, **kwargs)
-                self.cmd = CmdModel.create(self.id, self.cmd.x, self.cmd.y,
-                                           self.cmd.action, self.cmd.direction)
+            # with self.cm.obj_update():
+            logging.info('GREENLETS: %s' % self.AP_stats)
+            result = func(self, *args, **kwargs)
+            self.cmd = CmdModel.create(self.id, self.cmd.x, self.cmd.y,
+                                       self.cmd.action, self.cmd.direction)
             self.save()
             return result
         return wrapper
@@ -197,21 +209,21 @@ class CharacterModel(ModelMixin):
             not self.operations_blocked,
             self.AP - const.FIRE_AP >= 0
         ]):
-            self.cmd.action = int(const.BaseAction.Attack)
+            self.cmd.action = const.Action.Attack
             self.block_operation('shoot')
-            self.use_AP(const.FIRE_AP)
-            self.extra_data['sound_to_play'] = self.weapon.w.SOUNDS['fire']
+            # self.use_AP(const.FIRE_AP)
+            # self.extra_data['sound_to_play'] = self.weapon.w.SOUNDS['fire']
 
-            detected = [other for other in local_db['characters']
-                        if other.id != self.id and not
-                        other.is_dead and self.weapon.in_vision(other)]
+            # detected = [other for other in local_db['characters']
+            #             if other.id != self.id and not
+            #             other.is_dead and self.weapon.in_vision(other)]
 
-            if detected:
-                logging.info('Found characters: %s', detected)
-                self.weapon.shoot(detected)
+            # if detected:
+            #     logging.info('Found characters: %s', detected)
+            #     self.weapon.shoot(detected)
 
             self._delayed_command(self.weapon.w.SHOOT_TIME, 'stop')
-            self._delayed_command(1, 'restore_AP')
+            # self._delayed_command(1, 'restore_AP')
 
     @property
     def weapon_in_hands(self):
@@ -324,19 +336,17 @@ class CharacterModel(ModelMixin):
 
     @autosave
     def stop(self):
-        self.move('idle', self.cmd.direction)
+        self.move(const.Action.Breathe, self.cmd.direction)
 
     @autosave
     def move(self, action, direction):
         if self.operations_blocked or self.is_dead:
             return
-        way = '_'.join([action, direction])
-        logging.info('Current way: %s', way)
         logging.info('Current coords: %s', self.coords)
 
         x, y = self.coords
 
-        self.cmd.action = const.BaseAction(action)
+        self.cmd.action = const.Action(action)
         self.cmd.direction = const.Direction(direction)
 
         logging.info('\n'
@@ -346,39 +356,40 @@ class CharacterModel(ModelMixin):
                      self.cmd.direction, self.cmd.action,
                      self.weapon.name.value)
 
-        if way == 'walk_top':
-            self.cmd.y -= self.speed[1]
+        if self.cmd.action == const.Action.Walk:
+            if self.cmd.direction == const.Direction.N:
+                self.cmd.y -= self.speed[1]
+            elif self.cmd.direction == const.Direction.S:
+                self.cmd.y += self.speed[1]
+            elif self.cmd.direction == const.Direction.E:
+                self.cmd.x += self.speed[0]
+            elif self.cmd.direction == const.Direction.W:
+                self.cmd.x -= self.speed[0]
 
-        elif way == 'walk_bottom':
-            self.cmd.y += self.speed[1]
-
-        elif way == 'walk_right':
-            self.cmd.x += self.speed[0]
-
-        elif way == 'walk_left':
-            self.cmd.x -= self.speed[0]
-
-        if self.cm.is_collide:
-            self.cmd.x = x
-            self.cmd.y = y
+        # if self.cm.is_collide:
+        #     self.cmd.x = x
+        #     self.cmd.y = y
 
 
 class CmdModel(object):
 
-    fields = ('id', 'x', 'y', 'action.name.value', 'direction.name.value')
+    fields = ('id', 'x', 'y', 'action', 'direction')
 
     def __init__(self, id, character_id, x, y, action, direction):
-        self.id = int(id) if id else None
+        self.id = id
         self.character_id = int(character_id)
-        self.x = int(x)
-        self.y = int(y)
-        self.action = action
-        self.direction = direction
+        self.x = x
+        self.y = y
+        self.action = const.Action(action)
+        self.direction = const.Direction(direction)
+
+    def __repr__(self):
+        return '<CmdModel: id - %s>' % self.id
 
     @classmethod
     def create(cls, character_id,
                x=0, y=0,
-               action=const.BaseAction.Breathe,
+               action=const.Action.Breathe,
                direction=const.Direction.W):
         cmd = cls(id=None, character_id=character_id, x=x, y=y,
                   action=action, direction=direction)
@@ -400,12 +411,12 @@ class CmdModel(object):
     def save(self):
         if not self.id:
             self.id = redis_db.incr('cmd:ids')
-        return redis_db.lpush('cmd:%s' % self.character_id, self.to_json())
+        return redis_db.rpush('cmd:%s' % self.character_id, self.to_json())
 
     @classmethod
     def last(cls, character_id):
         try:
-            cmd = redis_db.lrange('cmd:%s' % character_id, 0, 0)[0]
+            cmd = redis_db.lrange('cmd:%s' % character_id, -1, -1)[0]
             return cls(character_id=character_id, **json.loads(cmd))
         except IndexError:
             pass
@@ -413,10 +424,9 @@ class CmdModel(object):
     @classmethod
     def delete(cls):
         keys = redis_db.keys('cmd:*')
-        for key in keys:
-            if key == 'ids':
-                continue
-            redis_db.delete(key)
+        if keys:
+            return redis_db.delete(*[key for key in keys if key != 'ids'])
+        return 0
 
     @classmethod
     def get_last_or_create(cls, character_id):

@@ -94,7 +94,7 @@ class Weapon(IntEnum):
     Spear = 10
 
 
-class BaseAction(IntEnum):
+class Action(IntEnum):
 
     Breathe = 1
     Attack = 2
@@ -111,16 +111,14 @@ class BaseAction(IntEnum):
     Pickup = 12
     Recoil = 13
     Heal = 14
+    Walk = 15
 
-
-class DeathAction(IntEnum):
-
-    Bighole = 1
-    Cutinhalf = 2
-    Electrify = 3
-    ElectrifyOverlay = 4
-    Explode = 5
-    Fire = 6
-    FireOverlay = 7
-    Melt = 8
-    Riddled = 9
+    Bighole = 16
+    Cutinhalf = 17
+    Electrify = 18
+    ElectrifyOverlay = 19
+    Explode = 20
+    Fire = 21
+    FireOverlay = 22
+    Melt = 23
+    Riddled = 24

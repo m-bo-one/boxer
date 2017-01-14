@@ -80,7 +80,7 @@ class EventDispatcherZMQ(object):
                 for name in enum_names(typo)
             } for typo in [
                 const.Armor, const.Weapon, const.Direction,
-                const.Position, const.BaseAction, const.DeathAction
+                const.Position, const.Action
             ]
         }
         self.send('constants', 'ok', 'Success', resp)

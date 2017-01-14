@@ -26,16 +26,16 @@ $(function () {
           app.keys[39] && app.keys[68] || app.keys[37] && app.keys[65]) return;
 
         if (app.keys[38] || app.keys[87]) {
-            app.user.move('walk', 'top');
+            app.user.move(app.constants.Action.Walk, app.constants.Direction.N);
         }
         else if (app.keys[40] || app.keys[83]) {
-            app.user.move('walk', 'bottom');
+            app.user.move(app.constants.Action.Walk, app.constants.Direction.S);
         }
         else if (app.keys[39] || app.keys[68]) {
-            app.user.move('walk', 'right');
+            app.user.move(app.constants.Action.Walk, app.constants.Direction.E);
         }
         else if (app.keys[37] || app.keys[65]) {
-            app.user.move('walk', 'left');
+            app.user.move(app.constants.Action.Walk, app.constants.Direction.W);
         }
 
     };

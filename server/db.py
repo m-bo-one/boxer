@@ -8,11 +8,6 @@ import pymongo
 
 from conf import settings
 
-__all__ = [
-    'redis_db',
-    'local_db',
-]
-
 
 class DBClient(object):
 
@@ -63,4 +58,4 @@ class DBClient(object):
 
 redis_db = DBClient().connect('redis')
 local_db = DBClient().connect('local')
-mongo_db = DBClient().connect('mongo')
+# mongo_db = DBClient().connect('mongo')

@@ -3,7 +3,7 @@ import math
 import random
 
 
-from constants import WeaponType
+import constants as const
 
 
 class WeaponVision(object):
@@ -65,13 +65,11 @@ class Weapon(object):
 
     def __init__(self, name, user):
         _weapons = {
-            WeaponType.NO_WEAPON: NoWeapon,
-            WeaponType.M60: M60Weapon
+            const.Weapon.Unarmed: Unarmed,
+            const.Weapon.Heavy: Heavy
         }
-        if isinstance(name, dict):
-            name = name['name']
         self.name = name
-        self.w = _weapons[name]()
+        self.w = _weapons[const.Weapon(name)]()
         self.w.user = user
         self.user = user
         self.vision = WeaponVision(
@@ -86,7 +84,7 @@ class Weapon(object):
         return self.w.shoot(detected)
 
 
-class NoWeapon(object):
+class Unarmed(object):
 
     DMG = 1
     RANGE = 1
@@ -100,7 +98,7 @@ class NoWeapon(object):
         raise NotImplementedError()
 
 
-class M60Weapon(object):
+class Heavy(object):
 
     DMG = (60, 95)
     RANGE = 210  # px

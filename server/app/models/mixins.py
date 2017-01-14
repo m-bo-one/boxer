@@ -1,7 +1,24 @@
-from bson.objectid import ObjectId
+import json
 
-from db import redis_db, mongo_db
-from utils import field_extractor
+from bson.objectid import ObjectId
+from enum import IntEnum, Enum
+
+from db import redis_db
+
+from .weapons import Weapon
+from .armors import Armor
+
+
+def field_extractor(inst):
+    data = {}
+    for field in inst.fields:
+        value = getattr(inst, field)
+        if isinstance(value, (Enum, IntEnum)):
+            value = value.value
+        elif isinstance(value, (Weapon, Armor)):
+            value = value.name.value
+        data[field] = value
+    return data
 
 
 class RedisModelMixin(object):
@@ -14,25 +31,20 @@ class RedisModelMixin(object):
         if not self.id:
             self.id = redis_db.incr('%s:ids' % self.model_key())
 
-        data = field_extractor(self)
-        return redis_db.hmset('%s:%s' % (self.model_key(), self.id), data)
+        data = json.dumps(field_extractor(self))
+        return redis_db.hset(self.model_key(), self.id, data)
 
     @classmethod
     def get(cls, id):
-        data = redis_db.hgetall('%s:%s' % (cls.model_key(), id))
+        data = redis_db.hget(cls.model_key(), id)
         if data:
-            if not data.get('id'):
-                data['id'] = id
-            return cls(**data)
+            return cls(**json.loads(data))
 
     @classmethod
     def delete(cls, id=None):
         if not id:
-            keys = redis_db.keys('%s:*' % cls.model_key())
-            if keys:
-                return redis_db.delete(*keys)
-            return
-        return redis_db.delete('%s:%s' % (cls.model_key(), id))
+            return redis_db.delete(cls.model_key())
+        return redis_db.hdel(cls.model_key())
 
 
 class MongoModelMixin(object):
@@ -48,6 +60,8 @@ class MongoModelMixin(object):
 
     @classmethod
     def get_collection(cls):
+        from db import DBClient
+        mongo_db = DBClient().connect('mongo')
         return mongo_db[cls.model_key()]
 
     def save(self):

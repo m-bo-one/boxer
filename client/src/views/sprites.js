@@ -20,15 +20,20 @@ var app = app || {},
             this.model.currentSprite.x = this.model.x;
             this.model.currentSprite.y = this.model.y;
 
-            if (
-                this.model.prevWeapon != this.model.weapon ||
-                this.model.currentSprite.currentAnimation != this.model.animation.way
-            ) {
+            utils._LOG('Sprite coords: ' +
+                       'X: ' + this.model.currentSprite.x + '; ' +
+                       'Y: ' + this.model.currentSprite.y + ';');
+
+            if (this.model.prevArmor != this.model.armor) {
                 this.changeSprite();
             }
+            if (this.model.currentSprite.currentAnimation != this.model.animation.key) {
+                utils._LOG('Start playing animation: ' + this.model.animation.key);
+                this.model.currentSprite.gotoAndPlay(this.model.animation.key);
+            }
             if (app.config.DEBUG) {
-                this._debugBorder();
-                this.renderPivot();
+                // this._debugBorder();
+                // this.renderPivot();
             }
             this.updateUsername();
             this.updateHP();
@@ -37,25 +42,19 @@ var app = app || {},
         changeSprite: function() {
             if (this.model.currentSprite) app.stage.removeChild(this.model.currentSprite);
 
-            this.model.currentSprite = app.baseSprites[this.model.animation.compound].clone();
+            this.model.currentSprite = app.baseSprites[this.model.animation.armor].clone();
             this.model.currentSprite.x = this.model.x;
             this.model.currentSprite.y = this.model.y;
             // this.model.currentSprite.scaleX = this.model.currentSprite.scaleY = 0.5;
 
-            if (this.model.isDead()) {
-                // play one time, hack
-                this.model.currentSprite.gotoAndStop(this.model.animation.way);
-                this.model.currentSprite._animation.next = false;
-                if (Math.floor(Date.now() / 1000) - this.model.updatedAt > 2) {
-                    this.model.currentSprite._animation.frames.splice(0, this.model.currentSprite._animation.frames.length - 1);
-                }
-            }
-            if (this.model.action == 'idle') {
-                this.model.currentSprite.gotoAndStop(this.model.animation.way);
-            } else {
-                this.model.currentSprite.gotoAndPlay(this.model.animation.way);
-            }
-            utils._LOG('Start playing animation: ' + this.model.animation.way);
+            // if (this.model.isDead()) {
+            //     // play one time, hack
+            //     this.model.currentSprite.gotoAndStop(this.model.animation.way);
+            //     this.model.currentSprite._animation.next = false;
+            //     if (Math.floor(Date.now() / 1000) - this.model.updatedAt > 2) {
+            //         this.model.currentSprite._animation.frames.splice(0, this.model.currentSprite._animation.frames.length - 1);
+            //     }
+            // }
 
             app.stage.addChild(this.model.currentSprite);
         },

@@ -18,30 +18,26 @@ var app = app || {},
             this.weapon = options.weapon;
             this.prevWeapon = null;
             this.health = options.health;
-            this.width = options.width;
-            this.height = options.height;
+            // this.width = options.width;
+            // this.height = options.height;
             this.operationsBlocked = options.operations_blocked;
             this.animation = options.animation;
             this.updatedAt = options.updated_at;
             this.scores = options.scores;
             this.maxHealth = options.max_health;
             this.AP = options.AP;
-            this.pivot = options.pivot;
+            // this.pivot = options.pivot;
             this._options = options;
 
             app.users[this.id] = this;
         },
         equipedByWeapon: function() {
-            return (this.weapon.name === 'no_weapon') ? false : true;
+            return (this.weapon === 1) ? false : true;
         },
         equipWeapon: function(weaponName) {
             if (this.operationsBlocked) return;
             var weaponName = weaponName || this.weapon.name;
-            var data = JSON.stringify({
-                msg_type: 'player_equip',
-                data: {'equipment': 'weapon'}
-            })
-            app.ws.send(data);
+            Stream.send('player_equip', {'equipment': 'weapon'});
         },
         isDead: function() {
             return this.health <= 0;
@@ -70,14 +66,14 @@ var app = app || {},
             utils._LOG('Receive update: direction - ' + options.direction + '; action - ' + options.action + ';');
 
             this.vision = options.vision;
-            this.prevWeapon = this.weapon;
+            this.prevArmor = this.armor;
             this.weapon = options.weapon;
             this.armor = options.armor;
-            this.width = options.width;
-            this.height = options.height;
+            // this.width = options.width;
+            // this.height = options.height;
             this.animation = options.animation;
             this.AP = options.AP;
-            this.pivot = options.pivot;
+            // this.pivot = options.pivot;
 
             // if (app.user.id == this.id && options.extra_data.resurection_time) {
             //     // TODO: Dont know where resurect timer need to show( End it in future
@@ -89,33 +85,21 @@ var app = app || {},
         move: function(action, direction) {
             if (this.operationsBlocked || this.isDead()) return;
             utils._LOG('Send move: direction - ' + direction + '; action - ' + action);
-            var data = JSON.stringify({
-                msg_type: 'player_move',
-                data: {
-                    'action': action,
-                    'direction': direction
-                }
+            Stream.send('player_move', {
+                'action': action,
+                'direction': direction
             });
-            app.ws.send(data);
         },
         shoot: function () {
             if (this.operationsBlocked || !this.equipedByWeapon() || this.AP < 4) return;
-            var data = JSON.stringify({
-                msg_type: 'player_shoot',
-                data: {}
-            });
-            app.ws.send(data);
+            Stream.send('player_shoot');
         },
         heal: function () {
             if (this.operationsBlocked || this.isDead() || this.isFullHealth()  || this.AP < 3) return;
-            var data = JSON.stringify({
-                msg_type: 'player_heal',
-                data: {}
-            });
-            app.ws.send(data);
+            Stream.send('player_heal');
         },
         stop: function() {
-            this.move("idle", this.direction);
+            this.move(app.constants.Action.Breathe, this.direction);
         },
         destroy: function() {
             app.stage.removeChild(this.currentSprite);
