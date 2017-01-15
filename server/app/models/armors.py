@@ -6,11 +6,10 @@ class Armor(object):
     def __init__(self, name, user):
         _armors = {
             const.Armor.GhoulArmour: GhoulArmour,
-            const.Armor.MutantArmour: MutantArmour,
-            const.Armor.Mutant: NoArmour,
+            const.Armor.MutantArmour: MutantArmour
         }
         self.name = name
-        self.a = _armors[const.Armor(name)]()
+        self.a = _armors.get(const.Armor(name), Unarmored)()
         self.a.user = user
         self.user = user
 
@@ -37,7 +36,7 @@ class GhoulArmour(object):
     }
 
 
-class NoArmour(object):
+class Unarmored(object):
 
     RESISTANCE = {
         'bullet': 0.0,

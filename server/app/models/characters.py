@@ -29,7 +29,7 @@ def field_extractor(inst):
 
 class CharacterModel(object):
 
-    fields = ('id', 'name', 'health', 'weapon',
+    fields = ('id', 'race', 'name', 'health', 'weapon',
               'armor', 'scores', 'inventory')
 
     collision_pipeline = (
@@ -39,8 +39,10 @@ class CharacterModel(object):
 
     AP_stats = {}
 
-    def __init__(self, id, name, health, weapon, armor, scores, inventory):
+    def __init__(self, id, race, name, health, weapon, armor, scores,
+                 inventory):
         self.id = id
+        self.race = const.Race(race)
         self.name = name
         self.health = health
         self.weapon = Weapon(weapon, self)
@@ -83,14 +85,15 @@ class CharacterModel(object):
 
     @classmethod
     def create(cls, name,
+               race='random',
                health=100,
                weapon=const.Weapon.Heavy,
-               armor='random'):
-        if armor == 'random':
-            armor = random.choice([const.Armor.MutantArmour,
-                                   const.Armor.GhoulArmour,
-                                   const.Armor.Mutant])
-        char = cls(id=None, name=name, health=health, weapon=weapon,
+               armor=const.Armor.Unarmored):
+        if race == 'random':
+            race = random.choice([const.Race.Ghoul,
+                                  const.Race.Mutant,
+                                  const.Race.Pipboy])
+        char = cls(id=None, race=race, name=name, health=health, weapon=weapon,
                    armor=armor, scores=0, inventory=[])
         char.save()
         char.cmd = CmdModel.get_last_or_create(char.id)
@@ -101,6 +104,7 @@ class CharacterModel(object):
         data = {
             'id': self.id,
             'name': self.name,
+            'race': self.race.value,
             'x': self.cmd.x,
             'y': self.cmd.y,
             # 'width': self.width,
@@ -152,11 +156,17 @@ class CharacterModel(object):
         else:
             action = self.cmd.action.name
 
-        return {
+        data = {
             "key": ''.join([
-                'Stand', action, weapon_key, '_', self.cmd.direction.name]),
-            "armor": self.armor.name.name
+                'Stand', action, weapon_key, '_', self.cmd.direction.name])
         }
+        if self.armor.name == const.Armor.Unarmored:
+            key_armor = self.race.name
+        else:
+            key_armor = self.armor.name.name
+
+        data['armor'] = key_armor
+        return data
 
     def __repr__(self):
         return '<CharacterModel: id - %s>' % self.id

@@ -3,9 +3,12 @@ from __future__ import division
 import json
 import datetime
 
-from utils import generate_token
-
 from mongoengine import Document, StringField, DateTimeField
+
+from utils import generate_token
+from db import redis_db
+
+from .characters import CharacterModel
 
 
 class UserModel(Document):
@@ -34,3 +37,18 @@ class UserModel(Document):
 
     def to_json(self):
         return json.dumps(self.to_dict())
+
+    def get_characters(self):
+        chars_data = redis_db.hgetall(":".join([self.meta['collection'],
+                                                str(self.id),
+                                                'characters']))
+        return ([CharacterModel(**json.loads(data))
+                for data in chars_data.itervalues()]
+                if chars_data is not None else [])
+
+    def add_character(self, name, race=None):
+        chars = self.get_characters()
+        if len(chars) < 3:
+            return UserModel.create(name=name)
+        else:
+            raise TypeError('Only 3 characters allowed.')

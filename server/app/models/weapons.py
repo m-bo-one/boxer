@@ -105,7 +105,7 @@ class Heavy(object):
     SPECTRE = 30  # degree
     CRIT_CHANCE = 15  # persent
     CRIT_MULTIPLIER = 3
-    SHOOT_TIME = 1
+    SHOOT_TIME = 1.1
     CHARGE_TYPE = 'bullet'
 
     @property

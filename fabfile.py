@@ -63,7 +63,7 @@ def gif2png(folder_path):
 
     threads = []
     # files = get_files_from_dir(folder_path)
-    files = [
+    nfiles = (
         'StandAttackHeavyBurst_N.gif',
         'StandAttackHeavyBurst_E.gif',
         'StandAttackHeavyBurst_W.gif',
@@ -88,7 +88,9 @@ def gif2png(folder_path):
         'StandMagichigh_E.gif',
         'StandMagichigh_W.gif',
         'StandMagichigh_S.gif',
-    ]
+    )
+    files = [os.path.join(_dir, nfile)
+             for _dir in os.listdir(folder_path) for nfile in nfiles]
 
     def gen_png(fname):
         try:
@@ -98,9 +100,9 @@ def gif2png(folder_path):
             print('ERROR: Gif %s not found.' % img_name)
             return
 
-        fdir = [fn for fn in folder_path.split('/') if fn][-1]
-        fpath = os.path.join(settings.SERVER_PATH,
-                             'extractor/assets/sprites/%s' % fdir)
+        fdir = fname.split('/')[0]
+        fpath = os.path.join(settings.PROJECT_PATH,
+                             'tmp/png/%s' % fdir)
         if not os.path.exists(fpath):
             os.mkdir(fpath)
         # To iterate through the entire gif
@@ -116,9 +118,10 @@ def gif2png(folder_path):
                 #         if pixdata[x, y] == (255, 255, 255, 255):
                 #             pixdata[x, y] = (255, 255, 255, 0)
                 im.save(
-                    os.path.join(fpath, '%s_%s.png' % (key, counter)), 'PNG')
+                    os.path.join(fpath, '%s_%s.png' % (key.split('/')[1],
+                                 counter)), 'PNG')
                 counter += 1
-        except EOFError:
+        except (EOFError, IOError):
             im.close()
 
     for fname in files:

@@ -72,12 +72,19 @@ class Direction(IntEnum):
     W = 4
 
 
+class Race(IntEnum):
+
+    Human = 1
+    Ghoul = 2
+    Mutant = 3
+    Pipboy = 4
+
+
 class Armor(IntEnum):
 
-    Ghoul = 1
+    Unarmored = 1
     GhoulArmour = 2
-    Mutant = 3
-    MutantArmour = 4
+    MutantArmour = 3
 
 
 class Weapon(IntEnum):
