@@ -31,13 +31,14 @@ DATABASES = {
     'redis': {
         'HOST': '127.0.0.1',
         'PORT': 6379,
-        'NAME': 0
+        'NAME': 0,
+        'POOL_MAX_SIZE': 100
     },
     'mongo': {
         'HOST': '127.0.0.1',
         'PORT': 27017,
         'NAME': 'boxer',
-        'POOL_MAX_SIZE': 20
+        'POOL_MAX_SIZE': 100
     }
 }
 

@@ -18,35 +18,6 @@ __all__ = [
 ]
 
 
-class MongoDBBackend(MongoDBBackend):
-
-    def __init__(self,
-                 db_name=settings.DATABASES['mongo']['NAME'],
-                 hostname=settings.DATABASES['mongo']['HOST'],
-                 port=settings.DATABASES['mongo']['PORT'],
-                 initialize=False, username=None, password=None,
-                 maxPoolSize=settings.DATABASES['mongo']['POOL_MAX_SIZE'],
-                 maxIdleTimeMS=5):
-        connection = connect(db_name, host=hostname, port=port,
-                             maxPoolSize=maxPoolSize,
-                             maxIdleTimeMS=maxIdleTimeMS)
-
-        signal.signal(signal.SIGHUP, lambda s, t: connection.close())
-        db = connection[db_name]
-        if username and password:
-            db.authenticate(username, password)
-        self._db = db
-        self.users = MongoMultiValueTable('users', 'username', db.users)
-        self.pending_registrations = MongoMultiValueTable(
-            'pending_registrations',
-            'pending_registration',
-            db.pending_registrations
-        )
-        self.roles = MongoSingleValueTable('roles', 'role', db.roles)
-        if initialize:
-            self._initialize_storage()
-
-
 class DBClient(object):
 
     shared_state = {}
@@ -65,7 +36,7 @@ class DBClient(object):
         pool = redis.ConnectionPool.from_url(
             url='redis://%s:%s?db=%s' % (
                 db_conf['HOST'], db_conf['PORT'], db_conf['NAME']),
-            max_connections=self.max_connections)
+            max_connections=db_conf['POOL_MAX_SIZE'])
         return redis.Redis(connection_pool=pool)
 
     def _local_connector(self):
@@ -77,7 +48,36 @@ class DBClient(object):
         }
 
     def _mongo_connector(self):
-        return MongoDBBackend()
+        class MongoDB(MongoDBBackend):
+
+            def __init__(self,
+                         db_name=settings.DATABASES['mongo']['NAME'],
+                         hostname=settings.DATABASES['mongo']['HOST'],
+                         port=settings.DATABASES['mongo']['PORT'],
+                         initialize=False, username=None, password=None,
+                         maxPoolSize=settings.DATABASES['mongo'][
+                            'POOL_MAX_SIZE'],
+                         maxIdleTimeMS=5):
+                connection = connect(db_name, host=hostname, port=port,
+                                     maxPoolSize=maxPoolSize,
+                                     maxIdleTimeMS=maxIdleTimeMS)
+
+                signal.signal(signal.SIGHUP, lambda s, t: connection.close())
+                db = connection[db_name]
+                if username and password:
+                    db.authenticate(username, password)
+                self._db = db
+                self.users = MongoMultiValueTable('users', 'username',
+                                                  db.users)
+                self.pending_registrations = MongoMultiValueTable(
+                    'pending_registrations',
+                    'pending_registration',
+                    db.pending_registrations
+                )
+                self.roles = MongoSingleValueTable('roles', 'role', db.roles)
+                if initialize:
+                    self._initialize_storage()
+        return MongoDB()
 
     def connect(self, name):
         try:

@@ -26,8 +26,10 @@ var app = app || {},
             this.scores = options.scores;
             this.maxHealth = options.max_health;
             this.AP = options.AP;
+            this.maxAP = options.max_AP;
             // this.pivot = options.pivot;
             this._options = options;
+            this._APCallbacks = [];
 
             app.users[this.id] = this;
         },
@@ -57,6 +59,7 @@ var app = app || {},
             this.health = options.health;
             this.action = options.action;
             this.direction = options.direction;
+            this.maxAP = options.max_AP;
 
             if (!this.operationsBlocked && options.hasOwnProperty('extra_data') && options.extra_data.sound_to_play) {
                 setTimeout(function() {
@@ -83,6 +86,9 @@ var app = app || {},
             // }
 
             this.trigger('change');
+            if (this.AP !== this.maxAP) {
+                this.trigger('action');
+            }
         },
         move: function(action, direction) {
             if (this.operationsBlocked || this.isDead()) return;

@@ -52,7 +52,7 @@ var app = app || {},
         },
         initAP: function() {
             this.imageActiveAP = [];
-            this.model.on("change", this.updateAP, this);
+            this.model.on("action", this.updateAP, this);
             this.updateAP();
         },
         updateFPS: function(FPS) {
@@ -70,32 +70,29 @@ var app = app || {},
             this.textScores.text = 'Scores: ' + this.model.scores;
         },
         updateAP: function() {
-            var self = this;
-            setTimeout(function() {
-                var dist = 0,
-                    cAP = self.imageActiveAP.slice();
-                self.imageActiveAP = [];
-                for (var j = 0; j < cAP.length; j++) {
-                    app.stage.removeChild(cAP[j]);
-                }
-                for (var i = 0; i < self.model.AP; i++) {
-                    var img = app.baseImages['active_AP'].clone();
-                    img.scaleX = scale;
-                    img.scaleY = scale;
-                    img.x += (size) / 1.5 + dist;
-                    img.y += app.canvas.height - size * 3 / 2;
-                    app.stage.addChildAt(img, app.stage.numChildren - 1);
-                    self.imageActiveAP.push(img);
-                    dist += size;
-                }
-            }, 1000);
+            var dist = 0,
+                cAP = this.imageActiveAP.slice();
+            this.imageActiveAP = [];
+            for (var j = 0; j < cAP.length; j++) {
+                app.stage.removeChild(cAP[j]);
+            }
+            for (var i = 0; i < this.model.AP; i++) {
+                var img = app.baseImages['active_AP'].clone();
+                img.scaleX = scale;
+                img.scaleY = scale;
+                img.x += (size) / 1.5 + dist;
+                img.y += app.canvas.height - size * 3 / 2;
+                app.stage.addChildAt(img, app.stage.numChildren - 1);
+                this.imageActiveAP.push(img);
+                dist += size;
+            }
         },
 
         // MAIN
         initialize: function() {
             _.extend(this, Backbone.Events);
-            this.panelRight();
             this.panelLeft();
+            this.panelRight();
         },
         panelRight: function() {
             this.initFPS();
