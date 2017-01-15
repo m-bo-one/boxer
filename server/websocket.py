@@ -26,6 +26,11 @@ class GameApplication(WebSocketApplication):
     @staticmethod
     def _g_cleaner(user):
         # spatial_hash.remove_obj_by_point(user.pivot, user)
+        CharacterModel._kill_AP_threads(user.id)
+        try:
+            del CharacterModel.AP_stats[user.id]
+        except KeyError:
+            pass
         try:
             local_db['characters'].remove(user)
         except KeyError:
@@ -33,7 +38,6 @@ class GameApplication(WebSocketApplication):
 
     def broadcast(self, msg_type, data):
         try:
-            print('-------')
             self.ws.send(json.dumps({'msg_type': msg_type, 'data': data}))
         except WebSocketError as e:
             GameApplication._g_cleaner(self.user)
@@ -56,7 +60,7 @@ class GameApplication(WebSocketApplication):
         self.user.heal()
 
     def register_user(self, message):
-        self.user = CharacterModel.create('hello')
+        self.user = CharacterModel.create(user_id=1, name='hello')
         print(self.user.id)
         local_db['characters'].add(self.user)
         self.broadcast('register_user', self.user.to_dict())
@@ -76,11 +80,8 @@ class GameApplication(WebSocketApplication):
 
 def main_ticker(server):
     local_db.setdefault('characters', set())
-    # counter = 0
     while True:
         gevent.sleep(0.01)
-        # print(counter)
-        # counter += 1
         data = {
             'users': {
                 'update': [
@@ -90,11 +91,9 @@ def main_ticker(server):
             },
             'count': len(server.clients),
         }
-        try:
+        if not main_queue.empty():
             result = main_queue.get_nowait()
             data['users']['remove'].append(result)
-        except:
-            pass
 
         for client in server.clients.values():
             try:

@@ -3,15 +3,16 @@ from __future__ import division
 import json
 import datetime
 
-from mongoengine import Document, StringField, DateTimeField
+from mongoengine import Document, StringField, DateTimeField, ListField
 
 from utils import generate_token
-from db import redis_db
 
 from .characters import CharacterModel
 
 
 class UserModel(Document):
+
+    CHAR_LIMIT = 3
 
     meta = {'collection': 'users'}
 
@@ -23,6 +24,7 @@ class UserModel(Document):
     last_login = DateTimeField(default=datetime.datetime.utcnow)
     desc = StringField(required=True, max_length=255, default='')
     role = StringField(required=True, max_length=10)
+    characters = ListField(default=[])
 
     def save(self):
         if not self.id:
@@ -39,16 +41,22 @@ class UserModel(Document):
         return json.dumps(self.to_dict())
 
     def get_characters(self):
-        chars_data = redis_db.hgetall(":".join([self.meta['collection'],
-                                                str(self.id),
-                                                'characters']))
-        return ([CharacterModel(**json.loads(data))
-                for data in chars_data.itervalues()]
-                if chars_data is not None else [])
+        return [CharacterModel.get(cid) for cid in self.characters]
 
-    def add_character(self, name, race=None):
+    def add_character(self, name, race):
         chars = self.get_characters()
-        if len(chars) < 3:
-            return UserModel.create(name=name)
+        if len(chars) < self.CHAR_LIMIT:
+            char = CharacterModel.create(user_id=str(self.id), name=name,
+                                         race=race)
+            self.characters.append(char.id)
         else:
-            raise TypeError('Only 3 characters allowed.')
+            raise TypeError('Only %s characters allowed.' % self.CHAR_LIMIT)
+
+    def remove_character(self, cid):
+        if not self.characters:
+            raise IndexError('Nothing to delete.')
+        if cid in self.characters:
+            char = CharacterModel.get(cid)
+            if char.user_id == str(self.id):
+                CharacterModel.delete(cid)
+                self.characters.remove(cid)

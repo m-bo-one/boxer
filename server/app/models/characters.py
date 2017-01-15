@@ -29,7 +29,7 @@ def field_extractor(inst):
 
 class CharacterModel(object):
 
-    fields = ('id', 'race', 'name', 'health', 'weapon',
+    fields = ('id', 'user_id', 'race', 'name', 'health', 'weapon',
               'armor', 'scores', 'inventory')
 
     collision_pipeline = (
@@ -39,9 +39,10 @@ class CharacterModel(object):
 
     AP_stats = {}
 
-    def __init__(self, id, race, name, health, weapon, armor, scores,
+    def __init__(self, id, user_id, race, name, health, weapon, armor, scores,
                  inventory):
         self.id = id
+        self.user_id = user_id
         self.race = const.Race(race)
         self.name = name
         self.health = health
@@ -62,7 +63,7 @@ class CharacterModel(object):
 
     @staticmethod
     def model_key():
-        return 'character'
+        return 'characters'
 
     def save(self):
         if not self.id:
@@ -81,10 +82,13 @@ class CharacterModel(object):
     def delete(cls, id=None):
         if not id:
             return redis_db.delete(cls.model_key())
-        return redis_db.hdel(cls.model_key())
+        return redis_db.hdel(cls.model_key(), id)
+
+    def remove(self):
+        return CharacterModel.delete(self.id)
 
     @classmethod
-    def create(cls, name,
+    def create(cls, user_id, name,
                race='random',
                health=100,
                weapon=const.Weapon.Heavy,
@@ -93,8 +97,9 @@ class CharacterModel(object):
             race = random.choice([const.Race.Ghoul,
                                   const.Race.Mutant,
                                   const.Race.Pipboy])
-        char = cls(id=None, race=race, name=name, health=health, weapon=weapon,
-                   armor=armor, scores=0, inventory=[])
+        char = cls(id=None, user_id=user_id, race=race, name=name,
+                   health=health, weapon=weapon, armor=armor, scores=0,
+                   inventory=[])
         char.save()
         char.cmd = CmdModel.get_last_or_create(char.id)
         # char.cm = CollisionManager(char, pipelines=char.collision_pipeline)
@@ -123,7 +128,8 @@ class CharacterModel(object):
             'scores': self.scores,
             'max_health': self.max_health,
             'operations': self.operations,
-            'AP': self.AP
+            'AP': self.AP,
+            'max_AP': const.MAX_AP
         }
         # print(data)
         return data
@@ -301,7 +307,7 @@ class CharacterModel(object):
     @classmethod
     def _kill_AP_threads(cls, id):
         cls.AP_stats.setdefault(id, [])
-        if cls.AP_stats[id]:
+        if cls.AP_stats.get(id):
             gevent.killall(cls.AP_stats[id])
             cls.AP_stats[id] = []
 
@@ -454,20 +460,20 @@ class CmdModel(object):
 
     def save(self):
         if not self.id:
-            self.id = redis_db.incr('cmd:ids')
-        return redis_db.rpush('cmd:%s' % self.character_id, self.to_json())
+            self.id = redis_db.incr('cmds:ids')
+        return redis_db.rpush('cmds:%s' % self.character_id, self.to_json())
 
     @classmethod
     def last(cls, character_id):
         try:
-            cmd = redis_db.lrange('cmd:%s' % character_id, -1, -1)[0]
+            cmd = redis_db.lrange('cmds:%s' % character_id, -1, -1)[0]
             return cls(character_id=character_id, **json.loads(cmd))
         except IndexError:
             pass
 
     @classmethod
     def delete(cls):
-        keys = redis_db.keys('cmd:*')
+        keys = redis_db.keys('cmds:*')
         if keys:
             return redis_db.delete(*[key for key in keys if key != 'ids'])
         return 0
