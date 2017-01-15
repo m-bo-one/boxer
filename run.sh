@@ -1,5 +1,10 @@
 #!/bin/bash
-source common.sh
+WORKSPACE_DIR=$HOME/boxer
+PROJ_DIR=$HOME/boxer
+CLIENT_DIR=$PROJ_DIR/client
+SERVER_DIR=$PROJ_DIR/server
+ENV_DIR=$PROJ_DIR/.env
+PROJECT=boxer
 
 tmux new-session -d -s $PROJECT
 tmux attach-session $PROJECT
@@ -19,7 +24,7 @@ tmux split-window -d -t 1 -h
 tmux split-window -d -t 0 -h
 
 fuser -k 5560/tcp
-fuser -k 8000/tcp
+fuser -k 8080/tcp
 fuser -k 9999/tcp
 
 find . -name "*.pyc" -exec rm -rf {} \;

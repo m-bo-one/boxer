@@ -10,7 +10,7 @@
         <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.3.3/backbone-min.js"></script>
         <script type="text/javascript">
             var app = app || {};
-            app.config = {{ !APP_SETTINGS }};
+            app.config = {{ APP_SETTINGS }};
         </script>
         <!-- API -->
         <script type="text/javascript" src="{{ SRC_URL }}api/login.js?updated={{ FILE_VERSION }}"></script>
@@ -45,15 +45,16 @@
         </div>
         <div class="container">
             <div id="conn_status" style="display: none;">Not Connected</div>
-            <div class="login">
+            <div class="login" {% if current_user %}style="display: none"{% endif %}>
                 <form id="quickLogin" method="POST" action="/api/login">
                     <input type="text" placeholder="Username" id="username"> 
                     <input type="password" placeholder="Password" id="password"> 
                     <input type="submit" value="Sign In">
+                    Login? <input type="checkbox" checked="checked">
                 </form>
                 <span class="login-error"></span>
             </div>
-            <canvas id="gameBoard" style="border: 1px solid black; display: none; float: left;">Your browser does not support the HTML5 canvas tag.</canvas>
+            <canvas id="gameBoard" style="border: 1px solid black; display: none;">Your browser does not support the HTML5 canvas tag.</canvas>
         </div>
     </body>
 </html>

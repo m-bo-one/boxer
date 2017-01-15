@@ -4,18 +4,30 @@ import logging
 import random
 import json
 import time
+from enum import IntEnum, Enum
 
 import gevent
 
 from db import redis_db
 import constants as const
-from .mixins import RedisModelMixin as ModelMixin, field_extractor
 from .weapons import Weapon
 from .armors import Armor
 from ..engine.colliders import CollisionManager
 
 
-class CharacterModel(ModelMixin):
+def field_extractor(inst):
+    data = {}
+    for field in inst.fields:
+        value = getattr(inst, field)
+        if isinstance(value, (Enum, IntEnum)):
+            value = value.value
+        elif isinstance(value, (Weapon, Armor)):
+            value = value.name.value
+        data[field] = value
+    return data
+
+
+class CharacterModel(object):
 
     fields = ('id', 'name', 'health', 'weapon',
               'armor', 'scores', 'inventory')
@@ -49,6 +61,25 @@ class CharacterModel(ModelMixin):
     @staticmethod
     def model_key():
         return 'character'
+
+    def save(self):
+        if not self.id:
+            self.id = redis_db.incr('%s:ids' % self.model_key())
+
+        data = json.dumps(field_extractor(self))
+        return redis_db.hset(self.model_key(), self.id, data)
+
+    @classmethod
+    def get(cls, id):
+        data = redis_db.hget(cls.model_key(), id)
+        if data:
+            return cls(**json.loads(data))
+
+    @classmethod
+    def delete(cls, id=None):
+        if not id:
+            return redis_db.delete(cls.model_key())
+        return redis_db.hdel(cls.model_key())
 
     @classmethod
     def create(cls, name,

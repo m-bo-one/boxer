@@ -32,7 +32,9 @@ var app = app || {};
         app.stage.addChildAt(app.baseImages['map'], 0);
         $(app.canvas).show();
         $('#conn_status').show();
-        $('.login').show();
+        if (!app.config.is_authorized) {
+            $('.login').show();
+        }
         $('.cssload-preloader').hide();
         Stream.init(app);
     }

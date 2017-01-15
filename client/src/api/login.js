@@ -7,23 +7,26 @@ $(function() {
 
         $('.login-error').empty();
 
-        var url = e.currentTarget.action;
+        var url;
         var method = e.currentTarget.method;
         var data = {
             'username': $(this).find('input#username').val(),
             'password': $(this).find('input#password').val()
         }
-
+        if ($(this).find('input[type="checkbox"]').is(':checked')) {
+            url = '/api/login';
+        } else {
+            url = '/api/registration'
+        }
         $.ajax({
             method: method,
             url: url,
             data: JSON.stringify(data),
             contentType : 'application/json'
         }).done(function(data) {
-            $('.login-error').css('color', 'green');
-            $('.login-error').html(data.message);
-            localStorage.setItem("uid", data.data.uid);
-            localStorage.setItem("token", data.data.token);
+            $('.login').hide();
+            // $('.login-error').css('color', 'green');
+            // $('.login-error').html(data.message);
             // Stream.init(app);
             console.log(data);
         }).fail(function(response) {

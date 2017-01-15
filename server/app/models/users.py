@@ -1,43 +1,29 @@
 from __future__ import division
 
 import json
-import time
+import datetime
 
-from utils import generate_temp_password, generate_token, check_temp_password
+from utils import generate_token
 
-from . import MongoModelMixin
+from mongoengine import Document, StringField, DateTimeField
 
 
-class UserModel(MongoModelMixin):
+class UserModel(Document):
 
-    fields = (
-        'username',
-        'password',
-        'token',
-        'created_at',
-        'updated_at'
-    )
-    model_key = staticmethod(lambda: 'users')
+    meta = {'collection': 'users'}
 
-    def __init__(self, username, password=None, **kwargs):
-        self._id = None
-        self.username = username
-        self.password = password
-        self.created_at = None
-        self.updated_at = None
-        self.token = None
-
-    def check_password(self, password):
-        return check_temp_password(password, self.password)
-
-    def hash_password(self, password):
-        self.password = generate_temp_password(password)
+    token = StringField(required=True, max_length=255)
+    username = StringField(required=True, max_length=16)
+    hash = StringField(required=True, max_length=255)
+    email_addr = StringField(required=True, max_length=255)
+    creation_date = DateTimeField(default=datetime.datetime.utcnow)
+    last_login = DateTimeField(default=datetime.datetime.utcnow)
+    desc = StringField(required=True, max_length=255, default='')
+    role = StringField(required=True, max_length=10)
 
     def save(self):
-        if not self._id:
-            self.created_at = time.time()
+        if not self.id:
             self.token = generate_token()
-        self.updated_at = time.time()
         super(UserModel, self).save()
 
     def to_dict(self):

@@ -1,6 +1,6 @@
 import os
 
-DEBUG = False
+DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 FPS = 60
 
@@ -36,6 +36,16 @@ DATABASES = {
     'mongo': {
         'HOST': '127.0.0.1',
         'PORT': 27017,
-        'NAME': 'boxer'
+        'NAME': 'boxer',
+        'POOL_MAX_SIZE': 20
     }
+}
+
+SESSION_OPTS = {
+    'session.cookie_expires': True,
+    'session.encrypt_key': SECRET_KEY,
+    'session.httponly': True,
+    'session.timeout': 3600 * 24,  # 1 day
+    'session.type': 'cookie',
+    'session.validate_key': True
 }

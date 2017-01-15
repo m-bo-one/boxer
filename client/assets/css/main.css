@@ -2,9 +2,11 @@ body {
     background-image: url("../desert-oasis-lake-palm-polygon.jpg");
 }
 canvas {
-    padding: 0;
-    margin: auto;
+    padding-left: 0;
+    padding-right: 0;
     display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
 .login {
     height:110px;

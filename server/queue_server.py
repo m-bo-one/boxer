@@ -13,10 +13,13 @@ from app.models import UserModel
 from utils import enum_names
 import constants as const
 
+from db import mongo_db
+
 
 class EventDispatcherZMQ(object):
 
     def __init__(self):
+        self.db = mongo_db
         self._context = zmq.Context()
         self.socket = self._context.socket(zmq.REP)
         logging.info('ZMQ: Binding address (%s, %s)', *settings.ZMQ_ADDRESS)
@@ -43,6 +46,16 @@ class EventDispatcherZMQ(object):
             'message': message
         })
 
+    def registration(self, msg):
+        user = UserModel(**msg)
+        try:
+            user.save()
+        except Exception as e:
+            logging.error('ZMQ: %s', e.message)
+            self.send('registration', 'error', 'Unexpected error')
+        else:
+            self.send('registration', 'ok', 'Success', user.to_dict())
+
     def login(self, msg):
         username = msg.get('username')
         password = msg.get('password')
@@ -59,13 +72,12 @@ class EventDispatcherZMQ(object):
 
         logging.info('ZMQ: Got password - %s' % password)
         try:
-            user = filter(lambda user: user.username == username,
-                          UserModel.all())[0]
+            user = UserModel.objects.get(username=username)
             logging.info('ZMQ: User password - %s' % user.password)
             if not user.check_password(password):
                 self.send('login', 'error', 'Invalid password.')
                 return
-        except IndexError:
+        except UserModel.DoesNotExist:
             user = UserModel(username=username)
             user.hash_password(password)
             user.save()
