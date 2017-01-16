@@ -107,7 +107,12 @@ def main_ticker(server):
 if __name__ == '__main__':
     try:
         CharacterModel.delete()
-        setup_logging()
+        log_params = {}
+        if not settings.DEBUG:
+            log_params = {
+                'default_level': logging.ERROR
+            }
+        setup_logging(**log_params)
         logging.info('Starting server...\n')
         server = WebSocketServer(
             settings.WEBSOCKET_ADDRESS, Resource(OrderedDict({

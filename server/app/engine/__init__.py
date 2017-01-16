@@ -1,8 +1,3 @@
-import os
-
+from .colliders import CollisionManager, spatial_hash
+from .pathfindings import Pathfinder
 from .tiles import TiledReader
-
-from conf import settings
-
-TiledReader.read_and_add_collision(
-    os.path.join(settings.ASSETS_PATH, 'map.tmx'))

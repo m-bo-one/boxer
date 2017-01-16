@@ -22,6 +22,12 @@ def get_files_from_dir(path):
             if os.path.isfile(os.path.join(path, f))]
 
 
+def enum_values(enum, ignore=None):
+    if ignore is None:
+        ignore = []
+    return [prop.value for prop in enum if prop.value not in ignore]
+
+
 def enum_names(enum, ignore=None):
     if ignore is None:
         ignore = []

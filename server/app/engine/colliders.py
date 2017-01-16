@@ -4,8 +4,6 @@ import random
 import logging
 from contextlib import contextmanager
 
-from db import local_db
-
 
 class SpatialHash(object):
 
@@ -76,6 +74,9 @@ class SpatialHash(object):
         logging.debug(potensial_collisions)
         return potensial_collisions
 
+    def is_predict_point_collide(self, point):
+        return True if self.contents.get(point, set()) else False
+
 
 spatial_hash = SpatialHash()
 
@@ -108,12 +109,6 @@ class CollisionManager(object):
         yield
         spatial_hash.insert_object_for_point(self.obj.pivot, self.obj)
 
-    @staticmethod
-    def get_random_coords():
-        x = random.randint(0, local_db['map_size']['width'] - 100)
-        y = random.randint(0, local_db['map_size']['height'] - 100)
-        return (x, y)
-
     @property
     def is_collide(self):
         result = False
@@ -127,6 +122,7 @@ class CollisionManager(object):
         return result
 
     def map_collision(self):
+        from db import local_db
         if (
             self.obj.x > local_db['map_size']['width'] - 100 or
             self.obj.x < 0 or
