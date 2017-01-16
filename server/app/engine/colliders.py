@@ -1,8 +1,16 @@
 """Main collision logic
 """
-import random
+from __future__ import division
+
 import logging
 from contextlib import contextmanager
+
+from db import local_db
+
+
+class CollisionError(Exception):
+    """raise this when object collides"""
+    pass
 
 
 class SpatialHash(object):
@@ -18,12 +26,14 @@ class SpatialHash(object):
         else:
             px = point['x']
             py = point['y']
-        return int(px / self.cell_size), int(py / self.cell_size)
+        return (int(px / self.cell_size),
+                int(py / self.cell_size))
 
     def insert_object_for_point(self, point, obj):
         self.contents.setdefault(self._hash(point), set()).add(obj)
 
     def insert_object_for_box(self, box, obj):
+        print(self.contents)
         for cell in self._get_cells(box):
             # append to each intersecting cell
             self.contents.setdefault(cell, set()).add(obj)
@@ -74,8 +84,26 @@ class SpatialHash(object):
         logging.debug(potensial_collisions)
         return potensial_collisions
 
+    @staticmethod
+    def in_bounds(point):
+        return bool(0 <= point[0] < local_db['map_size']['width'] and
+                    0 <= point[1] < local_db['map_size']['height'])
+
     def is_predict_point_collide(self, point):
-        return True if self.contents.get(point, set()) else False
+        # cells = self.contents.get(self._hash(point), set())
+        # if (
+        #     point[0] > local_db['map_size']['width'] - 100 or
+        #     point[0] <= 0 or
+        #     point[1] > local_db['map_size']['height'] - 100 or
+        #     point[1] <= 0
+        # ) and cells:
+        #     return True
+        # return False
+        # import ipdb; ipdb.set_trace()
+        cells = self.contents.get(self._hash(point), set())
+        # if cells:
+        #     import ipdb; ipdb.set_trace()
+        return True if cells else False
 
 
 spatial_hash = SpatialHash()
@@ -122,7 +150,6 @@ class CollisionManager(object):
         return result
 
     def map_collision(self):
-        from db import local_db
         if (
             self.obj.x > local_db['map_size']['width'] - 100 or
             self.obj.x < 0 or

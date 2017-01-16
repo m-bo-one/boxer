@@ -30,6 +30,12 @@ var app = app || {};
         createjs.Sound.muted = true;
 
         app.stage.addChildAt(app.baseImages['map'], 0);
+        app.baseImages['map'].on("click", function(evt) {
+            if (!app.user.buildPath) return;
+            app.user.buildPath([evt.stageX, evt.stageY]);
+            console.log("X: " + evt.stageX);
+            console.log("Y: " + evt.stageY);
+        });
         $(app.canvas).show();
         $('#conn_status').show();
         if (!app.config.is_authorized) {

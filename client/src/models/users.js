@@ -27,6 +27,7 @@ var app = app || {},
             this.maxHealth = options.max_health;
             this.AP = options.AP;
             this.maxAP = options.max_AP;
+            this.steps = options.steps;
             // this.pivot = options.pivot;
             this._options = options;
             this._APCallbacks = [];
@@ -60,6 +61,7 @@ var app = app || {},
             this.action = options.action;
             this.direction = options.direction;
             this.maxAP = options.max_AP;
+            this.steps = options.steps;
 
             if (!this.operationsBlocked && options.hasOwnProperty('extra_data') && options.extra_data.sound_to_play) {
                 setTimeout(function() {
@@ -89,6 +91,9 @@ var app = app || {},
             if (this.AP !== this.maxAP) {
                 this.trigger('action');
             }
+        },
+        buildPath: function(point) {
+            Stream.send('player_build_path', {'point': point});
         },
         move: function(action, direction) {
             if (this.operationsBlocked || this.isDead()) return;

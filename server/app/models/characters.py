@@ -12,7 +12,8 @@ from db import redis_db
 import constants as const
 from .weapons import Weapon
 from .armors import Armor
-from ..engine.colliders import CollisionManager
+from ..engine import CollisionManager
+from ..engine import Pathfinder
 
 
 def field_extractor(inst):
@@ -53,6 +54,7 @@ class CharacterModel(object):
         self.AP = const.MAX_AP
 
         self.operations = []
+        self.steps = []
         self.extra_data = {}
         self.max_health = const.HUMAN_HEALTH
         self.speed = [2, 2]
@@ -129,7 +131,8 @@ class CharacterModel(object):
             'max_health': self.max_health,
             'operations': self.operations,
             'AP': self.AP,
-            'max_AP': const.MAX_AP
+            'max_AP': const.MAX_AP,
+            'steps': self.steps
         }
         # print(data)
         return data
@@ -387,6 +390,21 @@ class CharacterModel(object):
     @autosave
     def stop(self):
         self.move(const.Action.Breathe, self.cmd.direction)
+
+    @autosave
+    def build_path(self, point):
+        point = [int(p) for p in point]
+        if point[0] % self.speed[0]:
+            point[0] = point[0] + 1
+        if point[1] % self.speed[1]:
+            point[1] = point[1] + 1
+
+        self.steps = list(Pathfinder.build_path(self, point))
+        # self.steps = []
+        self.steps.reverse()
+        print('---------\n')
+        print(self.steps)
+        print('\n---------\n')
 
     @autosave
     def move(self, action, direction):

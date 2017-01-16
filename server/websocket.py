@@ -51,10 +51,10 @@ class GameApplication(WebSocketApplication):
         if message:
             message = json.loads(message)
             logging.info('Evaluate msg %s' % message['msg_type'])
-            getattr(self, message['msg_type'])(message)
+            getattr(self, message['msg_type'])(message.get('data', None))
 
     def player_equip(self, message):
-        self.user.equip(message['data']['equipment'])
+        self.user.equip(message['equipment'])
 
     def player_heal(self, message):
         self.user.heal()
@@ -72,10 +72,13 @@ class GameApplication(WebSocketApplication):
             main_queue.put_nowait(char_id)
 
     def player_move(self, message):
-        self.user.move(message['data']['action'], message['data']['direction'])
+        self.user.move(message['action'], message['direction'])
 
     def player_shoot(self, message):
         self.user.shoot()
+
+    def player_build_path(self, message):
+        self.user.build_path(message['point'])
 
 
 def main_ticker(server):

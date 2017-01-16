@@ -1,34 +1,9 @@
 import heapq
 import constants as const
 
-from .colliders import spatial_hash
-
-
-# class SquareGrid:
-#     def __init__(self, width, height):
-#         self.width = width
-#         self.height = height
-#         self.walls = []
-
-#     def in_bounds(self, point):
-#         spatial_hash
-#         (x, y) = id
-#         return 0 <= x < self.width and 0 <= y < self.height
-
-#     def passable(self, id):
-#         return id not in self.walls
-
-#     def neighbors(self, id):
-#         (x, y) = id
-#         results = [(x+1, y), (x, y-1), (x-1, y), (x, y+1)]
-#         if (x + y) % 2 == 0:
-#             results.reverse()  # aesthetics
-#         results = filter(self.in_bounds, results)
-#         results = filter(self.passable, results)
-#         return results
-
 
 class PriorityQueue(object):
+
     def __init__(self):
         self.elements = []
 
@@ -64,11 +39,22 @@ class Pathfinder(object):
             steps.append(self.dir_funcs[direction](point, self.obj.speed))
         return steps
 
-    def passable(self, point):
+    @staticmethod
+    def passable(point):
+        from .colliders import spatial_hash
         return not spatial_hash.is_predict_point_collide(point)
 
+    @staticmethod
+    def in_bounds(point):
+        from .colliders import spatial_hash
+        return spatial_hash.in_bounds(point)
+
     def get_neighbors(self, point):
-        return filter(self.passable, self._possible_steps(point))
+        steps = self._possible_steps(point)
+        if (point[0] + point[1]) % 2 == 0:
+            steps.reverse()  # aesthetics
+        steps = filter(self.in_bounds, steps)
+        return filter(self.passable, steps)
 
     @staticmethod
     def heuristic(a, b):
@@ -83,6 +69,13 @@ class Pathfinder(object):
     def a_star_search(self, goal):
         if goal[0] % self.obj.speed[0] or goal[1] % self.obj.speed[1]:
             raise TypeError('Wrong speed for this coordinates.')
+
+        # check if clicked point has no collision
+        if not self.passable(goal) or not self.in_bounds(goal):
+            return
+
+        print('Point %s' % str(goal))
+
         frontier = PriorityQueue()
         frontier.put(self.start, 0)
         self.came_from = {}
@@ -90,43 +83,36 @@ class Pathfinder(object):
         self.came_from[self.start] = None
         self.cost_so_far[self.start] = 0
 
-        counter = 0
-
         while not frontier.empty():
-            print(counter)
             current = frontier.get()
 
             if current == goal:
                 break
 
             for next in self.get_neighbors(current):
-                new_cost = self.cost_so_far[current] + 1
+                new_cost = self.cost_so_far[current]
                 if (next not in self.cost_so_far or
                    new_cost < self.cost_so_far[next]):
-                    self.cost_so_far[next] = new_cost
+                    self.cost_so_far[next] = new_cost + \
+                        self.cost_so_far.get(current, next)
                     priority = new_cost + self.heuristic(goal, next)
                     frontier.put(next, priority)
                     self.came_from[next] = current
 
-            counter += 1
-
     def reconstruct_path(self, goal):
         if not self.came_from.get(goal):
-            raise TypeError('Path not builded.')
-        current = goal
-        path = [current]
-        # yield current
-        while current != self.start:
-            current = self.came_from[current]
-            # yield current
-        # yield self.start
-            path.append(current)
-        path.append(self.start)  # optional
-        path.reverse()  # optional
-        return path
+            return
+            yield
+        else:
+            current = goal
+            yield current
+            while current != self.start:
+                current = self.came_from[current]
+                yield current
 
     @classmethod
     def build_path(cls, obj, goal, alg='A*'):
+        goal = tuple(goal)
         p = Pathfinder(obj, [
             const.Direction.W,
             const.Direction.S,
@@ -135,4 +121,5 @@ class Pathfinder(object):
         ])
         if alg == 'A*':
             p.a_star_search(goal)
+        # return []
         return p.reconstruct_path(goal)

@@ -55,6 +55,12 @@ var app = app || {},
             this.model.on("action", this.updateAP, this);
             this.updateAP();
         },
+        initSteps: function() {
+            this.stepsLine = new createjs.Shape();
+            this.model.on("change", this.updateSteps, this);
+            this.updateSteps();
+            app.stage.addChild(this.stepsLine);
+        },
         updateFPS: function(FPS) {
             this.textFPS.text = 'FPS: ' + FPS.toFixed(0);
         },
@@ -87,6 +93,18 @@ var app = app || {},
                 dist += size;
             }
         },
+        updateSteps: function() {
+            this.stepsLine.graphics.clear();
+            this.stepsLine.graphics.setStrokeStyle(3);
+            this.stepsLine.graphics.beginStroke(color);
+            // this.stepsLine.graphics.moveTo(0, 0);
+            for (var i = 0; i < this.model.steps.length; i++) {
+                var x = this.model.steps[i][0],
+                    y = this.model.steps[i][1];
+                this.stepsLine.graphics.lineTo(x, y);
+            }
+            this.stepsLine.graphics.endStroke();
+        },
 
         // MAIN
         initialize: function() {
@@ -102,6 +120,7 @@ var app = app || {},
         },
         panelLeft: function() {
             this.initAP();
+            this.initSteps();
         },
         render: function() {
             app.stage.update();
@@ -110,6 +129,7 @@ var app = app || {},
         destroy: function() {
             this.remove();
             this.unbind();
+            app.stage.removeChild(this.stepsLine);
         }
     });
 })();
