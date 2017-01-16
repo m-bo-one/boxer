@@ -18,6 +18,12 @@ class SpatialHash(object):
     def __init__(self, cell_size=32):
         self.cell_size = float(cell_size)
         self.contents = {}
+        # self.make_map()
+
+    # def make_map(self):
+    #     for x in xrange(0, local_db['map_size']['width'], 1):
+    #         for y in xrange(0, local_db['map_size']['width'], 1):
+    #             self.contents.setdefault(self._hash((x, y)), set())
 
     def _hash(self, point):
         if isinstance(point, (tuple, list)):

@@ -17,6 +17,11 @@ class PriorityQueue(object):
         return heapq.heappop(self.elements)[1]
 
 
+def _df(coord):
+    # TODO
+    return coord
+
+
 class Pathfinder(object):
 
     dir_funcs = {
@@ -24,6 +29,11 @@ class Pathfinder(object):
         const.Direction.E: lambda p, s: (p[0] + s[0], p[1]),
         const.Direction.N: lambda p, s: (p[0], p[1] - s[1]),
         const.Direction.S: lambda p, s: (p[0], p[1] + s[1]),
+
+        const.Direction.SW: lambda p, s: (p[0] + _df(s[0]), p[1] + _df(s[1])),
+        const.Direction.SE: lambda p, s: (p[0] - _df(s[0]), p[1] + _df(s[1])),
+        const.Direction.NE: lambda p, s: (p[0] - _df(s[0]), p[1] - _df(s[1])),
+        const.Direction.NW: lambda p, s: (p[0] + _df(s[0]), p[1] - _df(s[1])),
     }
 
     def __init__(self, obj, directions):
@@ -65,6 +75,33 @@ class Pathfinder(object):
     @property
     def start(self):
         return (self.obj.x, self.obj.y)
+
+    def g_bfs_search(self, goal):
+        if goal[0] % self.obj.speed[0] or goal[1] % self.obj.speed[1]:
+            raise TypeError('Wrong speed for this coordinates.')
+
+        # check if clicked point has no collision
+        if not self.passable(goal) or not self.in_bounds(goal):
+            return
+
+        print('Point %s' % str(goal))
+
+        frontier = PriorityQueue()
+        frontier.put(self.start, 0)
+        self.came_from = {}
+        self.came_from[self.start] = None
+
+        while not frontier.empty():
+            current = frontier.get()
+
+            if current == goal:
+                break
+
+            for next in self.get_neighbors(current):
+                if next not in self.came_from:
+                    priority = self.heuristic(goal, next)
+                    frontier.put(next, priority)
+                    self.came_from[next] = current
 
     def a_star_search(self, goal):
         if goal[0] % self.obj.speed[0] or goal[1] % self.obj.speed[1]:
@@ -114,12 +151,18 @@ class Pathfinder(object):
     def build_path(cls, obj, goal, alg='A*'):
         goal = tuple(goal)
         p = Pathfinder(obj, [
-            const.Direction.W,
-            const.Direction.S,
-            const.Direction.E,
             const.Direction.N,
+            const.Direction.E,
+            const.Direction.S,
+            const.Direction.W,
+
+            # const.Direction.SW,
+            # const.Direction.SE,
+            # const.Direction.NE,
+            # const.Direction.NW,
         ])
         if alg == 'A*':
             p.a_star_search(goal)
-        # return []
+        elif alg == 'BFS':
+            p.g_bfs_search(goal)
         return p.reconstruct_path(goal)

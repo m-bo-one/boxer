@@ -71,6 +71,11 @@ class Direction(IntEnum):
     S = 3
     W = 4
 
+    NW = 5
+    NE = 6
+    SW = 7
+    SE = 8
+
 
 class Race(IntEnum):
 
