@@ -1,6 +1,8 @@
 import heapq
 import constants as const
 
+from .colliders import spatial_hash
+
 
 class PriorityQueue(object):
 
@@ -36,22 +38,20 @@ class Pathfinder(object):
         const.Direction.NW: lambda p, s: (p[0] + _df(s[0]), p[1] - _df(s[1])),
     }
 
-    def __init__(self, obj, directions):
+    def __init__(self, obj):
         self.queue = PriorityQueue()
         self.obj = obj
-        self.directions = directions
         self.came_from = {}
         self.cost_so_far = {}
 
-    def _possible_steps(self, point):
+    def _possible_steps(self, point, goal):
         steps = []
-        for direction in self.directions:
+        for direction in self._aesthetics_directions(point, goal):
             steps.append(self.dir_funcs[direction](point, self.obj.speed))
         return steps
 
     @staticmethod
     def passable(point):
-        from .colliders import spatial_hash
         return not spatial_hash.is_predict_point_collide(point)
 
     @staticmethod
@@ -59,12 +59,101 @@ class Pathfinder(object):
         from .colliders import spatial_hash
         return spatial_hash.in_bounds(point)
 
-    def get_neighbors(self, point):
-        steps = self._possible_steps(point)
-        if (point[0] + point[1]) % 2 == 0:
-            steps.reverse()  # aesthetics
+    def get_neighbors(self, point, goal):
+        steps = self._possible_steps(point, goal)
         steps = filter(self.in_bounds, steps)
         return filter(self.passable, steps)
+
+    def _aesthetics_directions(self, point, goal):
+        if point[0] <= goal[0] and point[1] <= goal[1]:
+            if goal[0] - point[0] > goal[1] - point[1]:
+                directions = [const.Direction.E,
+                              const.Direction.SE,
+                              # const.Direction.S,
+                              const.Direction.NE,
+                              # const.Direction.N,
+                              const.Direction.NW,
+                              const.Direction.W,
+                              const.Direction.SW
+                              ]
+            else:
+                directions = [
+                              # const.Direction.S,
+                              const.Direction.SE,
+                              const.Direction.E,
+                              const.Direction.NE,
+                              # const.Direction.N,
+                              const.Direction.NW,
+                              const.Direction.W,
+                              const.Direction.SW
+                              ]
+        elif point[0] <= goal[0] and point[1] >= goal[1]:
+            if goal[0] - point[0] > -(goal[1] - point[1]):
+                directions = [const.Direction.E,
+                              const.Direction.NE,
+                              # const.Direction.N,
+                              const.Direction.SE,
+                              # const.Direction.S,
+                              const.Direction.NW,
+                              const.Direction.W,
+                              const.Direction.SW
+                              ]
+            else:
+                directions = [
+                              # const.Direction.N,
+                              const.Direction.NE,
+                              const.Direction.E,
+                              const.Direction.SE,
+                              # const.Direction.S,
+                              const.Direction.NW,
+                              const.Direction.W,
+                              const.Direction.SW
+                              ]
+        elif point[0] >= goal[0] and point[1] <= goal[1]:
+            if -(goal[0] - point[0]) > goal[1] - point[1]:
+                directions = [const.Direction.W,
+                              const.Direction.SW,
+                              # const.Direction.S,
+                              const.Direction.SE,
+                              # const.Direction.N,
+                              const.Direction.NW,
+                              const.Direction.E,
+                              const.Direction.NE,
+                              ]
+            else:
+                directions = [
+                              # const.Direction.S,
+                              const.Direction.SW,
+                              const.Direction.W,
+                              const.Direction.SE,
+                              # const.Direction.N,
+                              const.Direction.NW,
+                              const.Direction.E,
+                              const.Direction.NE,
+                              ]
+        elif point[0] >= goal[0] and point[1] >= goal[1]:
+            if -(goal[0] - point[0]) > -(goal[1] - point[1]):
+                directions = [const.Direction.W,
+                              const.Direction.NW,
+                              # const.Direction.N,
+                              const.Direction.NE,
+                              # const.Direction.S,
+                              const.Direction.NW,
+                              const.Direction.E,
+                              const.Direction.NE,
+                              ]
+            else:
+                directions = [
+                              # const.Direction.N,
+                              const.Direction.NW,
+                              const.Direction.W,
+                              const.Direction.NE,
+                              # const.Direction.S,
+                              const.Direction.NW,
+                              const.Direction.E,
+                              const.Direction.NE,
+                              ]
+        return directions
 
     @staticmethod
     def heuristic(a, b):
@@ -76,6 +165,14 @@ class Pathfinder(object):
     def start(self):
         return (self.obj.x, self.obj.y)
 
+    def _coord_to_int(self, point):
+        point = [int(p) for p in point]
+        if point[0] % self.obj.speed[0]:
+            point[0] = point[0] + 1
+        if point[1] % self.obj.speed[1]:
+            point[1] = point[1] + 1
+        return tuple(point)
+
     def g_bfs_search(self, goal):
         if goal[0] % self.obj.speed[0] or goal[1] % self.obj.speed[1]:
             raise TypeError('Wrong speed for this coordinates.')
@@ -84,12 +181,14 @@ class Pathfinder(object):
         if not self.passable(goal) or not self.in_bounds(goal):
             return
 
+        start = self._coord_to_int(self.start)
+
         print('Point %s' % str(goal))
 
         frontier = PriorityQueue()
-        frontier.put(self.start, 0)
+        frontier.put(start, 0)
         self.came_from = {}
-        self.came_from[self.start] = None
+        self.came_from[start] = None
 
         while not frontier.empty():
             current = frontier.get()
@@ -97,10 +196,11 @@ class Pathfinder(object):
             if current == goal:
                 break
 
-            for next in self.get_neighbors(current):
+            for next in self.get_neighbors(current, goal):
                 if next not in self.came_from:
                     priority = self.heuristic(goal, next)
                     frontier.put(next, priority)
+                    print(next)
                     self.came_from[next] = current
 
     def a_star_search(self, goal):
@@ -111,14 +211,16 @@ class Pathfinder(object):
         if not self.passable(goal) or not self.in_bounds(goal):
             return
 
+        start = self._coord_to_int(self.start)
+
         print('Point %s' % str(goal))
 
         frontier = PriorityQueue()
         frontier.put(self.start, 0)
         self.came_from = {}
         self.cost_so_far = {}
-        self.came_from[self.start] = None
-        self.cost_so_far[self.start] = 0
+        self.came_from[start] = None
+        self.cost_so_far[start] = 0
 
         while not frontier.empty():
             current = frontier.get()
@@ -126,12 +228,12 @@ class Pathfinder(object):
             if current == goal:
                 break
 
-            for next in self.get_neighbors(current):
+            for next in self.get_neighbors(current, goal):
                 new_cost = self.cost_so_far[current]
                 if (next not in self.cost_so_far or
                    new_cost < self.cost_so_far[next]):
                     self.cost_so_far[next] = new_cost + \
-                        self.cost_so_far.get(current, next)
+                        self.cost_so_far.get(current, 1)
                     priority = new_cost + self.heuristic(goal, next)
                     frontier.put(next, priority)
                     self.came_from[next] = current
@@ -141,26 +243,17 @@ class Pathfinder(object):
             return
             yield
         else:
+            start = self._coord_to_int(self.start)
             current = goal
             yield current
-            while current != self.start:
+            while current != start:
                 current = self.came_from[current]
                 yield current
 
     @classmethod
     def build_path(cls, obj, goal, alg='A*'):
         goal = tuple(goal)
-        p = Pathfinder(obj, [
-            const.Direction.N,
-            const.Direction.E,
-            const.Direction.S,
-            const.Direction.W,
-
-            # const.Direction.SW,
-            # const.Direction.SE,
-            # const.Direction.NE,
-            # const.Direction.NW,
-        ])
+        p = Pathfinder(obj)
         if alg == 'A*':
             p.a_star_search(goal)
         elif alg == 'BFS':

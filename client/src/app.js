@@ -25,7 +25,20 @@ $(function () {
         if (_.isEmpty(app.user) || app.commandsBlocked || app.keys[38] && app.keys[87] || app.keys[40] && app.keys[83] ||
           app.keys[39] && app.keys[68] || app.keys[37] && app.keys[65]) return;
 
-        if (app.keys[38] || app.keys[87]) {
+        if (app.keys[38] && app.keys[37] || app.keys[87] && app.keys[65]) {
+            app.user.move(app.constants.Action.Walk, app.constants.Direction.NW);
+        }
+        else if (app.keys[38] && app.keys[39] || app.keys[87] && app.keys[68]) {
+            app.user.move(app.constants.Action.Walk, app.constants.Direction.NE);
+        }
+        else if (app.keys[40] && app.keys[37] || app.keys[83] && app.keys[65]) {
+            app.user.move(app.constants.Action.Walk, app.constants.Direction.SW);
+        }
+        else if (app.keys[40] && app.keys[39] || app.keys[83] && app.keys[68]) {
+            app.user.move(app.constants.Action.Walk, app.constants.Direction.SE);
+        }
+
+        else if (app.keys[38] || app.keys[87]) {
             app.user.move(app.constants.Action.Walk, app.constants.Direction.N);
         }
         else if (app.keys[40] || app.keys[83]) {

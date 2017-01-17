@@ -7,7 +7,9 @@ import time
 from enum import IntEnum, Enum
 
 import gevent
+from gevent.pool import Pool
 
+from utils import lookahead
 from db import redis_db
 import constants as const
 from .weapons import Weapon
@@ -29,6 +31,8 @@ def field_extractor(inst):
 
 
 class CharacterModel(object):
+
+    max_pool_size = 100
 
     fields = ('id', 'user_id', 'race', 'name', 'health', 'weapon',
               'armor', 'scores', 'inventory')
@@ -53,6 +57,7 @@ class CharacterModel(object):
         self.inventory = inventory
         self.AP = const.MAX_AP
 
+        self._pool = Pool(self.max_pool_size)
         self.operations = []
         self.steps = []
         self.extra_data = {}
@@ -108,7 +113,7 @@ class CharacterModel(object):
         return char
 
     def to_dict(self):
-        data = {
+        return {
             'id': self.id,
             'name': self.name,
             'race': self.race.value,
@@ -134,8 +139,6 @@ class CharacterModel(object):
             'max_AP': const.MAX_AP,
             'steps': self.steps
         }
-        # print(data)
-        return data
 
     # @property
     # def size(self):
@@ -248,12 +251,15 @@ class CharacterModel(object):
         else:
             return False
 
-    def _delayed_command(self, delay, fname):
+    def _delayed_command(self, delay, fname, *args, **kwargs):
 
-        def _callback():
-            getattr(self, fname)()
+        def _callback(*args, **kwargs):
+            getattr(self, fname)(*args, **kwargs)
 
-        return gevent.spawn_later(delay, _callback)
+        g = self._pool.greenlet_class(_callback, *args, **kwargs)
+        self._pool.add(g)
+        g.start_later(delay)
+        return g
 
     @autosave
     def shoot(self):
@@ -387,24 +393,60 @@ class CharacterModel(object):
         except KeyError:
             pass
 
-    @autosave
-    def stop(self):
-        self.move(const.Action.Breathe, self.cmd.direction)
+    PATH_TREADS = {}
 
     @autosave
     def build_path(self, point):
+        # self.stop()
+
+        if self.PATH_TREADS.get(self.id):
+            self.PATH_TREADS[self.id].kill()
+            self.PATH_TREADS[self.id] = None
+
         point = [int(p) for p in point]
         if point[0] % self.speed[0]:
             point[0] = point[0] + 1
         if point[1] % self.speed[1]:
             point[1] = point[1] + 1
 
-        self.steps = list(Pathfinder.build_path(self, point))
-        # self.steps = []
-        self.steps.reverse()
-        print('---------\n')
-        print(self.steps)
-        print('\n---------\n')
+        print(self.coords)
+        pf = Pathfinder.build_path(self, point, 'BFS')
+
+        def _move(pf, prev_step):
+            self.steps = []
+            for step, has_more in lookahead(reversed(list(pf))):
+                if prev_step[0] - step[0] == 0:
+                    logging.debug('UID: %s, GO Y', self.id)
+                    if step[1] - prev_step[1] >= 0:
+                        logging.debug('UID: %s, GO BOTTOM', self.id)
+                        direction = const.Direction.S
+                    else:
+                        logging.debug('UID: %s, GO TOP', self.id)
+                        direction = const.Direction.N
+                elif prev_step[1] - step[1] == 0:
+                    logging.debug('UID: %s, GO X', self.id)
+                    if step[0] - prev_step[0] >= 0:
+                        logging.debug('UID: %s, GO RIGHT', self.id)
+                        direction = const.Direction.E
+                    else:
+                        logging.debug('UID: %s, GO LEFT', self.id)
+                        direction = const.Direction.W
+
+                prev_step = step
+
+                self.steps.append(step)
+                self.move(const.Action.Walk, direction)
+                gevent.sleep(0.0175)
+                if not has_more:
+                    self.stop()
+
+            self.PATH_TREADS[self.id] = None
+
+        self.PATH_TREADS[self.id] = self._pool.spawn(_move, pf, self.coords)
+
+    @autosave
+    def stop(self):
+        self.move(const.Action.Breathe, self.cmd.direction)
 
     @autosave
     def move(self, action, direction):
@@ -425,6 +467,19 @@ class CharacterModel(object):
                      self.weapon.name.value)
 
         if self.cmd.action == const.Action.Walk:
+            import math
+            if self.cmd.direction == const.Direction.NE:
+                self.cmd.x += self.speed[0] / float(math.sqrt(2))
+                self.cmd.y -= self.speed[1] / float(math.sqrt(2))
+            elif self.cmd.direction == const.Direction.NW:
+                self.cmd.x -= self.speed[0] / float(math.sqrt(2))
+                self.cmd.y -= self.speed[1] / float(math.sqrt(2))
+            elif self.cmd.direction == const.Direction.SE:
+                self.cmd.x += self.speed[0] / float(math.sqrt(2))
+                self.cmd.y += self.speed[1] / float(math.sqrt(2))
+            elif self.cmd.direction == const.Direction.SW:
+                self.cmd.x -= self.speed[0] / float(math.sqrt(2))
+                self.cmd.y += self.speed[1] / float(math.sqrt(2))
             if self.cmd.direction == const.Direction.N:
                 self.cmd.y -= self.speed[1]
             elif self.cmd.direction == const.Direction.S:

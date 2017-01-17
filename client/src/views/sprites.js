@@ -32,7 +32,7 @@ var app = app || {},
                 this.model.currentSprite.gotoAndPlay(this.model.animation.key);
             }
             if (app.config.DEBUG) {
-                // this._debugBorder();
+                this._debugBorder();
                 // this.renderPivot();
             }
             this.updateUsername();

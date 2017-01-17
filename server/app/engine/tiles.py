@@ -1,7 +1,5 @@
-import os
 import pytmx
 
-from conf import settings
 from .colliders import spatial_hash
 
 
@@ -23,6 +21,3 @@ class TiledReader(object):
             'min': (obj.x, obj.y),
             'max': (obj.x + obj.width, obj.y + obj.height)
         }
-
-TiledReader.read_and_add_collision(
-    os.path.join(settings.ASSETS_PATH, 'map.tmx'))

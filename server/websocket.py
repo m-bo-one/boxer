@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, unicode_literals
 
+import os
 import logging
 import json
 from collections import OrderedDict
@@ -15,7 +16,7 @@ from conf import settings
 from utils import setup_logging
 from db import local_db
 from app.models import CharacterModel
-from app.engine.colliders import spatial_hash
+from app.engine import spatial_hash, TiledReader
 
 
 main_queue = Queue()
@@ -109,6 +110,8 @@ def main_ticker(server):
 
 if __name__ == '__main__':
     try:
+        TiledReader.read_and_add_collision(
+            os.path.join(settings.ASSETS_PATH, 'map.tmx'))
         CharacterModel.delete()
         log_params = {}
         if not settings.DEBUG:
