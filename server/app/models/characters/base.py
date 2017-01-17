@@ -248,7 +248,7 @@ class CharacterModel(object):
             not self.operations_blocked,
             self.AP - const.FIRE_AP >= 0
         ]):
-            self._kill_path()
+            self._clear_greenlets()
             self.cmd.action = const.Action.Attack
             self.block_operation('shoot')
             self.use_AP(const.FIRE_AP)
@@ -285,18 +285,17 @@ class CharacterModel(object):
 
     def restore_AP(self):
         x = 0
-        CharacterModel._kill_AP_threads(self.id)
+        self._kill_AP_threads()
         for _ in range(const.MAX_AP - self.AP):
             thread = self._delayed_command(x, 'incr_AP')
             self.AP_stats[self.id].append(thread)
             x += 1
 
-    @classmethod
-    def _kill_AP_threads(cls, id):
-        cls.AP_stats.setdefault(id, [])
-        if cls.AP_stats.get(id):
-            gevent.killall(cls.AP_stats[id])
-            cls.AP_stats[id] = []
+    def _kill_AP_threads(self):
+        self.AP_stats.setdefault(self.id, [])
+        if self.AP_stats.get(self.id):
+            gevent.killall(self.AP_stats[self.id])
+            self.AP_stats[self.id] = []
 
     @autosave
     def incr_AP(self):
@@ -345,7 +344,7 @@ class CharacterModel(object):
 
     @autosave
     def kill(self):
-        CharacterModel._kill_AP_threads(self.id)
+        self._kill_AP_threads()
         death_actions = [const.DeathAction.Melt]
         self.cmd.action = random.choice(death_actions)
         self.extra_data['resurection_time'] = const.RESURECTION_TIME
@@ -381,11 +380,14 @@ class CharacterModel(object):
         except (KeyError, AttributeError):
             pass
 
+    def _clear_greenlets(self):
+        self._kill_AP_threads()
+        self._kill_path()
+
     @autosave
     def build_path(self, point):
-        CharacterModel._kill_AP_threads(self.id)
+        self._clear_greenlets()
         self.stop()
-        self._kill_path()
 
         point = [int(p) for p in point]
         if point[0] % self.speed[0]:
@@ -435,7 +437,6 @@ class CharacterModel(object):
                 if not has_more:
                     self.stop()
                     self._delayed_command(1, 'restore_AP')
-                    self._kill_path()
 
         self.PATH_TREADS[self.id] = self._pool.spawn(_move, pf, self.coords)
 

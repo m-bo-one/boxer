@@ -142,7 +142,7 @@ class Heavy(object):
 
     @property
     def SOUND(self):
-        return random.choice(['fire', 'fire2', 'fire3'])
+        return random.choice(['fire'])
 
     @property
     def damage(self):

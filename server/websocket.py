@@ -27,11 +27,7 @@ class GameApplication(WebSocketApplication):
     @staticmethod
     def _g_cleaner(user):
         # spatial_hash.remove_obj_by_point(user.pivot, user)
-        CharacterModel._kill_AP_threads(user.id)
-        try:
-            del CharacterModel.AP_stats[user.id]
-        except KeyError:
-            pass
+        user.clear_greenlets()
         try:
             local_db['characters'].remove(user)
         except KeyError:
