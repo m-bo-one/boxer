@@ -66,7 +66,8 @@ class Weapon(object):
     def __init__(self, name, user):
         _weapons = {
             const.Weapon.Unarmed: Unarmed,
-            const.Weapon.Heavy: Heavy
+            const.Weapon.Heavy: Heavy,
+            const.Weapon.Rifle: Rifle,
         }
         self.name = name
         self.w = _weapons[const.Weapon(name)]()
@@ -96,6 +97,37 @@ class Unarmed(object):
 
     def shoot(self, detected):
         raise NotImplementedError()
+
+
+class Rifle(object):
+
+    DMG = (45, 60)
+    RANGE = 210  # px
+    SPECTRE = 30  # degree
+    CRIT_CHANCE = 30  # persent
+    CRIT_MULTIPLIER = 2
+    SHOOT_TIME = 1.1
+    CHARGE_TYPE = 'bullet'
+
+    @property
+    def SOUND(self):
+        return random.choice(['fire3'])
+
+    @property
+    def damage(self):
+        return int(random.choice(xrange(self.DMG[0],
+                                        self.DMG[1],
+                                        1)))
+
+    def shoot(self, detected):
+        calc_damage = int(self.damage / len(detected))
+
+        if random.randrange(100) < self.CRIT_CHANCE:
+            calc_damage = self.CRIT_MULTIPLIER * calc_damage
+
+        for other in detected:
+            if other.got_hit(self.user.weapon, calc_damage):  # killed
+                self.user._delayed_command(0, 'update_scores')
 
 
 class Heavy(object):

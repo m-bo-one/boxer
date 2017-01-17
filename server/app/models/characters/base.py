@@ -4,7 +4,6 @@ import logging
 import random
 import json
 import time
-from enum import IntEnum, Enum
 
 import gevent
 from gevent.pool import Pool
@@ -12,22 +11,10 @@ from gevent.pool import Pool
 from utils import lookahead
 from db import redis_db
 import constants as const
-from .weapons import Weapon
-from .armors import Armor
-from ..engine import CollisionManager
-from ..engine import Pathfinder
-
-
-def field_extractor(inst):
-    data = {}
-    for field in inst.fields:
-        value = getattr(inst, field)
-        if isinstance(value, (Enum, IntEnum)):
-            value = value.value
-        elif isinstance(value, (Weapon, Armor)):
-            value = value.name.value
-        data[field] = value
-    return data
+from .commands import CmdModel, field_extractor
+from ..weapons import Weapon
+from ..armors import Armor
+from ...engine import Pathfinder, CollisionManager
 
 
 class CharacterModel(object):
@@ -61,7 +48,7 @@ class CharacterModel(object):
         self.operations = []
         self.steps = []
         self.extra_data = {}
-        self.max_health = const.HUMAN_HEALTH
+        self.max_health = self.setup_params['health']
         self.speed = [2, 2]
         if self.id:
             self.cmd = CmdModel.get_last_or_create(self.id)
@@ -95,15 +82,8 @@ class CharacterModel(object):
         return CharacterModel.delete(self.id)
 
     @classmethod
-    def create(cls, user_id, name,
-               race='random',
-               health=100,
-               weapon=const.Weapon.Heavy,
-               armor=const.Armor.Unarmored):
-        if race == 'random':
-            race = random.choice([const.Race.Ghoul,
-                                  const.Race.Mutant,
-                                  const.Race.Pipboy])
+    def create(cls, user_id, name, race, health, weapon, armor,
+               *args, **kwargs):
         char = cls(id=None, user_id=user_id, race=race, name=name,
                    health=health, weapon=weapon, armor=armor, scores=0,
                    inventory=[])
@@ -268,6 +248,7 @@ class CharacterModel(object):
             not self.operations_blocked,
             self.AP - const.FIRE_AP >= 0
         ]):
+            self._kill_path()
             self.cmd.action = const.Action.Attack
             self.block_operation('shoot')
             self.use_AP(const.FIRE_AP)
@@ -295,10 +276,7 @@ class CharacterModel(object):
         if type == 'weapon' and self.weapon_in_hands:
             self.weapon = Weapon(const.Weapon.Unarmed, self)
         elif type == 'weapon':
-            self.weapon = Weapon(const.Weapon.Heavy, self)
-
-        if type == 'armor':
-            self.armor = Armor(const.Armor.GhoulArmour, self)
+            self.weapon = Weapon(self.setup_params['weapon'], self)
 
     def use_AP(self, p):
         self.AP -= p
@@ -400,11 +378,12 @@ class CharacterModel(object):
             self.PATH_TREADS[self.id].kill()
             self.PATH_TREADS[self.id] = None
             self.steps = []
-        except KeyError:
+        except (KeyError, AttributeError):
             pass
 
     @autosave
     def build_path(self, point):
+        CharacterModel._kill_AP_threads(self.id)
         self.stop()
         self._kill_path()
 
@@ -414,11 +393,9 @@ class CharacterModel(object):
         if point[1] % self.speed[1]:
             point[1] = point[1] + 1
 
-        print(self.coords)
         pf = Pathfinder.build_path(self, point, 'BFS')
 
         def _move(pf, prev_step):
-            self.steps = []
             for step, has_more in lookahead(reversed(list(pf))):
                 if prev_step[0] - step[0] != 0 and prev_step[1] - step[1] != 0:
                     logging.debug('UID: %s, define GO', self.id)
@@ -454,9 +431,10 @@ class CharacterModel(object):
 
                 self.steps.append(step)
                 self.move(const.Action.Walk, direction)
-                gevent.sleep(0.0175)
+                gevent.sleep(0.01)
                 if not has_more:
                     self.stop()
+                    self._delayed_command(1, 'restore_AP')
                     self._kill_path()
 
         self.PATH_TREADS[self.id] = self._pool.spawn(_move, pf, self.coords)
@@ -509,70 +487,3 @@ class CharacterModel(object):
         # if self.cm.is_collide:
         #     self.cmd.x = x
         #     self.cmd.y = y
-
-
-class CmdModel(object):
-
-    fields = ('id', 'x', 'y', 'action', 'direction')
-
-    def __init__(self, id, character_id, x, y, action, direction):
-        self.id = id
-        self.character_id = int(character_id)
-        self.x = x
-        self.y = y
-        self.action = const.Action(action)
-        self.direction = const.Direction(direction)
-
-    def __repr__(self):
-        return '<CmdModel: id - %s>' % self.id
-
-    @classmethod
-    def create(cls, character_id,
-               x=0, y=0,
-               action=const.Action.Breathe,
-               direction=const.Direction.W):
-        cmd = cls(id=None, character_id=character_id, x=x, y=y,
-                  action=action, direction=direction)
-        cmd.save()
-        return cmd
-
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'x': self.x,
-            'y': self.y,
-            'action': self.action,
-            'direction': self.direction,
-        }
-
-    def to_json(self):
-        return json.dumps(field_extractor(self))
-
-    def save(self):
-        if not self.id:
-            self.id = redis_db.incr('cmds:ids')
-        return redis_db.rpush('cmds:%s' % self.character_id, self.to_json())
-
-    @classmethod
-    def last(cls, character_id):
-        try:
-            cmd = redis_db.lrange('cmds:%s' % character_id, -1, -1)[0]
-            return cls(character_id=character_id, **json.loads(cmd))
-        except IndexError:
-            pass
-
-    @classmethod
-    def delete(cls):
-        keys = redis_db.keys('cmds:*')
-        if keys:
-            return redis_db.delete(*[key for key in keys if key != 'ids'])
-        return 0
-
-    @classmethod
-    def get_last_or_create(cls, character_id):
-        if character_id is None:
-            raise TypeError("Can't be None")
-        cmd = CmdModel.last(character_id)
-        if not cmd:
-            cmd = CmdModel.create(character_id)
-        return cmd

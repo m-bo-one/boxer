@@ -15,7 +15,7 @@ from geventwebsocket import (
 from conf import settings
 from utils import setup_logging
 from db import local_db
-from app.models import CharacterModel
+from app.models import CharacterModel, Outlander
 from app.engine import spatial_hash, TiledReader
 
 
@@ -61,8 +61,8 @@ class GameApplication(WebSocketApplication):
         self.user.heal()
 
     def register_user(self, message):
-        self.user = CharacterModel.create(user_id=1, name='hello')
-        print(self.user.id)
+        self.user = Outlander.create(user_id=1, name='hello')
+        logging.debug(self.user.id)
         local_db['characters'].add(self.user)
         self.broadcast('register_user', self.user.to_dict())
 
@@ -73,13 +73,10 @@ class GameApplication(WebSocketApplication):
             main_queue.put_nowait(char_id)
 
     def player_move(self, message):
-        self.user.move(message['action'], message['direction'])
+        self.user.build_path(message['point'])
 
     def player_shoot(self, message):
         self.user.shoot()
-
-    def player_build_path(self, message):
-        self.user.build_path(message['point'])
 
 
 def main_ticker(server):

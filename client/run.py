@@ -214,7 +214,10 @@ class BaseHttpRunner(object):
             })
 
         try:
+            username = username.strip()
+            password = password.strip()
             self._create_simple_user(username, password)
+            self.ceng.login(username, password)
         except (AAAException, AuthException) as e:
             return self.json_response({
                 'status': 'error',

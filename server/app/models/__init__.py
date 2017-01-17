@@ -1,2 +1,3 @@
 from .users import UserModel
-from .characters import CharacterModel, CmdModel
+from .commands import CmdModel
+from .characters import CharacterModel, Outlander

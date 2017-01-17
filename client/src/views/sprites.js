@@ -110,16 +110,16 @@ var app = app || {},
             app.stage.addChild(this.initHP);
         },
         updateHP: function() {
-            if (this.model.health == 100) {
+            if (this.model.health == this.model.maxHealth) {
                 _hpColor = '#156526';
                 _stars = ' * '.repeat(4);
-            } else if (66 < this.model.health && this.model.health <= 100) {
+            } else if (this.model.maxHealth * 0.66 < this.model.health && this.model.health <= this.model.maxHealth) {
                 _hpColor = '#1de592';
                 _stars = ' * '.repeat(3);
-            } else if (33 < this.model.health && this.model.health <= 66) {
+            } else if (this.model.maxHealth * 0.33 < this.model.health && this.model.health <= this.model.maxHealth * 0.66) {
                 _hpColor = '#FF7400';
                 _stars = ' * '.repeat(2);
-            } else if (0 < this.model.health && this.model.health <= 33) {
+            } else if (0 < this.model.health && this.model.health <= this.model.maxHealth * 0.33) {
                 _hpColor = '#990000';
                 _stars = ' * '.repeat(1);
             } else {

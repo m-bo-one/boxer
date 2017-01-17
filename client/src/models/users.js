@@ -66,7 +66,7 @@ var app = app || {},
             if (!this.operationsBlocked && options.hasOwnProperty('extra_data') && options.extra_data.sound_to_play) {
                 setTimeout(function() {
                     createjs.Sound.play(options.extra_data.sound_to_play);
-                }, 200);
+                }, 300);
             }
             this.operationsBlocked = options.operations_blocked;
 
@@ -92,16 +92,9 @@ var app = app || {},
                 this.trigger('action');
             }
         },
-        buildPath: function(point) {
-            Stream.send('player_build_path', {'point': point});
-        },
-        move: function(action, direction) {
+        move: function(point) {
             if (this.operationsBlocked || this.isDead()) return;
-            utils._LOG('Send move: direction - ' + direction + '; action - ' + action);
-            Stream.send('player_move', {
-                'action': action,
-                'direction': direction
-            });
+            Stream.send('player_move', {'point': point});
         },
         shoot: function () {
             if (this.operationsBlocked || !this.equipedByWeapon() || this.AP < 5) return;

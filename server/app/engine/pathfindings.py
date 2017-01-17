@@ -70,20 +70,20 @@ class Pathfinder(object):
             if goal[0] - point[0] > goal[1] - point[1]:
                 directions = [const.Direction.E,
                               const.Direction.SE,
-                              # const.Direction.S,
+                              const.Direction.S,
                               const.Direction.NE,
-                              # const.Direction.N,
+                              const.Direction.N,
                               const.Direction.NW,
                               const.Direction.W,
                               const.Direction.SW
                               ]
             else:
                 directions = [
-                              # const.Direction.S,
+                              const.Direction.S,
                               const.Direction.SE,
                               const.Direction.E,
                               const.Direction.NE,
-                              # const.Direction.N,
+                              const.Direction.N,
                               const.Direction.NW,
                               const.Direction.W,
                               const.Direction.SW
@@ -92,20 +92,20 @@ class Pathfinder(object):
             if goal[0] - point[0] > -(goal[1] - point[1]):
                 directions = [const.Direction.E,
                               const.Direction.NE,
-                              # const.Direction.N,
+                              const.Direction.N,
                               const.Direction.SE,
-                              # const.Direction.S,
+                              const.Direction.S,
                               const.Direction.NW,
                               const.Direction.W,
                               const.Direction.SW
                               ]
             else:
                 directions = [
-                              # const.Direction.N,
+                              const.Direction.N,
                               const.Direction.NE,
                               const.Direction.E,
                               const.Direction.SE,
-                              # const.Direction.S,
+                              const.Direction.S,
                               const.Direction.NW,
                               const.Direction.W,
                               const.Direction.SW
@@ -114,20 +114,20 @@ class Pathfinder(object):
             if -(goal[0] - point[0]) > goal[1] - point[1]:
                 directions = [const.Direction.W,
                               const.Direction.SW,
-                              # const.Direction.S,
+                              const.Direction.S,
                               const.Direction.SE,
-                              # const.Direction.N,
+                              const.Direction.N,
                               const.Direction.NW,
                               const.Direction.E,
                               const.Direction.NE,
                               ]
             else:
                 directions = [
-                              # const.Direction.S,
+                              const.Direction.S,
                               const.Direction.SW,
                               const.Direction.W,
                               const.Direction.SE,
-                              # const.Direction.N,
+                              const.Direction.N,
                               const.Direction.NW,
                               const.Direction.E,
                               const.Direction.NE,
@@ -136,20 +136,20 @@ class Pathfinder(object):
             if -(goal[0] - point[0]) > -(goal[1] - point[1]):
                 directions = [const.Direction.W,
                               const.Direction.NW,
-                              # const.Direction.N,
+                              const.Direction.N,
                               const.Direction.NE,
-                              # const.Direction.S,
+                              const.Direction.S,
                               const.Direction.NW,
                               const.Direction.E,
                               const.Direction.NE,
                               ]
             else:
                 directions = [
-                              # const.Direction.N,
+                              const.Direction.N,
                               const.Direction.NW,
                               const.Direction.W,
                               const.Direction.NE,
-                              # const.Direction.S,
+                              const.Direction.S,
                               const.Direction.NW,
                               const.Direction.E,
                               const.Direction.NE,
@@ -184,8 +184,6 @@ class Pathfinder(object):
 
         start = self._coord_to_int(self.start)
 
-        print('Point %s' % str(goal))
-
         frontier = PriorityQueue()
         frontier.put(start, 0)
         self.came_from = {}
@@ -201,7 +199,6 @@ class Pathfinder(object):
                 if next not in self.came_from:
                     priority = self.heuristic(goal, next)
                     frontier.put(next, priority)
-                    print(next)
                     self.came_from[next] = current
 
     def a_star_search(self, goal):
@@ -213,8 +210,6 @@ class Pathfinder(object):
             return
 
         start = self._coord_to_int(self.start)
-
-        print('Point %s' % str(goal))
 
         frontier = PriorityQueue()
         frontier.put(self.start, 0)

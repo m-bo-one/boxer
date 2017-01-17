@@ -31,8 +31,7 @@ var app = app || {};
 
         app.stage.addChildAt(app.baseImages['map'], 0);
         app.baseImages['map'].on("click", function(evt) {
-            if (!app.user.buildPath) return;
-            app.user.buildPath([evt.stageX, evt.stageY]);
+            app.user.move([evt.stageX, evt.stageY]);
             console.log("X: " + evt.stageX);
             console.log("Y: " + evt.stageY);
         });

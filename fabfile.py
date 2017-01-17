@@ -56,41 +56,36 @@ def update_asset_meta(fpath, speed=0.3):
         json.dump(data, outfile)
 
 
-def gif2png(folder_path):
+def gif2png(folder_path, sprite=None):
     from gevent import monkey; monkey.patch_all()  # noqa
     import gevent
     from PIL import Image
 
     threads = []
-    # files = get_files_from_dir(folder_path)
-    nfiles = (
-        'StandAttackHeavyBurst_N.gif',
-        'StandAttackHeavyBurst_E.gif',
-        'StandAttackHeavyBurst_W.gif',
-        'StandAttackHeavyBurst_S.gif',
-        'StandBreatheHeavy_N.gif',
-        'StandBreatheHeavy_E.gif',
-        'StandBreatheHeavy_W.gif',
-        'StandBreatheHeavy_S.gif',
-        'StandWalkHeavy_N.gif',
-        'StandWalkHeavy_E.gif',
-        'StandWalkHeavy_W.gif',
-        'StandWalkHeavy_S.gif',
-        'StandBreathe_N.gif',
-        'StandBreathe_E.gif',
-        'StandBreathe_W.gif',
-        'StandBreathe_S.gif',
-        'StandWalk_N.gif',
-        'StandWalk_E.gif',
-        'StandWalk_W.gif',
-        'StandWalk_S.gif',
-        'StandMagichigh_N.gif',
-        'StandMagichigh_E.gif',
-        'StandMagichigh_W.gif',
-        'StandMagichigh_S.gif',
+    directions = ('N', 'E', 'W', 'S', 'NE', 'NW', 'SE', 'SW')
+    lfiles = (
+        # 'StandAttackHeavyBurst',
+        # 'StandAttackHeavySingle',
+        # 'StandBreatheHeavy',
+        # 'StandWalkHeavy',
+        'StandBreathe',
+        'StandWalk',
+        'StandMagichigh',
+        # 'StandAttackThrow',
+        'StandBreatheRifle',
+        'StandWalkRifle',
+        'StandAttackRifleSingle',
+        'StandAttackRifleBurst',
+        'StandRun',
+        'DeathRiddled',
+        'DeathExplode',
     )
-    files = [os.path.join(_dir, nfile)
-             for _dir in os.listdir(folder_path) for nfile in nfiles]
+    nfiles = ["_".join([nfile, d + ".gif"])
+              for nfile in lfiles for d in directions]
+    files = (os.path.join(_dir, nfile)
+             for _dir in os.listdir(folder_path) for nfile in nfiles)
+    if sprite:
+        files = (f for f in files if sprite in f)
 
     def gen_png(fname):
         try:
@@ -111,12 +106,12 @@ def gif2png(folder_path):
             counter = 0
             while 1:
                 im.seek(im.tell()+1)
-                # pixdata = im.load()
+                pixdata = im.load()
 
-                # for y in range(im.size[1]):
-                #     for x in range(im.size[0]):
-                #         if pixdata[x, y] == (255, 255, 255, 255):
-                #             pixdata[x, y] = (255, 255, 255, 0)
+                for y in range(im.size[1]):
+                    for x in range(im.size[0]):
+                        if pixdata[x, y] == (255, 255, 255, 255):
+                            pixdata[x, y] = (255, 255, 255, 0)
                 im.save(
                     os.path.join(fpath, '%s_%s.png' % (key.split('/')[1],
                                  counter)), 'PNG')
