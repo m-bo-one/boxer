@@ -1,3 +1,4 @@
+import math
 import heapq
 import constants as const
 
@@ -156,11 +157,27 @@ class Pathfinder(object):
                               ]
         return [d for d in directions if d not in self.chop_directions]
 
+    @classmethod
+    def heuristic(cls, a, b):
+        return cls._euclidean_distance(b, a)
+
     @staticmethod
-    def heuristic(a, b):
-        (x1, y1) = a
-        (x2, y2) = b
+    def _manhattan_distance(point, goal):
+        (x1, y1) = point
+        (x2, y2) = goal
         return abs(x1 - x2) + abs(y1 - y2)
+
+    @staticmethod
+    def _diagonal_distance(point, goal):
+        (x1, y1) = point
+        (x2, y2) = goal
+        return max(abs(x1 - x2), abs(y1 - y2))
+
+    @staticmethod
+    def _euclidean_distance(point, goal):
+        (x1, y1) = point
+        (x2, y2) = goal
+        return math.sqrt(abs(x1 - x2) ** 2 + abs(y1 - y2) ** 2)
 
     @property
     def start(self):

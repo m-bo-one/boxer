@@ -27,7 +27,7 @@ class GameApplication(WebSocketApplication):
     @staticmethod
     def _g_cleaner(user):
         # spatial_hash.remove_obj_by_point(user.pivot, user)
-        user.clear_greenlets()
+        user._clear_greenlets()
         try:
             local_db['characters'].remove(user)
         except KeyError:
@@ -73,6 +73,9 @@ class GameApplication(WebSocketApplication):
 
     def player_shoot(self, message):
         self.user.shoot()
+
+    def player_stealth(self, message):
+        self.user.stealth()
 
 
 def main_ticker(server):

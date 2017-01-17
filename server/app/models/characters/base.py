@@ -17,12 +17,24 @@ from ..armors import Armor
 from ...engine import Pathfinder, CollisionManager
 
 
+def autosave(func):
+    def wrapper(self, *args, **kwargs):
+        # with self.cm.obj_update():
+        logging.info('GREENLETS: %s' % self.AP_stats)
+        result = func(self, *args, **kwargs)
+        self.cmd = CmdModel.create(self.id, self.cmd.x, self.cmd.y,
+                                   self.cmd.action, self.cmd.direction)
+        self.save()
+        return result
+    return wrapper
+
+
 class CharacterModel(object):
 
     max_pool_size = 100
 
     fields = ('id', 'user_id', 'race', 'name', 'health', 'weapon',
-              'armor', 'scores', 'inventory')
+              'armor', 'scores', 'inventory', 'display')
 
     collision_pipeline = (
         'map_collision',
@@ -30,9 +42,10 @@ class CharacterModel(object):
     )
 
     AP_stats = {}
+    allowed_actions = set(['shoot', 'move', 'heal', 'equip'])
 
     def __init__(self, id, user_id, race, name, health, weapon, armor, scores,
-                 inventory):
+                 inventory, display):
         self.id = id
         self.user_id = user_id
         self.race = const.Race(race)
@@ -50,10 +63,14 @@ class CharacterModel(object):
         self.extra_data = {}
         self.max_health = self.setup_params['health']
         self.speed = [2, 2]
+        self.display = const.Display(display)
         if self.id:
             self.cmd = CmdModel.get_last_or_create(self.id)
             # self.cm = CollisionManager(self,
             #                            pipelines=self.collision_pipeline)
+
+    def is_allowed(self, fname):
+        return bool(fname in self.allowed_actions)
 
     @staticmethod
     def model_key():
@@ -82,11 +99,11 @@ class CharacterModel(object):
         return CharacterModel.delete(self.id)
 
     @classmethod
-    def create(cls, user_id, name, race, health, weapon, armor,
+    def create(cls, user_id, name, race, health, weapon, armor, display,
                *args, **kwargs):
         char = cls(id=None, user_id=user_id, race=race, name=name,
                    health=health, weapon=weapon, armor=armor, scores=0,
-                   inventory=[])
+                   display=display, inventory=[])
         char.save()
         char.cmd = CmdModel.get_last_or_create(char.id)
         # char.cm = CollisionManager(char, pipelines=char.collision_pipeline)
@@ -97,6 +114,7 @@ class CharacterModel(object):
             'id': self.id,
             'name': self.name,
             'race': self.race.value,
+            'display': self.display.value,
             'x': self.cmd.x,
             'y': self.cmd.y,
             # 'width': self.width,
@@ -197,17 +215,6 @@ class CharacterModel(object):
     def is_full_health(self):
         return self.health == const.HUMAN_HEALTH
 
-    def autosave(func):
-        def wrapper(self, *args, **kwargs):
-            # with self.cm.obj_update():
-            logging.info('GREENLETS: %s' % self.AP_stats)
-            result = func(self, *args, **kwargs)
-            self.cmd = CmdModel.create(self.id, self.cmd.x, self.cmd.y,
-                                       self.cmd.action, self.cmd.direction)
-            self.save()
-            return result
-        return wrapper
-
     @property
     def operations_blocked(self):
         try:
@@ -246,8 +253,10 @@ class CharacterModel(object):
         if all([
             self.weapon_in_hands,
             not self.operations_blocked,
-            self.AP - const.FIRE_AP >= 0
+            self.AP - const.FIRE_AP >= 0,
+            self.is_allowed('shoot')
         ]):
+            self.display_show()
             self._clear_greenlets()
             self.cmd.action = const.Action.Attack
             self.block_operation('shoot')
@@ -265,12 +274,18 @@ class CharacterModel(object):
             self._delayed_command(self.weapon.w.SHOOT_TIME, 'stop')
             self._delayed_command(1, 'restore_AP')
 
+    @autosave
+    def stealth(self):
+        raise NotImplementedError()
+
     @property
     def weapon_in_hands(self):
         return self.weapon.name != const.Weapon.Unarmed
 
     @autosave
     def equip(self, type):
+        if not self.is_allowed('equip'):
+            return
         logging.info('Current weapon: %s', self.weapon.name)
 
         if type == 'weapon' and self.weapon_in_hands:
@@ -316,12 +331,25 @@ class CharacterModel(object):
             return 1
         return 0
 
+    def display_hide(self):
+        self.display = const.Display.Hidden
+
+    def display_show(self):
+        self.display = const.Display.Exposed
+
+    def display_toggle(self):
+        if self.display == const.Display.Hidden:
+            self.display_show()
+        else:
+            self.display_hide()
+
     @autosave
     def heal(self, target=None):
         if all([
             not self.is_full_health,
             not self.operations_blocked,
-            self.AP - const.HEAL_AP >= 0
+            self.AP - const.HEAL_AP >= 0,
+            self.is_allowed('heal')
         ]):
             if target is not None and target != self:
                 raise NotImplementedError()
@@ -344,6 +372,7 @@ class CharacterModel(object):
 
     @autosave
     def kill(self):
+        self.display_show()
         self._kill_AP_threads()
         death_actions = [const.DeathAction.Melt]
         self.cmd.action = random.choice(death_actions)
@@ -386,6 +415,8 @@ class CharacterModel(object):
 
     @autosave
     def build_path(self, point):
+        if not self.is_allowed('move'):
+            return
         self._clear_greenlets()
         self.stop()
 
@@ -395,7 +426,7 @@ class CharacterModel(object):
         if point[1] % self.speed[1]:
             point[1] = point[1] + 1
 
-        pf = Pathfinder.build_path(self, point, 'BFS')
+        pf = Pathfinder.build_path(self, point, 'A*')
 
         def _move(pf, prev_step):
             for step, has_more in lookahead(reversed(list(pf))):
@@ -432,8 +463,8 @@ class CharacterModel(object):
                 prev_step = step
 
                 self.steps.append(step)
-                self.move(const.Action.Walk, direction)
-                gevent.sleep(0.01)
+                self.move(const.Action.Walk, direction, step)
+                gevent.sleep(0.02)
                 if not has_more:
                     self.stop()
                     self._delayed_command(1, 'restore_AP')
@@ -442,15 +473,15 @@ class CharacterModel(object):
 
     @autosave
     def stop(self):
-        self.move(const.Action.Breathe, self.cmd.direction)
+        self.move(const.Action.Breathe, self.cmd.direction, self.coords)
 
     @autosave
-    def move(self, action, direction):
+    def move(self, action, direction, coords):
         if self.operations_blocked or self.is_dead:
             return
         logging.info('Current coords: %s', self.coords)
 
-        x, y = self.coords
+        # x, y = self.coords
 
         self.cmd.action = const.Action(action)
         self.cmd.direction = const.Direction(direction)
@@ -463,27 +494,29 @@ class CharacterModel(object):
                      self.weapon.name.value)
 
         if self.cmd.action == const.Action.Walk:
-            import math
-            if self.cmd.direction == const.Direction.NE:
-                self.cmd.x += self.speed[0] / float(math.sqrt(2))
-                self.cmd.y -= self.speed[1] / float(math.sqrt(2))
-            elif self.cmd.direction == const.Direction.NW:
-                self.cmd.x -= self.speed[0] / float(math.sqrt(2))
-                self.cmd.y -= self.speed[1] / float(math.sqrt(2))
-            elif self.cmd.direction == const.Direction.SE:
-                self.cmd.x += self.speed[0] / float(math.sqrt(2))
-                self.cmd.y += self.speed[1] / float(math.sqrt(2))
-            elif self.cmd.direction == const.Direction.SW:
-                self.cmd.x -= self.speed[0] / float(math.sqrt(2))
-                self.cmd.y += self.speed[1] / float(math.sqrt(2))
-            if self.cmd.direction == const.Direction.N:
-                self.cmd.y -= self.speed[1]
-            elif self.cmd.direction == const.Direction.S:
-                self.cmd.y += self.speed[1]
-            elif self.cmd.direction == const.Direction.E:
-                self.cmd.x += self.speed[0]
-            elif self.cmd.direction == const.Direction.W:
-                self.cmd.x -= self.speed[0]
+            self.cmd.x = coords[0]
+            self.cmd.y = coords[1]
+            # import math
+            # if self.cmd.direction == const.Direction.NE:
+            #     self.cmd.x += self.speed[0] / float(math.sqrt(2))
+            #     self.cmd.y -= self.speed[1] / float(math.sqrt(2))
+            # elif self.cmd.direction == const.Direction.NW:
+            #     self.cmd.x -= self.speed[0] / float(math.sqrt(2))
+            #     self.cmd.y -= self.speed[1] / float(math.sqrt(2))
+            # elif self.cmd.direction == const.Direction.SE:
+            #     self.cmd.x += self.speed[0] / float(math.sqrt(2))
+            #     self.cmd.y += self.speed[1] / float(math.sqrt(2))
+            # elif self.cmd.direction == const.Direction.SW:
+            #     self.cmd.x -= self.speed[0] / float(math.sqrt(2))
+            #     self.cmd.y += self.speed[1] / float(math.sqrt(2))
+            # if self.cmd.direction == const.Direction.N:
+            #     self.cmd.y -= self.speed[1]
+            # elif self.cmd.direction == const.Direction.S:
+            #     self.cmd.y += self.speed[1]
+            # elif self.cmd.direction == const.Direction.E:
+            #     self.cmd.x += self.speed[0]
+            # elif self.cmd.direction == const.Direction.W:
+            #     self.cmd.x -= self.speed[0]
 
         # if self.cm.is_collide:
         #     self.cmd.x = x

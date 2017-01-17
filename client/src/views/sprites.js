@@ -10,9 +10,11 @@ var app = app || {},
     app.SpriteView = Backbone.View.extend({
 
         initialize: function() {
+            this.elements = [];
             this.changeSprite();
             this.initUsername();
             this.initHP();
+            this.initAlpha();
             this.model.on("change", this.render, this);
             this.on("player_hit", this.updateDmgDisplay, this);
         },
@@ -32,15 +34,16 @@ var app = app || {},
                 this.model.currentSprite.gotoAndPlay(this.model.animation.key);
             }
             if (app.config.DEBUG) {
-                this._debugBorder();
+                // this._debugBorder();
                 // this.renderPivot();
             }
             this.updateUsername();
             this.updateHP();
+            this.updateTransparency();
             return this;
         },
         changeSprite: function() {
-            if (this.model.currentSprite) app.stage.removeChild(this.model.currentSprite);
+            app.stage.removeChild(this.model.currentSprite);
 
             this.model.currentSprite = app.baseSprites[this.model.animation.armor].clone();
             this.model.currentSprite.x = this.model.x;
@@ -59,9 +62,7 @@ var app = app || {},
             app.stage.addChild(this.model.currentSprite);
         },
         _debugBorder: function() {
-            if (this.sshape) {
-                app.stage.removeChild(this.sshape);
-            }
+            app.stage.removeChild(this.sshape);
             this.sshape = new createjs.Shape().set({
                 x: this.model.currentSprite.x,
                 y: this.model.currentSprite.y
@@ -77,6 +78,7 @@ var app = app || {},
             this.sshape.graphics.endFill();
             // this.sshape.graphics.drawRect(0, 0, this.model.width, this.model.height);
             app.stage.addChild(this.sshape);
+            this.elements.push(this.sshape);
         },
         renderPivot: function() {
             if (this.pv) {
@@ -97,6 +99,7 @@ var app = app || {},
             this.textUsername.font = size + ' px Russo One';
             this.updateUsername();
             app.stage.addChild(this.textUsername);
+            this.elements.push(this.textUsername);
         },
         updateUsername: function() {
             this.textUsername.text = this.model.name;
@@ -108,6 +111,37 @@ var app = app || {},
             this.initHP.font = size + ' px Russo One';
             this.updateHP();
             app.stage.addChild(this.initHP);
+            this.elements.push(this.initHP);
+        },
+        _detectAlpha: function() {
+            var alpha;
+            if (this.model.display == app.constants.Display.Hidden) {
+                if (this.model == app.user) {
+                    alpha = 0.5;
+                } else {
+                    alpha = 0;
+                }
+            } else {
+                alpha = 1;
+            }
+            return alpha;
+        },
+        initAlpha: function() {
+            var alpha = this._detectAlpha();
+            for (var i = 0; i < this.elements.length; i++) {
+                this.elements[i].alpha = alpha;
+            }
+            this.model.currentSprite.alpha = alpha;
+        },
+        updateTransparency: function() {
+            if (this.model._prevDisplay != this.model.display) {
+                var alpha = this._detectAlpha();
+                for (var i = 0; i < this.elements.length; i++) {
+                    createjs.Tween.get(this.elements[i]).to({alpha:  alpha}, 500);
+                }
+                createjs.Tween.get(this.model.currentSprite).to({alpha:  alpha}, 500);
+                this.model._prevDisplay = this.model.display;
+            }
         },
         updateHP: function() {
             if (this.model.health == this.model.maxHealth) {
@@ -170,8 +204,9 @@ var app = app || {},
             _run(dmg, color);
         },
         destroy: function() {
-            app.stage.removeChild(this.textUsername);
-            app.stage.removeChild(this.initHP);
+            for (var i = 0; i < this.elements.length; i++) {
+                app.stage.removeChild(this.elements[i]);
+            }
             this.remove();
             this.unbind();
             delete app.sprites[this.model.id];

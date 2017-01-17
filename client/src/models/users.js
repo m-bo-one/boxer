@@ -28,6 +28,7 @@ var app = app || {},
             this.AP = options.AP;
             this.maxAP = options.max_AP;
             this.steps = options.steps;
+            this.display = options.display;
             // this.pivot = options.pivot;
             this._options = options;
             this._APCallbacks = [];
@@ -80,6 +81,7 @@ var app = app || {},
             // this.height = options.height;
             this.animation = options.animation;
             this.AP = options.AP;
+            this.display = options.display;
             // this.pivot = options.pivot;
 
             // if (app.user.id == this.id && options.extra_data.resurection_time) {
@@ -95,6 +97,10 @@ var app = app || {},
         move: function(point) {
             if (this.operationsBlocked || this.isDead()) return;
             Stream.send('player_move', {'point': point});
+        },
+        stealth: function() {
+            if (this.isDead()) return;
+            Stream.send('player_stealth');
         },
         shoot: function () {
             if (this.operationsBlocked || !this.equipedByWeapon() || this.AP < 5) return;

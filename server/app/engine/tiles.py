@@ -15,6 +15,8 @@ class TiledReader(object):
                 box = cls._get_obj_box(obj)
                 spatial_hash.insert_object_for_box(box, obj)
 
+        print(spatial_hash.contents)
+
     @staticmethod
     def _get_obj_box(obj):
         return {

@@ -22,8 +22,8 @@ $(function () {
         if (app.config.DEBUG) utils.drawBoard();
         if (app.hud) app.hud.trigger('updateFPS', createjs.Ticker.getMeasuredFPS());
 
-        if (_.isEmpty(app.user) || app.commandsBlocked || app.keys[38] && app.keys[87] || app.keys[40] && app.keys[83] ||
-          app.keys[39] && app.keys[68] || app.keys[37] && app.keys[65]) return;
+        // if (_.isEmpty(app.user) || app.commandsBlocked || app.keys[38] && app.keys[87] || app.keys[40] && app.keys[83] ||
+        //   app.keys[39] && app.keys[68] || app.keys[37] && app.keys[65]) return;
 
         // if (app.keys[38] && app.keys[37] || app.keys[87] && app.keys[65]) {
         //     app.user.move(app.constants.Action.Walk, app.constants.Direction.NW);
@@ -81,6 +81,16 @@ $(function () {
         if (app.keys[72]) {
             app.user.heal();
         }
+
+        // 0   48
+        // 1   49
+        // 2   50
+        // 3   51
+
+        // button '3'
+        if (app.keys[51]) {
+            app.user.stealth();
+        }        
     });
     window.addEventListener("keyup", function (e) {
         app.keys[e.keyCode] = false;
