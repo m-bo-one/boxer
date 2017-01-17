@@ -115,9 +115,9 @@ if __name__ == '__main__':
         CharacterModel.delete()
         log_params = {}
         if not settings.DEBUG:
-            log_params = {
-                'default_level': logging.ERROR
-            }
+            log_params['default_level'] = logging.ERROR
+        else:
+            log_params['default_level'] = logging.DEBUG
         setup_logging(**log_params)
         logging.info('Starting server...\n')
         server = WebSocketServer(

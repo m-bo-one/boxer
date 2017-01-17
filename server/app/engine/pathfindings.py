@@ -38,11 +38,12 @@ class Pathfinder(object):
         const.Direction.NW: lambda p, s: (p[0] + _df(s[0]), p[1] - _df(s[1])),
     }
 
-    def __init__(self, obj):
+    def __init__(self, obj, chop_directions):
         self.queue = PriorityQueue()
         self.obj = obj
         self.came_from = {}
         self.cost_so_far = {}
+        self.chop_directions = chop_directions
 
     def _possible_steps(self, point, goal):
         steps = []
@@ -153,7 +154,7 @@ class Pathfinder(object):
                               const.Direction.E,
                               const.Direction.NE,
                               ]
-        return directions
+        return [d for d in directions if d not in self.chop_directions]
 
     @staticmethod
     def heuristic(a, b):
@@ -251,9 +252,11 @@ class Pathfinder(object):
                 yield current
 
     @classmethod
-    def build_path(cls, obj, goal, alg='A*'):
+    def build_path(cls, obj, goal, alg='A*', chop_directions=None):
+        if chop_directions is None:
+            chop_directions = []
         goal = tuple(goal)
-        p = Pathfinder(obj)
+        p = Pathfinder(obj, chop_directions)
         if alg == 'A*':
             p.a_star_search(goal)
         elif alg == 'BFS':

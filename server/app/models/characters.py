@@ -395,13 +395,18 @@ class CharacterModel(object):
 
     PATH_TREADS = {}
 
-    @autosave
-    def build_path(self, point):
-        # self.stop()
-
-        if self.PATH_TREADS.get(self.id):
+    def _kill_path(self):
+        try:
             self.PATH_TREADS[self.id].kill()
             self.PATH_TREADS[self.id] = None
+            self.steps = []
+        except KeyError:
+            pass
+
+    @autosave
+    def build_path(self, point):
+        self.stop()
+        self._kill_path()
 
         point = [int(p) for p in point]
         if point[0] % self.speed[0]:
@@ -415,7 +420,21 @@ class CharacterModel(object):
         def _move(pf, prev_step):
             self.steps = []
             for step, has_more in lookahead(reversed(list(pf))):
-                if prev_step[0] - step[0] == 0:
+                if prev_step[0] - step[0] != 0 and prev_step[1] - step[1] != 0:
+                    logging.debug('UID: %s, define GO', self.id)
+                    if step[0] > prev_step[0] and step[1] < prev_step[1]:
+                        logging.debug('UID: %s, GO UP-RIGHT', self.id)
+                        direction = const.Direction.NE
+                    elif step[0] > prev_step[0] and step[1] > prev_step[1]:
+                        logging.debug('UID: %s, GO BOTTOM-RIGHT', self.id)
+                        direction = const.Direction.SE
+                    elif step[0] < prev_step[0] and step[1] > prev_step[1]:
+                        logging.debug('UID: %s, GO BOTTOM-LEFT', self.id)
+                        direction = const.Direction.SW
+                    elif step[0] < prev_step[0] and step[1] < prev_step[1]:
+                        logging.debug('UID: %s, GO UP-LEFT', self.id)
+                        direction = const.Direction.NW
+                elif prev_step[0] - step[0] == 0:
                     logging.debug('UID: %s, GO Y', self.id)
                     if step[1] - prev_step[1] >= 0:
                         logging.debug('UID: %s, GO BOTTOM', self.id)
@@ -431,7 +450,6 @@ class CharacterModel(object):
                     else:
                         logging.debug('UID: %s, GO LEFT', self.id)
                         direction = const.Direction.W
-
                 prev_step = step
 
                 self.steps.append(step)
@@ -439,8 +457,7 @@ class CharacterModel(object):
                 gevent.sleep(0.0175)
                 if not has_more:
                     self.stop()
-
-            self.PATH_TREADS[self.id] = None
+                    self._kill_path()
 
         self.PATH_TREADS[self.id] = self._pool.spawn(_move, pf, self.coords)
 
