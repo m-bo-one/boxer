@@ -1,4 +1,10 @@
-require(['app', 'stream', 'easel', 'preload', 'sound'], function(app, Stream) {
+require([
+    'app',
+    'stream',
+    'easel',
+    'preload',
+    'sound'
+], function(app, Stream) {
 
     var queue, ss, s, _highlitted, app = window.app;
 

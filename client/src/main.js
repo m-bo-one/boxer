@@ -1,5 +1,5 @@
 requirejs.config({
-    baseUrl: "src/components/",
+    baseUrl: "src/lib/",
     paths: {
         domReady: 'domReady/domReady',
         jquery: 'jquery/dist/jquery.min',
@@ -11,6 +11,7 @@ requirejs.config({
         sound: 'SoundJS/lib/soundjs-0.6.2.min',
         preload: 'PreloadJS/lib/preloadjs-0.6.2.min',
 
+        config: '../config',
         utils: '../utils',
         app: '../app',
         stream: '../stream',
@@ -41,14 +42,25 @@ requirejs.config({
         preload: {
             deps: ['easel'],
             exports: 'Preload'
+        },
+
+        utils: {
+            deps: ['config']
+        },
+        app: {
+            deps: ['config']
+        },
+        stream: {
+            deps: ['app']
+        },
+        preloader: {
+            deps: ['app', 'stream']
         }
     }
 });
 requirejs([
-    'utils',
     'app',
     'preloader',
-    'stream',
     'appApi/constants',
     'appApi/login',
     'appModels/characters',

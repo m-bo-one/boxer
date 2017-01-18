@@ -1,4 +1,8 @@
-define(['app', 'backbone', 'underscore'], function(app, Backbone, _) {
+define([
+    'app',
+    'backbone',
+    'underscore'
+], function(app, Backbone, _) {
 
     var Stream = function(app) {};
 
@@ -10,7 +14,7 @@ define(['app', 'backbone', 'underscore'], function(app, Backbone, _) {
         app.ws.send(jData);
     };
     Stream.init = function() {
-        var ws = new WebSocket("ws://" + window.location.hostname + ':9999' + "/game");
+        var ws = new WebSocket("ws://" + app.config.WS.HOST + ':' + app.config.WS.PORT + "/game");
         _.extend(ws, Backbone.Events);
 
         ws.onopen = function(evt) {

@@ -1,4 +1,10 @@
-require(['app', 'utils', 'backbone', 'underscore', 'easel'], function(app, utils, Backbone, _) {
+require([
+    'app',
+    'utils',
+    'backbone',
+    'underscore',
+    'easel'
+], function(app, utils, Backbone, _) {
 
     var cellSize = 32;
 

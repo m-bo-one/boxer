@@ -1,8 +1,8 @@
-define(['backbone', 'underscore'], function(Backbone, _) {
+define(['config', 'backbone', 'underscore'], function(config, Backbone, _) {
 
     return {
         _LOG: function (msg) {
-            // console.log(msg);
+            if (config.DEBUG) console.log(msg);
         },
         toRadians(deg) {
             return deg * Math.PI / 180;

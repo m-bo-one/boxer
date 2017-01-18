@@ -1,4 +1,4 @@
-define(['jquery', 'backbone', 'easel'], function($, Backbone) {
+define(['config', 'jquery', 'backbone', 'easel'], function(config, $, Backbone) {
 
     var gameLoop = function (event) {
         /** Keys notation
@@ -25,6 +25,7 @@ define(['jquery', 'backbone', 'easel'], function($, Backbone) {
     };
 
     window.app = {};
+    app.config = config;
     app.canvas = document.getElementById("gameBoard");
     app.canvas.width = 1280;
     app.canvas.height = 768;
@@ -37,7 +38,7 @@ define(['jquery', 'backbone', 'easel'], function($, Backbone) {
     app.stage.enableMouseOver(10);
     // createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
     createjs.Ticker.addEventListener("tick", gameLoop);
-    createjs.Ticker.setFPS(60);
+    createjs.Ticker.setFPS(app.config.FPS);
 
     window.addEventListener("keydown", function (e) {
         app.keys[e.keyCode] = true;
