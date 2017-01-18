@@ -1,4 +1,12 @@
-require(['app', 'utils', 'stream', 'backbone', 'underscore', 'easel', 'sound'], function(app, utils, Stream, Backbone, _) {
+require([
+    'app',
+    'utils',
+    'stream',
+    'backbone',
+    'underscore',
+    'easel',
+    'sound'
+], function(app, utils, Stream, Backbone, _) {
 
     app.UserModel = Backbone.Model.extend({
 
@@ -70,7 +78,6 @@ require(['app', 'utils', 'stream', 'backbone', 'underscore', 'easel', 'sound'], 
             utils._LOG('Receive update: direction - ' + options.direction + '; action - ' + options.action + ';');
 
             this.vision = options.vision;
-            this.prevArmor = this.armor;
             this.weapon = options.weapon;
             this.armor = options.armor;
             // this.width = options.width;
@@ -86,7 +93,7 @@ require(['app', 'utils', 'stream', 'backbone', 'underscore', 'easel', 'sound'], 
             // }
 
             this.trigger('change');
-            if (this.AP !== this.maxAP) {
+            if (this.AP <= this.maxAP) {
                 this.trigger('action');
             }
         },
@@ -102,7 +109,7 @@ require(['app', 'utils', 'stream', 'backbone', 'underscore', 'easel', 'sound'], 
             if (this.operationsBlocked || !this.equipedByWeapon() || this.AP < 5) return;
             Stream.send('player_shoot', {'cid': cid});
         },
-        heal: function () {
+        heal: function() {
             if (this.operationsBlocked || this.isDead() || this.isFullHealth()  || this.AP < 4) return;
             Stream.send('player_heal');
         },
@@ -112,7 +119,6 @@ require(['app', 'utils', 'stream', 'backbone', 'underscore', 'easel', 'sound'], 
         destroy: function() {
             app.stage.removeChild(this.currentSprite);
             delete app.users[this.id];
-            delete this;
         }
 
     });

@@ -26,35 +26,28 @@ require(['app', 'utils', 'backbone', 'underscore', 'easel', 'tween'], function(a
                 this.changeSprite();
             }
             if (this.model.currentSprite.currentAnimation != this.model.animation.key) {
-                console.log(22222222222222);
-                console.log("CURRENT " + this.model.currentSprite.currentAnimation);
-                console.log("SERVER " + this.model.animation.key);
-                utils._LOG('Start playing animation: ' + this.model.animation.key);
-                if (this.model.isDead()) {
-                    // play one time, hack
-                    this.model.currentSprite.gotoAndStop(this.model.animation.key);
-                    this.model.currentSprite._animation.next = false;
-                    if (Math.floor(Date.now() / 1000) - this.model.updatedAt > 2) {
-                        this.model.currentSprite._animation.frames.splice(0, this.model.currentSprite._animation.frames.length - 1);
-                        this.model.currentSprite.play();
-                    } else {
-                        this.model.currentSprite.play();
-                    }
-                } else {
-                    this.model.currentSprite.gotoAndPlay(this.model.animation.key);
-                }
+                this.animate();
             }
-            // if (app.config.DEBUG) {
-                // this._debugBorder();
-                // this.renderPivot();
-            // }
             this.updateUsername();
             this.updateHP();
             this.updateTransparency();
             return this;
         },
+        animate: function() {
+            utils._LOG('Start playing animation: ' + this.model.animation.key);
+            if (this.model.isDead()) {
+                this.model.currentSprite.gotoAndStop(this.model.animation.key);
+                this.model.currentSprite._animation.next = false;
+                // TODO: Fix updateAt
+                if (Math.floor(Date.now() / 1000) - this.model.updatedAt > 2) {
+                    this.model.currentSprite._animation.frames.splice(0, this.model.currentSprite._animation.frames.length - 1);
+                }
+                this.model.currentSprite.play();
+            } else {
+                this.model.currentSprite.gotoAndPlay(this.model.animation.key);
+            }
+        },
         changeSprite: function() {
-            console.log(11111111111);
             if (this.model.currentSprite) {
                 app.stage.removeChild(this.model.currentSprite);
                 this.model.currentSprite.removeAllEventListeners();
@@ -64,23 +57,14 @@ require(['app', 'utils', 'backbone', 'underscore', 'easel', 'tween'], function(a
             this.model.currentSprite.x = this.model.x;
             this.model.currentSprite.y = this.model.y;
 
-            // this.model.currentSprite.on("mouseover", function() {
-            //     console.log('HOVERED');
-            //     // this.model.currentSprite.filters = [
-            //     //     new createjs.ColorFilter(0, 0, 0, 1, 0, 0, 0),
-            //     //     // new createjs.BlurFilter(5, 5, 10)
-            //     // ];
-            //     // var b = this.model.currentSprite.getBounds();
-            //     // this.model.currentSprite.cache(b.x, b.y, b.width, b.height);
-            // }, this);
-            // this.model.currentSprite.on("mouseout", function() {
-            //     console.log('UNHOVERED');
-            //     // this.model.currentSprite.filters = [];
-            //     // this.model.currentSprite.uncache();
-            // }, this);
             this.model.currentSprite.on('click', function() {
                 app.user.shoot(this.model.id);
             }, this);
+
+            if (!this.model.prevArmor) {
+                this.animate();
+            }
+            this.model.prevArmor = this.model.armor;
 
             app.stage.addChild(this.model.currentSprite);
         },
