@@ -26,36 +26,46 @@ define(['app', 'backbone', 'underscore'], function(app, Backbone, _) {
                 ws.trigger(answer.msg_type, parsedData);
             };
             ws.on('register_user', function(data) {
-                app.user = new app.UserModel(data);
-                // TODO: Maybe revert back to model??
-                app.sprites[app.user.id] = new app.SpriteView({ model: app.user });
+                app.characters[data.id] = {};
+                app.characters[data.id]['model'] = new app.CharacterModel(data);
 
-                app.hud = new app.HudView({ model: app.user });
+                app.currentCharacter = app.characters[data.id];
+                // TODO: Maybe revert back to model??
+                app.characters[data.id]['sprite'] = new app.SpriteView({
+                    model: app.currentCharacter.model
+                });
+
+                app.characters[data.id]['hud'] = new app.HudView({
+                    model: app.currentCharacter.model
+                });
                 // app.weaponVision = new app.WeaponVisionView({ model: app.user });
             });
             ws.on('users_map', function(data) {
-                if (app.hud) app.hud.trigger('updateOnline', data.count);
+                if (app.currentCharacter) {
+                    app.currentCharacter.hud.trigger('updateOnline', data.count);
+                }
 
                 for (var j = 0; j < data.users.update.length; j++) {
                     var charId = data.users.update[j].id;
                     var updateData = data.users.update[j];
 
-                    if (app.users.hasOwnProperty(charId)) {
-                        app.users[charId].refreshData(updateData);
+                    if (app.characters.hasOwnProperty(charId)) {
+                        app.characters[charId]['model'].refreshData(updateData);
                     } else {
-                        app.users[charId] = new app.UserModel(updateData);
-                        app.sprites[charId] = new app.SpriteView({ model: app.users[charId] });  
+                        app.characters[charId] = {};
+                        app.characters[charId]['model'] = new app.CharacterModel(updateData);
+                        app.characters[charId]['sprite'] = new app.SpriteView({
+                            model: app.characters[charId]['model']
+                        });  
                     }
                 }
                 for (var i = 0; i < data.users.remove.length; i++) {
                     var removeId = data.users.remove[i];
-                    if (app.users.hasOwnProperty(removeId)) {
-                        app.sprites[removeId].destroy();
-                        app.users[removeId].destroy();
-                        if (app.user.id === removeId) {
-                            // app.weaponVision.destroy();
-                            app.user.destroy();
+                    if (app.characters.hasOwnProperty(removeId)) {
+                        for (var key in app.characters[removeId]) {
+                            app.characters[removeId][key].destroy();
                         }
+                        delete app.characters[removeId];
                     }
                 }
             });

@@ -51,7 +51,7 @@ requirejs([
     'stream',
     'appApi/constants',
     'appApi/login',
-    'appModels/users',
+    'appModels/characters',
     'appViews/map',
     'appViews/hud',
     'appViews/sprites',

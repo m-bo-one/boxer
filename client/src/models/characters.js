@@ -8,7 +8,7 @@ require([
     'sound'
 ], function(app, utils, Stream, Backbone, _) {
 
-    app.UserModel = Backbone.Model.extend({
+    app.CharacterModel = Backbone.Model.extend({
 
         initialize: function(options) {
             this.id = options.id;
@@ -36,8 +36,6 @@ require([
             // this.pivot = options.pivot;
             this._options = options;
             this._APCallbacks = [];
-
-            app.users[this.id] = this;
         },
         equipedByWeapon: function() {
             return (this.weapon === 1) ? false : true;
@@ -118,7 +116,7 @@ require([
         },
         destroy: function() {
             app.stage.removeChild(this.currentSprite);
-            delete app.users[this.id];
+            this.currentSprite.removeAllEventListeners();
         }
 
     });

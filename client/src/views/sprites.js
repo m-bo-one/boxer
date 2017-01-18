@@ -58,7 +58,7 @@ require(['app', 'utils', 'backbone', 'underscore', 'easel', 'tween'], function(a
             this.model.currentSprite.y = this.model.y;
 
             this.model.currentSprite.on('click', function() {
-                app.user.shoot(this.model.id);
+                app.currentCharacter.model.shoot(this.model.id);
             }, this);
 
             if (!this.model.prevArmor) {
@@ -123,7 +123,7 @@ require(['app', 'utils', 'backbone', 'underscore', 'easel', 'tween'], function(a
         _detectAlpha: function() {
             var alpha;
             if (this.model.display == app.constants.Display.Hidden) {
-                if (this.model == app.user) {
+                if (this.model == app.currentCharacter.model) {
                     alpha = 0.5;
                 } else {
                     alpha = 0;
@@ -170,7 +170,7 @@ require(['app', 'utils', 'backbone', 'underscore', 'easel', 'tween'], function(a
 
             this.initHP.color = _hpColor;
 
-            if (this.model == app.user) {
+            if (app.currentCharacter && this.model == app.currentCharacter.model) {
                 this.initHP.text = this.model.health + '/' + this.model.maxHealth;
                 this.initHP.x = this.model.x + size - this.initHP.text.length;
                 this.initHP.y = this.model.y - 2 * size;
@@ -216,7 +216,6 @@ require(['app', 'utils', 'backbone', 'underscore', 'easel', 'tween'], function(a
             }
             this.remove();
             this.unbind();
-            delete app.sprites[this.model.id];
         }
     });
 

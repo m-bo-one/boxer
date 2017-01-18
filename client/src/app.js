@@ -14,9 +14,13 @@ define(['jquery', 'backbone', 'easel'], function($, Backbone) {
         **/
 
         app.stage.update();
-        if (app.user.currentSprite && app.user.currentSprite.cacheCanvas) app.user.currentSprite.updateCache();
+        // if (app.user.currentSprite && app.user.currentSprite.cacheCanvas) {
+        //     app.user.currentSprite.updateCache();
+        // }
         // if (app.config.DEBUG) utils.drawBoard();
-        if (app.hud) app.hud.trigger('updateFPS', createjs.Ticker.getMeasuredFPS());
+        if (app.currentCharacter) {
+            app.currentCharacter.hud.trigger('updateFPS', createjs.Ticker.getMeasuredFPS());
+        }
 
     };
 
@@ -27,9 +31,8 @@ define(['jquery', 'backbone', 'easel'], function($, Backbone) {
     app.canvas.style.backgroundColor = "white";
     app.ctx = app.canvas.getContext("2d");
     app.keys = {};
-    app.users = {};
-    app.user = {};
-    app.sprites = {};
+    app.characters = {};
+    app.currentCharacter = null;
     app.stage = new createjs.Stage(app.canvas);
     app.stage.enableMouseOver(10);
     // createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;

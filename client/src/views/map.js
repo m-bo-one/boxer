@@ -4,7 +4,7 @@ require(['app', 'utils', 'backbone', 'underscore', 'easel'], function(app, utils
 
     app.MapView = Backbone.View.extend({
         sendMove: function(evt) {
-            app.user.move([evt.stageX, evt.stageY]);
+            app.currentCharacter.model.move([evt.stageX, evt.stageY]);
             console.log("X: " + evt.stageX);
             console.log("Y: " + evt.stageY);
         },
