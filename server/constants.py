@@ -96,3 +96,17 @@ class Action(IntEnum):
     FireOverlay = 22
     Melt = 23
     Riddled = 24
+
+    @staticmethod
+    def get_death_keys():
+        return [
+            Action.Bighole,
+            Action.Cutinhalf,
+            Action.Electrify,
+            Action.ElectrifyOverlay,
+            Action.Explode,
+            Action.Fire,
+            Action.FireOverlay,
+            Action.Melt,
+            Action.Riddled
+        ]

@@ -154,28 +154,35 @@ class CharacterModel(object):
 
     @property
     def animation(self):
-        if self.weapon.name == const.Weapon.Unarmed:
-            weapon_key = ''
-        elif self.cmd.action == const.Action.Attack:
-            weapon_key = ''.join([self.weapon.name.name, 'Burst'])
-        else:
-            weapon_key = self.weapon.name.name
-
-        if self.cmd.action == const.Action.Heal:
-            action = const.Action.Magichigh.name
-        else:
-            action = self.cmd.action.name
-
-        data = {
-            "key": ''.join([
-                'Stand', action, weapon_key, '_', self.cmd.direction.name])
-        }
+        data = {}
         if self.armor.name == const.Armor.Unarmored:
             key_armor = self.race.name
         else:
             key_armor = self.armor.name.name
 
         data['armor'] = key_armor
+
+        if self.cmd.action in const.Action.get_death_keys():
+            key = ''.join(['Death', self.cmd.action.name,
+                           '_', self.cmd.direction.name])
+        else:
+            if self.weapon.name == const.Weapon.Unarmed:
+                weapon_key = ''
+            elif self.cmd.action == const.Action.Attack:
+                weapon_key = ''.join([self.weapon.name.name, 'Burst'])
+            else:
+                weapon_key = self.weapon.name.name
+
+            if self.cmd.action == const.Action.Heal:
+                action = const.Action.Magichigh.name
+            else:
+                action = self.cmd.action.name
+
+            key = ''.join(['Stand', action, weapon_key,
+                           '_', self.cmd.direction.name])
+
+        data['key'] = key
+
         return data
 
     def __repr__(self):
@@ -249,30 +256,28 @@ class CharacterModel(object):
         return g
 
     @autosave
-    def shoot(self):
-        if all([
-            self.weapon_in_hands,
-            not self.operations_blocked,
-            self.AP - const.FIRE_AP >= 0,
-            self.is_allowed('shoot')
-        ]):
-            self.display_show()
-            self._clear_greenlets()
-            self.cmd.action = const.Action.Attack
-            self.block_operation('shoot')
-            self.use_AP(const.FIRE_AP)
-            self.extra_data['sound_to_play'] = self.weapon.w.SOUND
+    def shoot(self, other):
+        if (not self.is_allowed('shoot') or
+           not other or other.is_dead or
+           not self.weapon_in_hands or
+           self.operations_blocked or
+           self.AP - const.FIRE_AP < 0):
+            return
+        self.display_show()
+        self._clear_greenlets()
+        self.cmd.action = const.Action.Attack
+        self.block_operation('shoot')
+        self.use_AP(const.FIRE_AP)
+        self.extra_data['sound_to_play'] = self.weapon.w.SOUND
 
-            # detected = [other for other in local_db['characters']
-            #             if other.id != self.id and not
-            #             other.is_dead and self.weapon.in_vision(other)]
+        detected = self.weapon.in_vision(other)
 
-            # if detected:
-            #     logging.info('Found characters: %s', detected)
-            #     self.weapon.shoot(detected)
+        if detected:
+            logging.info('Found character: %s', detected)
+            self.weapon.shoot(detected)
 
-            self._delayed_command(self.weapon.w.SHOOT_TIME, 'stop')
-            self._delayed_command(1, 'restore_AP')
+        self._delayed_command(self.weapon.w.SHOOT_TIME, 'stop')
+        self._delayed_command(1, 'restore_AP')
 
     @autosave
     def stealth(self):
@@ -374,11 +379,13 @@ class CharacterModel(object):
     def kill(self):
         self.display_show()
         self._kill_AP_threads()
-        death_actions = [const.DeathAction.Melt]
-        self.cmd.action = random.choice(death_actions)
+        self.cmd.action = random.choice([
+            const.Action.Riddled,
+            const.Action.Explode,
+        ])
         self.extra_data['resurection_time'] = const.RESURECTION_TIME
 
-        self._delayed_command(const.RESURECTION_TIME, 'resurect')
+        # self._delayed_command(const.RESURECTION_TIME, 'resurect')
 
     @autosave
     def update_scores(self):

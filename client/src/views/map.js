@@ -16,9 +16,14 @@ var app = app || {},
             this._highlitted = new createjs.Shape().set({alpha: 0.5});
             app.stage.addChild(this._highlitted);
         },
-        updateLintBox: function() {
-            var st = app.stage.getStage();
-            var cell = [st.mouseX, st.mouseY];
+        canvasMouseMove: function(evt, view) {
+            // if (evt.currentTarget instanceof createjs.Sprite) {
+            //     console.log('FOUND')
+            // }
+            view.updateLintBox(evt);
+        },
+        updateLintBox: function(evt) {
+            var cell = [evt.stageX, evt.stageY];
             this._highlitted.graphics.clear();
             this._highlitted.graphics.beginFill("red").drawRect(
                 parseInt(cell[0] / cellSize) * cellSize,
@@ -31,7 +36,7 @@ var app = app || {},
         initialize: function() {
             this.initLintBox();
             app.stage.on("click", this.sendMove);
-            app.stage.on("stagemousemove", this.updateLintBox, this);
+            app.stage.on("stagemousemove", this.canvasMouseMove, null, false, this);
         },
         render: function() {
             app.stage.update();

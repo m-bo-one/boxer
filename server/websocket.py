@@ -29,7 +29,7 @@ class GameApplication(WebSocketApplication):
         # spatial_hash.remove_obj_by_point(user.pivot, user)
         user._clear_greenlets()
         try:
-            local_db['characters'].remove(user)
+            del local_db['characters'][user.id]
         except KeyError:
             pass
 
@@ -59,7 +59,7 @@ class GameApplication(WebSocketApplication):
     def register_user(self, message):
         self.user = Outlander.create(user_id=1, name='hello')
         logging.debug(self.user.id)
-        local_db['characters'].add(self.user)
+        local_db['characters'][self.user.id] = self.user
         self.broadcast('register_user', self.user.to_dict())
 
     def unregister_user(self, message):
@@ -68,24 +68,33 @@ class GameApplication(WebSocketApplication):
             self._g_cleaner(self.user)
             main_queue.put_nowait(char_id)
 
+    @staticmethod
+    def get_character_by_cid(cid):
+        try:
+            return local_db['characters'][cid]
+        except KeyError:
+            pass
+
     def player_move(self, message):
         self.user.move(message['point'])
 
     def player_shoot(self, message):
-        self.user.shoot()
+        char = self.get_character_by_cid(message['cid'])
+        self.user.shoot(char)
 
     def player_stealth(self, message):
         self.user.stealth()
 
 
 def main_ticker(server):
-    local_db.setdefault('characters', set())
+    local_db.setdefault('characters', {})
     while True:
         gevent.sleep(0.01)
         data = {
             'users': {
                 'update': [
-                    char.to_dict() for char in local_db['characters']
+                    char.to_dict()
+                    for char in local_db['characters'].itervalues()
                 ],
                 'remove': []
             },
@@ -106,8 +115,8 @@ def main_ticker(server):
 
 if __name__ == '__main__':
     try:
-        TiledReader.read_and_add_collision(
-            os.path.join(settings.ASSETS_PATH, 'map.tmx'))
+        # TiledReader.read_and_add_collision(
+        #     os.path.join(settings.ASSETS_PATH, 'map.tmx'))
         CharacterModel.delete()
         log_params = {}
         if not settings.DEBUG:

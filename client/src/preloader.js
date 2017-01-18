@@ -29,7 +29,7 @@ var app = app || {};
     var onPreloadComplete = function(evt) {
         createjs.Sound.muted = true;
 
-        app.stage.addChildAt(app.baseImages['map'], 0);
+        // app.stage.addChildAt(app.baseImages['map'], 0);
         app.map = new app.MapView();
         $(app.canvas).show();
         $('#conn_status').show();

@@ -47,8 +47,9 @@ class Pathfinder(object):
 
     @staticmethod
     def _centralize_cell(cell, cell_size=settings.GAME['CELL_SIZE']):
-        x = (cell[0] // cell_size) * cell_size
-        y = (cell[1] // cell_size) * cell_size
+        x = int((cell[0] // cell_size) * cell_size)
+        y = int((cell[1] // cell_size) * cell_size)
+        print((x + cell_size / 2, y + cell_size / 2))
         return (x + cell_size / 2, y + cell_size / 2)
 
     def _possible_steps(self, point, goal):

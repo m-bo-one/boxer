@@ -102,9 +102,9 @@ var app = app || {},
             if (this.isDead()) return;
             Stream.send('player_stealth');
         },
-        shoot: function () {
+        shoot: function(cid) {
             if (this.operationsBlocked || !this.equipedByWeapon() || this.AP < 5) return;
-            Stream.send('player_shoot');
+            Stream.send('player_shoot', {'cid': cid});
         },
         heal: function () {
             if (this.operationsBlocked || this.isDead() || this.isFullHealth()  || this.AP < 4) return;
