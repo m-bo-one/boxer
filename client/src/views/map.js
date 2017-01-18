@@ -1,10 +1,6 @@
-var app = app || {},
-    utils = utils || {};
+require(['app', 'utils', 'backbone', 'underscore', 'easel'], function(app, utils, Backbone, _) {
 
-(function() {
-    'use strict';
-
-    var cellSize = app.config.GAME.CELL_SIZE;
+    var cellSize = 32;
 
     app.MapView = Backbone.View.extend({
         sendMove: function(evt) {
@@ -49,4 +45,5 @@ var app = app || {},
         }
 
     });
-})();
+
+});

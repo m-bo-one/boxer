@@ -1,7 +1,5 @@
-var app = app || {};
+require(['app', 'jquery', 'domReady!'], function(app, $, domReady) {
 
-
-$(function() {
     $('#quickLogin').on('submit', function(e) {
         e.preventDefault();
 
@@ -36,4 +34,5 @@ $(function() {
             console.log(data);
         });
     });
+
 });

@@ -1,7 +1,6 @@
-var app = app || {};
+require(['app', 'stream', 'easel', 'preload', 'sound'], function(app, Stream) {
 
-(function () {
-    var queue, ss, s, _highlitted;
+    var queue, ss, s, _highlitted, app = window.app;
 
     app.baseSprites = {};
     app.baseImages = {};
@@ -33,9 +32,9 @@ var app = app || {};
         app.map = new app.MapView();
         $(app.canvas).show();
         $('#conn_status').show();
-        if (!app.config.is_authorized) {
-            $('.login').show();
-        }
+        // if (!app.config.is_authorized) {
+        //     $('.login').show();
+        // }
         $('.cssload-preloader').hide();
         Stream.init(app);
     }
@@ -47,4 +46,6 @@ var app = app || {};
     queue.on("complete", onPreloadComplete, this);
     queue.loadManifest('assets/manifest.json');
 
-})();
+    return queue;
+
+});

@@ -4,6 +4,7 @@ logs/
 *.log
 __pycache__/
 bower_components/
+client/src/components/
 static/assets/
 manifest.json
 tmp/

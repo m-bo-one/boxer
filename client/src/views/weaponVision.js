@@ -1,8 +1,4 @@
-var app = app || {},
-    utils = utils || {};
-
-(function() {
-    'use strict';
+require(['app', 'utils', 'backbone', 'underscore'], function(app, utils, Backbone, _) {
 
     var R, cx, cy, alphas, alphae;
 
@@ -46,4 +42,5 @@ var app = app || {},
             this.unbind();
         }
     });
-})();
+
+});

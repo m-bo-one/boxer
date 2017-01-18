@@ -1,8 +1,4 @@
-var app = app || {},
-    utils = utils || {};
-
-(function() {
-    'use strict';
+require(['app', 'backbone', 'underscore'], function(app, Backbone, _) {
 
     var size = 20,
         font = size + 'px Russo One',
@@ -132,4 +128,5 @@ var app = app || {},
             app.stage.removeChild(this.stepsLine);
         }
     });
-})();
+
+});

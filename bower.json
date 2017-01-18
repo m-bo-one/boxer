@@ -1,0 +1,30 @@
+{
+  "name": "boxer",
+  "homepage": "https://github.com/DeV1doR/boxer",
+  "authors": [
+    "devidor <bogdankurinniy.dev1@gmail.com>"
+  ],
+  "description": "",
+  "main": "",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "backbone": "^1.3.3",
+    "jquery": "^3.1.1",
+    "underscore": "^1.8.3",
+    "requirejs": "^2.3.2",
+    "SoundJS": "^0.6.2",
+    "PreloadJS": "^0.6.2",
+    "TweenJS": "^0.6.2",
+    "EaselJS": "^0.8.2",
+    "text": "requirejs-text#^2.0.15",
+    "domReady": "requirejs-domReady#^2.0.1"
+  }
+}

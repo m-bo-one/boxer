@@ -1,8 +1,4 @@
-var app = app || {},
-    utils = utils || {};
-
-$(function () {
-    'use strict';
+define(['jquery', 'backbone', 'easel'], function($, Backbone) {
 
     var gameLoop = function (event) {
         /** Keys notation
@@ -19,11 +15,12 @@ $(function () {
 
         app.stage.update();
         if (app.user.currentSprite && app.user.currentSprite.cacheCanvas) app.user.currentSprite.updateCache();
-        if (app.config.DEBUG) utils.drawBoard();
+        // if (app.config.DEBUG) utils.drawBoard();
         if (app.hud) app.hud.trigger('updateFPS', createjs.Ticker.getMeasuredFPS());
 
     };
 
+    window.app = {};
     app.canvas = document.getElementById("gameBoard");
     app.canvas.width = 1280;
     app.canvas.height = 768;
@@ -36,8 +33,8 @@ $(function () {
     app.stage = new createjs.Stage(app.canvas);
     app.stage.enableMouseOver(10);
     // createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
-    createjs.Ticker.setFPS(app.config.GAME.FPS);
     createjs.Ticker.addEventListener("tick", gameLoop);
+    createjs.Ticker.setFPS(60);
 
     window.addEventListener("keydown", function (e) {
         app.keys[e.keyCode] = true;
@@ -73,4 +70,7 @@ $(function () {
         })
         app.ws.send(data);
     };
+
+    return app;
+
 });

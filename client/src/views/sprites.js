@@ -1,8 +1,4 @@
-var app = app || {},
-    utils = utils || {};
-
-(function() {
-    'use strict';
+require(['app', 'utils', 'backbone', 'underscore', 'easel', 'tween'], function(app, utils, Backbone, _) {
 
     var _stars, _hpColor,
         size = 10;
@@ -48,10 +44,10 @@ var app = app || {},
                     this.model.currentSprite.gotoAndPlay(this.model.animation.key);
                 }
             }
-            if (app.config.DEBUG) {
+            // if (app.config.DEBUG) {
                 // this._debugBorder();
                 // this.renderPivot();
-            }
+            // }
             this.updateUsername();
             this.updateHP();
             this.updateTransparency();
@@ -239,4 +235,5 @@ var app = app || {},
             delete app.sprites[this.model.id];
         }
     });
-})();
+
+});

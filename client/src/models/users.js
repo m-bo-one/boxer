@@ -1,8 +1,4 @@
-var app = app || {},
-    utils = utils || {};
-
-(function () {
-    'use strict';
+require(['app', 'utils', 'stream', 'backbone', 'underscore', 'easel', 'sound'], function(app, utils, Stream, Backbone, _) {
 
     app.UserModel = Backbone.Model.extend({
 
@@ -118,5 +114,7 @@ var app = app || {},
             delete app.users[this.id];
             delete this;
         }
+
     });
-})();
+
+});
