@@ -1,5 +1,6 @@
 from __future__ import division
 
+import math
 import logging
 import random
 import json
@@ -62,7 +63,7 @@ class CharacterModel(object):
         self.steps = []
         self.extra_data = {}
         self.max_health = self.setup_params['health']
-        self.speed = [2, 2]
+        self._footpace = [2, 2]
         self.display = const.Display(display)
         if self.id:
             self.cmd = CmdModel.get_last_or_create(self.id)
@@ -119,7 +120,6 @@ class CharacterModel(object):
             'y': self.cmd.y,
             # 'width': self.width,
             # 'height': self.height,
-            'speed': self.speed,
             # 'pivot': self.pivot,
             'action': self.cmd.action.value,
             'direction': self.cmd.direction.value,
@@ -414,22 +414,20 @@ class CharacterModel(object):
         self._kill_path()
 
     @autosave
-    def build_path(self, point):
+    def move(self, point):
         if not self.is_allowed('move'):
             return
         self._clear_greenlets()
         self.stop()
 
-        point = [int(p) for p in point]
-        if point[0] % self.speed[0]:
-            point[0] = point[0] + 1
-        if point[1] % self.speed[1]:
-            point[1] = point[1] + 1
-
         pf = Pathfinder.build_path(self, point, 'A*')
 
-        def _move(pf, prev_step):
-            for step, has_more in lookahead(reversed(list(pf))):
+        def _move(pf):
+            for i, lk in enumerate(lookahead(reversed(list(pf)))):
+                step, has_more = lk
+                speed = 0.015
+                if i == 0:
+                    prev_step = step
                 if prev_step[0] - step[0] != 0 and prev_step[1] - step[1] != 0:
                     logging.debug('UID: %s, define GO', self.id)
                     if step[0] > prev_step[0] and step[1] < prev_step[1]:
@@ -444,6 +442,8 @@ class CharacterModel(object):
                     elif step[0] < prev_step[0] and step[1] < prev_step[1]:
                         logging.debug('UID: %s, GO UP-LEFT', self.id)
                         direction = const.Direction.NW
+
+                    speed *= math.sqrt(2)
                 elif prev_step[0] - step[0] == 0:
                     logging.debug('UID: %s, GO Y', self.id)
                     if step[1] - prev_step[1] >= 0:
@@ -463,25 +463,23 @@ class CharacterModel(object):
                 prev_step = step
 
                 self.steps.append(step)
-                self.move(const.Action.Walk, direction, step)
-                gevent.sleep(0.02)
+                self._plot_path(const.Action.Walk, direction, step)
+                gevent.sleep(speed)
                 if not has_more:
                     self.stop()
                     self._delayed_command(1, 'restore_AP')
 
-        self.PATH_TREADS[self.id] = self._pool.spawn(_move, pf, self.coords)
+        self.PATH_TREADS[self.id] = self._pool.spawn(_move, pf)
 
     @autosave
     def stop(self):
-        self.move(const.Action.Breathe, self.cmd.direction, self.coords)
+        self._plot_path(const.Action.Breathe, self.cmd.direction, self.coords)
 
     @autosave
-    def move(self, action, direction, coords):
+    def _plot_path(self, action, direction, coords):
         if self.operations_blocked or self.is_dead:
             return
         logging.info('Current coords: %s', self.coords)
-
-        # x, y = self.coords
 
         self.cmd.action = const.Action(action)
         self.cmd.direction = const.Direction(direction)
@@ -496,28 +494,3 @@ class CharacterModel(object):
         if self.cmd.action == const.Action.Walk:
             self.cmd.x = coords[0]
             self.cmd.y = coords[1]
-            # import math
-            # if self.cmd.direction == const.Direction.NE:
-            #     self.cmd.x += self.speed[0] / float(math.sqrt(2))
-            #     self.cmd.y -= self.speed[1] / float(math.sqrt(2))
-            # elif self.cmd.direction == const.Direction.NW:
-            #     self.cmd.x -= self.speed[0] / float(math.sqrt(2))
-            #     self.cmd.y -= self.speed[1] / float(math.sqrt(2))
-            # elif self.cmd.direction == const.Direction.SE:
-            #     self.cmd.x += self.speed[0] / float(math.sqrt(2))
-            #     self.cmd.y += self.speed[1] / float(math.sqrt(2))
-            # elif self.cmd.direction == const.Direction.SW:
-            #     self.cmd.x -= self.speed[0] / float(math.sqrt(2))
-            #     self.cmd.y += self.speed[1] / float(math.sqrt(2))
-            # if self.cmd.direction == const.Direction.N:
-            #     self.cmd.y -= self.speed[1]
-            # elif self.cmd.direction == const.Direction.S:
-            #     self.cmd.y += self.speed[1]
-            # elif self.cmd.direction == const.Direction.E:
-            #     self.cmd.x += self.speed[0]
-            # elif self.cmd.direction == const.Direction.W:
-            #     self.cmd.x -= self.speed[0]
-
-        # if self.cm.is_collide:
-        #     self.cmd.x = x
-        #     self.cmd.y = y

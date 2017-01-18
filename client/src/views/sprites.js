@@ -43,11 +43,27 @@ var app = app || {},
             return this;
         },
         changeSprite: function() {
-            app.stage.removeChild(this.model.currentSprite);
+            if (this.model.currentSprite) {
+                app.stage.removeChild(this.model.currentSprite);
+                this.model.currentSprite.removeAllEventListeners();
+            }
 
             this.model.currentSprite = app.baseSprites[this.model.animation.armor].clone();
             this.model.currentSprite.x = this.model.x;
             this.model.currentSprite.y = this.model.y;
+
+            this.model.currentSprite.on("mouseover", function() {
+                this.model.currentSprite.filters = [
+                    new createjs.ColorFilter(0, 0, 0, 1, 0, 0, 0),
+                    // new createjs.BlurFilter(5, 5, 10)
+                ];
+                var b = this.model.currentSprite.getBounds();
+                this.model.currentSprite.cache(b.x, b.y, b.width, b.height);
+            }, this);
+            this.model.currentSprite.on("mouseout", function() {
+                this.model.currentSprite.filters = [];
+                this.model.currentSprite.uncache();
+            }, this);
             // this.model.currentSprite.scaleX = this.model.currentSprite.scaleY = 0.5;
 
             // if (this.model.isDead()) {

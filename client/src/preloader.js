@@ -1,7 +1,7 @@
 var app = app || {};
 
 (function () {
-    var queue, ss, s;
+    var queue, ss, s, _highlitted;
 
     app.baseSprites = {};
     app.baseImages = {};
@@ -30,11 +30,7 @@ var app = app || {};
         createjs.Sound.muted = true;
 
         app.stage.addChildAt(app.baseImages['map'], 0);
-        app.baseImages['map'].on("click", function(evt) {
-            app.user.move([evt.stageX, evt.stageY]);
-            console.log("X: " + evt.stageX);
-            console.log("Y: " + evt.stageY);
-        });
+        app.map = new app.MapView();
         $(app.canvas).show();
         $('#conn_status').show();
         if (!app.config.is_authorized) {

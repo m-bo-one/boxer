@@ -69,7 +69,7 @@ class GameApplication(WebSocketApplication):
             main_queue.put_nowait(char_id)
 
     def player_move(self, message):
-        self.user.build_path(message['point'])
+        self.user.move(message['point'])
 
     def player_shoot(self, message):
         self.user.shoot()

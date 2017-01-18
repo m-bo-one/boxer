@@ -2,7 +2,10 @@ import os
 
 DEBUG = True
 TEMPLATE_DEBUG = False
-FPS = 60
+GAME = {
+    'FPS': 60,
+    'CELL_SIZE': 32
+}
 
 PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 SERVER_PATH = os.path.join(PROJECT_PATH, 'server')

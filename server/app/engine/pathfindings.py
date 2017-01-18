@@ -2,6 +2,9 @@ import math
 import heapq
 import constants as const
 
+from conf import settings
+from db import local_db
+
 from .colliders import spatial_hash
 
 
@@ -20,23 +23,18 @@ class PriorityQueue(object):
         return heapq.heappop(self.elements)[1]
 
 
-def _df(coord):
-    # TODO
-    return coord
-
-
 class Pathfinder(object):
 
     dir_funcs = {
-        const.Direction.W: lambda p, s: (p[0] - s[0], p[1]),
-        const.Direction.E: lambda p, s: (p[0] + s[0], p[1]),
-        const.Direction.N: lambda p, s: (p[0], p[1] - s[1]),
-        const.Direction.S: lambda p, s: (p[0], p[1] + s[1]),
+        const.Direction.W: lambda p, s: (p[0] - s, p[1]),
+        const.Direction.E: lambda p, s: (p[0] + s, p[1]),
+        const.Direction.N: lambda p, s: (p[0], p[1] - s),
+        const.Direction.S: lambda p, s: (p[0], p[1] + s),
 
-        const.Direction.SW: lambda p, s: (p[0] + _df(s[0]), p[1] + _df(s[1])),
-        const.Direction.SE: lambda p, s: (p[0] - _df(s[0]), p[1] + _df(s[1])),
-        const.Direction.NE: lambda p, s: (p[0] - _df(s[0]), p[1] - _df(s[1])),
-        const.Direction.NW: lambda p, s: (p[0] + _df(s[0]), p[1] - _df(s[1])),
+        const.Direction.SW: lambda p, s: (p[0] + s, p[1] + s),
+        const.Direction.SE: lambda p, s: (p[0] - s, p[1] + s),
+        const.Direction.NE: lambda p, s: (p[0] - s, p[1] - s),
+        const.Direction.NW: lambda p, s: (p[0] + s, p[1] - s),
     }
 
     def __init__(self, obj, chop_directions):
@@ -45,11 +43,19 @@ class Pathfinder(object):
         self.came_from = {}
         self.cost_so_far = {}
         self.chop_directions = chop_directions
+        self.start = self._centralize_cell(self.obj.coords)
+
+    @staticmethod
+    def _centralize_cell(cell, cell_size=settings.GAME['CELL_SIZE']):
+        x = (cell[0] // cell_size) * cell_size
+        y = (cell[1] // cell_size) * cell_size
+        return (x + cell_size / 2, y + cell_size / 2)
 
     def _possible_steps(self, point, goal):
         steps = []
         for direction in self._aesthetics_directions(point, goal):
-            steps.append(self.dir_funcs[direction](point, self.obj.speed))
+            steps.append(self.dir_funcs[direction](
+                point, self.obj._footpace[0]))
         return steps
 
     @staticmethod
@@ -179,32 +185,11 @@ class Pathfinder(object):
         (x2, y2) = goal
         return math.sqrt(abs(x1 - x2) ** 2 + abs(y1 - y2) ** 2)
 
-    @property
-    def start(self):
-        return (self.obj.x, self.obj.y)
-
-    def _coord_to_int(self, point):
-        point = [int(p) for p in point]
-        if point[0] % self.obj.speed[0]:
-            point[0] = point[0] + 1
-        if point[1] % self.obj.speed[1]:
-            point[1] = point[1] + 1
-        return tuple(point)
-
     def g_bfs_search(self, goal):
-        if goal[0] % self.obj.speed[0] or goal[1] % self.obj.speed[1]:
-            raise TypeError('Wrong speed for this coordinates.')
-
-        # check if clicked point has no collision
-        if not self.passable(goal) or not self.in_bounds(goal):
-            return
-
-        start = self._coord_to_int(self.start)
-
         frontier = PriorityQueue()
-        frontier.put(start, 0)
+        frontier.put(self.start, 0)
         self.came_from = {}
-        self.came_from[start] = None
+        self.came_from[self.start] = None
 
         while not frontier.empty():
             current = frontier.get()
@@ -219,21 +204,12 @@ class Pathfinder(object):
                     self.came_from[next] = current
 
     def a_star_search(self, goal):
-        if goal[0] % self.obj.speed[0] or goal[1] % self.obj.speed[1]:
-            raise TypeError('Wrong speed for this coordinates.')
-
-        # check if clicked point has no collision
-        if not self.passable(goal) or not self.in_bounds(goal):
-            return
-
-        start = self._coord_to_int(self.start)
-
         frontier = PriorityQueue()
         frontier.put(self.start, 0)
         self.came_from = {}
         self.cost_so_far = {}
-        self.came_from[start] = None
-        self.cost_so_far[start] = 0
+        self.came_from[self.start] = None
+        self.cost_so_far[self.start] = 0
 
         while not frontier.empty():
             current = frontier.get()
@@ -256,10 +232,9 @@ class Pathfinder(object):
             return
             yield
         else:
-            start = self._coord_to_int(self.start)
             current = goal
             yield current
-            while current != start:
+            while current != self.start:
                 current = self.came_from[current]
                 yield current
 
@@ -267,7 +242,10 @@ class Pathfinder(object):
     def build_path(cls, obj, goal, alg='A*', chop_directions=None):
         if chop_directions is None:
             chop_directions = []
-        goal = tuple(goal)
+        goal = cls._centralize_cell(goal)
+        # check if clicked point has no collision
+        if not cls.passable(goal) or not cls.in_bounds(goal):
+            return []
         p = Pathfinder(obj, chop_directions)
         if alg == 'A*':
             p.a_star_search(goal)

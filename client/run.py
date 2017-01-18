@@ -96,7 +96,7 @@ class BaseHttpRunner(object):
     def app_settings(self):
         return {
             'DEBUG': settings.TEMPLATE_DEBUG,
-            'FPS': settings.FPS,
+            'GAME': settings.GAME,
             'is_authorized': not self.ceng.user_is_anonymous
         }
 

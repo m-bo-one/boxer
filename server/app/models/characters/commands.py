@@ -4,6 +4,7 @@ from enum import IntEnum, Enum
 from ..weapons import Weapon
 from ..armors import Armor
 
+from conf import settings
 from db import redis_db
 import constants as const
 
@@ -37,7 +38,8 @@ class CmdModel(object):
 
     @classmethod
     def create(cls, character_id,
-               x=0, y=0,
+               x=settings.GAME['CELL_SIZE'] / 2,
+               y=settings.GAME['CELL_SIZE'] / 2,
                action=const.Action.Breathe,
                direction=const.Direction.W):
         cmd = cls(id=None, character_id=character_id, x=x, y=y,

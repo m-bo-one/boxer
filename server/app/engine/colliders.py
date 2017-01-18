@@ -6,6 +6,7 @@ import logging
 from contextlib import contextmanager
 
 from db import local_db
+from conf import settings
 
 
 class CollisionError(Exception):
@@ -15,7 +16,7 @@ class CollisionError(Exception):
 
 class SpatialHash(object):
 
-    def __init__(self, cell_size=32):
+    def __init__(self, cell_size=settings.GAME['CELL_SIZE']):
         self.cell_size = float(cell_size)
         self.contents = {}
         # self.make_map()

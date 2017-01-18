@@ -18,6 +18,7 @@ $(function () {
         **/
 
         app.stage.update();
+        if (app.user.currentSprite && app.user.currentSprite.cacheCanvas) app.user.currentSprite.updateCache();
         // FOR FUTURE GRID SYSTEM
         if (app.config.DEBUG) utils.drawBoard();
         if (app.hud) app.hud.trigger('updateFPS', createjs.Ticker.getMeasuredFPS());
@@ -63,8 +64,9 @@ $(function () {
     app.user = {};
     app.sprites = {};
     app.stage = new createjs.Stage(app.canvas);
+    app.stage.enableMouseOver(10);
     // createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
-    createjs.Ticker.setFPS(app.config.FPS);
+    createjs.Ticker.setFPS(app.config.GAME.FPS);
     createjs.Ticker.addEventListener("tick", gameLoop);
 
     window.addEventListener("keydown", function (e) {
