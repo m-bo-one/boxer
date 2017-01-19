@@ -2,13 +2,17 @@
 2D websocket game with authoritative server
 
 Some small mechanics at pictures:
-- Death animation <br>
+
+Death animation <br>
 ![](https://media.giphy.com/media/26gseP6BwnyNcZf0c/giphy.gif)
 
-- Heal animation <br>
+Heal animation <br>
 ![](https://media.giphy.com/media/l3q2xRBfPE3Dc0zAs/source.gif)
 
-- Path finding (used A* search based on euclidean distance) <br>
+Stealth mechanics <br>
+![](https://media.giphy.com/media/26xBNnfvy0zqKmhJC/source.gif)
+
+Path finding (used A* search based on euclidean distance) <br>
 ![](https://media.giphy.com/media/l3q2LhZTFlOFiwbZe/source.gif)
 
 
