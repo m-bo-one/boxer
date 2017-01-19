@@ -105,7 +105,9 @@ class BaseWeapon(object):
         if random.randrange(100) < self.CRIT_CHANCE:
             calc_damage *= self.CRIT_MULTIPLIER
 
-        if detected.got_hit(self.user.weapon, calc_damage):  # killed
+        is_killed = detected._delayed_command(0.5, 'got_hit', self.user.weapon,
+                                              calc_damage).get()
+        if is_killed:  # killed
             self.user._delayed_command(0, 'update_scores')
 
 
@@ -125,7 +127,7 @@ class Rifle(BaseWeapon):
     RANGE = 180  # px
     CRIT_CHANCE = 30  # persent
     CRIT_MULTIPLIER = 2
-    SHOOT_TIME = 1.1
+    SHOOT_TIME = 0.8
     CHARGE_TYPE = 'bullet'
 
     @property

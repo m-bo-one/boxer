@@ -72,8 +72,10 @@ define(['config', 'jquery', 'backbone', 'easel'], function(config, $, Backbone) 
             case 65:
                 if (app.shootMode) {
                     app.shootMode = false;
+                    $(app.canvas).removeClass('shoot-cursor');
                 } else {
                     app.shootMode = true;
+                    $(app.canvas).addClass('shoot-cursor');
                     app.currentCharacter.model.stop();
                 }
                 break;

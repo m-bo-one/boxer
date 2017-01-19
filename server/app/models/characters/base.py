@@ -58,6 +58,7 @@ class CharacterModel(object):
         self.scores = scores
         self.inventory = inventory
         self.AP = const.MAX_AP
+        self.max_AP = const.MAX_AP
 
         self._pool = Pool(self.max_pool_size)
         self.operations = []
@@ -70,6 +71,8 @@ class CharacterModel(object):
             self.cmd = CmdModel.get_last_or_create(self.id)
             # self.cm = CollisionManager(self,
             #                            pipelines=self.collision_pipeline)
+
+        self._pool.spawn(self.restore_AP)
 
     def is_allowed(self, fname):
         return bool(fname in self.allowed_actions)
@@ -135,7 +138,7 @@ class CharacterModel(object):
             'max_health': self.max_health,
             'operations': self.operations,
             'AP': self.AP,
-            'max_AP': const.MAX_AP,
+            'max_AP': self.max_AP,
             'steps': self.steps
         }
 
@@ -167,17 +170,17 @@ class CharacterModel(object):
             key = ''.join(['Death', self.cmd.action.name,
                            '_', self.cmd.direction.name])
         else:
-            if self.weapon.name == const.Weapon.Unarmed:
-                weapon_key = ''
-            elif self.cmd.action == const.Action.Attack:
-                weapon_key = ''.join([self.weapon.name.name, 'Burst'])
-            else:
-                weapon_key = self.weapon.name.name
-
             if self.cmd.action == const.Action.Heal:
                 action = const.Action.Magichigh.name
+                weapon_key = ''
             else:
                 action = self.cmd.action.name
+                if self.weapon.name == const.Weapon.Unarmed:
+                    weapon_key = ''
+                elif self.cmd.action == const.Action.Attack:
+                    weapon_key = ''.join([self.weapon.name.name, 'Burst'])
+                else:
+                    weapon_key = self.weapon.name.name
 
             key = ''.join(['Stand', action, weapon_key,
                            '_', self.cmd.direction.name])
@@ -262,7 +265,8 @@ class CharacterModel(object):
            not other or other.is_dead or
            not self.weapon_in_hands or
            self.operations_blocked or
-           self.AP - const.FIRE_AP < 0):
+           self.AP - const.FIRE_AP < 0 or
+           self == other):
             return
         self.display_show()
         self._clear_greenlets()
@@ -278,7 +282,7 @@ class CharacterModel(object):
             self.weapon.shoot(detected)
 
         self._delayed_command(self.weapon.w.SHOOT_TIME, 'stop')
-        self._delayed_command(1, 'restore_AP')
+        # self._delayed_command(1, 'restore_AP')
 
     @autosave
     def stealth(self):
@@ -305,12 +309,10 @@ class CharacterModel(object):
             self.AP = 0
 
     def restore_AP(self):
-        x = 0
-        self._kill_AP_threads()
-        for _ in range(const.MAX_AP - self.AP):
-            thread = self._delayed_command(x, 'incr_AP')
-            self.AP_stats[self.id].append(thread)
-            x += 1
+        while True:
+            if self.AP < self.max_AP and not self.operations_blocked:
+                self.incr_AP()
+            gevent.sleep(1)
 
     def _kill_AP_threads(self):
         self.AP_stats.setdefault(self.id, [])
@@ -357,24 +359,23 @@ class CharacterModel(object):
             self.AP - const.HEAL_AP >= 0,
             self.is_allowed('heal')
         ]):
-            if target is not None and target != self:
-                raise NotImplementedError()
-            else:
-                # TODO: For future, add inventory and
-                # replace heal of inventory stimulators
-                logging.info('Health before heal: %s', self.health)
-                self.health += random.randrange(10, 20, 1)
-                logging.info('Health before heal: %s', self.health)
 
-                self.cmd.action = const.Action.Heal
-                self.block_operation('heal')
-                self.use_AP(const.HEAL_AP)
+            self.cmd.action = const.Action.Heal
+            self.block_operation('heal')
+            self.use_AP(const.HEAL_AP)
 
-                if self.health > self.max_health:
-                    self.health = self.max_health
+            def _heal(target):
+                logging.info('Health before heal: %s', target.health)
+                target.health += random.randrange(10, 20, 1)
+                logging.info('Health before heal: %s', target.health)
+                if target.health > target.max_health:
+                    target.health = target.max_health
+                target.save()
 
-                self._delayed_command(const.HEAL_TIME, 'stop')
-                self._delayed_command(1, 'restore_AP')
+            target = target if target and target != self else self
+            _heal(target)
+
+            self._delayed_command(const.HEAL_TIME, 'stop')
 
     @autosave
     def kill(self):
@@ -412,10 +413,10 @@ class CharacterModel(object):
     def _kill_path(self):
         try:
             self.PATH_TREADS[self.id].kill()
-        except Exception as e:
-            logging.error('GREENLET: kill path - %s' % e.message)
-        finally:
             del self.PATH_TREADS[self.id]
+        except Exception:
+            pass
+        finally:
             self.steps = []
 
     def _clear_greenlets(self):
@@ -474,13 +475,12 @@ class CharacterModel(object):
                 gevent.sleep(speed)
                 if not has_more:
                     self._delayed_command(0, 'stop')
-                    self._delayed_command(1, 'restore_AP')
 
         self.PATH_TREADS[self.id] = self._pool.spawn(_move, pf)
 
     @autosave
     def stop(self):
-        self._clear_greenlets()
+        self._kill_path()
         self._plot_path(const.Action.Breathe, self.cmd.direction, self.coords)
 
     @autosave

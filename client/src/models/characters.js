@@ -22,8 +22,6 @@ require([
             this.weapon = options.weapon;
             this.prevWeapon = null;
             this.health = options.health;
-            // this.width = options.width;
-            // this.height = options.height;
             this.operationsBlocked = options.operations_blocked;
             this.animation = options.animation;
             this.updatedAt = options.updated_at;
@@ -33,7 +31,6 @@ require([
             this.maxAP = options.max_AP;
             this.steps = options.steps;
             this.display = options.display;
-            // this.pivot = options.pivot;
             this._options = options;
             this._APCallbacks = [];
         },
@@ -78,12 +75,9 @@ require([
             this.vision = options.vision;
             this.weapon = options.weapon;
             this.armor = options.armor;
-            // this.width = options.width;
-            // this.height = options.height;
             this.animation = options.animation;
             this.AP = options.AP;
             this.display = options.display;
-            // this.pivot = options.pivot;
 
             // if (app.user.id == this.id && options.extra_data.resurection_time) {
             //     // TODO: Dont know where resurect timer need to show( End it in future

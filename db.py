@@ -44,7 +44,8 @@ class DBClient(object):
             'map_size': {
                 'width': 1280,
                 'height': 768
-            }
+            },
+            '_char_greenlets': {}
         }
 
     def _mongo_connector(self):

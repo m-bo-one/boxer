@@ -54,7 +54,8 @@ class GameApplication(WebSocketApplication):
         self.user.equip(message['equipment'])
 
     def player_heal(self, message):
-        self.user.heal()
+        char = self.get_character_by_cid(message)
+        self.user.heal(char)
 
     def register_user(self, message):
         self.user = Outlander.create(user_id=1, name='hello')
@@ -69,21 +70,21 @@ class GameApplication(WebSocketApplication):
             main_queue.put_nowait(char_id)
 
     @staticmethod
-    def get_character_by_cid(cid):
+    def get_character_by_cid(message):
         try:
+            cid = message['cid']
             return local_db['characters'][cid]
-        except KeyError:
+        except (TypeError, KeyError):
             pass
 
     def player_move(self, message):
         self.user.move(message['point'])
 
     def player_stop(self, message):
-        print('asdasd')
         self.user.stop()
 
     def player_shoot(self, message):
-        char = self.get_character_by_cid(message['cid'])
+        char = self.get_character_by_cid(message)
         self.user.shoot(char)
 
     def player_stealth(self, message):

@@ -43,7 +43,7 @@ class Pathfinder(object):
         self.came_from = {}
         self.cost_so_far = {}
         self.chop_directions = chop_directions
-        self.start = self._centralize_cell(self.obj.coords)
+        self.start = self._get_nearest_multiple_point(obj)
 
     @staticmethod
     def _centralize_cell(cell, cell_size=settings.GAME['CELL_SIZE']):
@@ -239,12 +239,20 @@ class Pathfinder(object):
                 current = self.came_from[current]
                 yield current
 
+    @staticmethod
+    def _get_nearest_multiple_point(obj):
+        tmp = (coord % obj._footpace[i] for i, coord in enumerate(obj.coords))
+        return tuple([int(obj.coords[i] + (
+                      obj._footpace[i] - t if t > 0 else t))
+                      for i, t in enumerate(tmp)])
+
     @classmethod
     def build_path(cls, obj, goal, alg='A*', chop_directions=None):
         if chop_directions is None:
             chop_directions = []
         if (not goal[0] or not goal[1]):
             return []
+
         goal = cls._centralize_cell(goal)
         # check if clicked point has no collision
         if not cls.passable(goal) or not cls.in_bounds(goal):
