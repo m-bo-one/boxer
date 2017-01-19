@@ -113,9 +113,8 @@ def main_ticker(server):
             try:
                 client.ws.send(json.dumps({
                     'msg_type': 'users_map', 'data': data}))
-            except WebSocketError as e:
-                GameApplication._g_cleaner(client.user)
-                logging.error(e)
+            except WebSocketError:
+                pass
 
 
 if __name__ == '__main__':
