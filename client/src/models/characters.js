@@ -96,7 +96,7 @@ require([
             }
         },
         move: function(point) {
-            if (this.operationsBlocked || this.isDead()) return;
+            if (app.shootMode || this.operationsBlocked || this.isDead()) return;
             Stream.send('player_move', {'point': point});
         },
         stealth: function() {
@@ -104,7 +104,7 @@ require([
             Stream.send('player_stealth');
         },
         shoot: function(cid) {
-            if (this.operationsBlocked || !this.equipedByWeapon() || this.AP < 5) return;
+            if (!app.shootMode || this.operationsBlocked || !this.equipedByWeapon() || this.AP < 5) return;
             Stream.send('player_shoot', {'cid': cid});
         },
         heal: function() {
@@ -112,7 +112,7 @@ require([
             Stream.send('player_heal');
         },
         stop: function() {
-            this.move(app.constants.Action.Breathe, this.direction);
+            Stream.send('player_stop');
         },
         destroy: function() {
             app.stage.removeChild(this.currentSprite);

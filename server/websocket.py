@@ -78,6 +78,10 @@ class GameApplication(WebSocketApplication):
     def player_move(self, message):
         self.user.move(message['point'])
 
+    def player_stop(self, message):
+        print('asdasd')
+        self.user.stop()
+
     def player_shoot(self, message):
         char = self.get_character_by_cid(message['cid'])
         self.user.shoot(char)

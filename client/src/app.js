@@ -33,6 +33,7 @@ define(['config', 'jquery', 'backbone', 'easel'], function(config, $, Backbone) 
     app.ctx = app.canvas.getContext("2d");
     app.keys = {};
     app.characters = {};
+    app.shootMode = false;
     app.currentCharacter = null;
     app.stage = new createjs.Stage(app.canvas);
     app.stage.enableMouseOver(10);
@@ -42,31 +43,46 @@ define(['config', 'jquery', 'backbone', 'easel'], function(config, $, Backbone) 
 
     window.addEventListener("keydown", function (e) {
         app.keys[e.keyCode] = true;
-        // button '1'
-        if (app.keys[49]) {
-            app.user.equipWeapon();
+        switch (e.keyCode) {
+            // button 'Z'
+            case 90:
+                app.currentCharacter.model.equipWeapon();
+                break;
+            // button 'H'
+            case 72:
+                app.currentCharacter.model.heal();
+                break;
+            // button 'Q'
+            case 81:
+                app.currentCharacter.model.stealth();
+                break;
+            // button 'W'
+            case 87:
+                // TODO
+                break;
+            // button 'E'
+            case 69:
+                // TODO
+                break;
+            // button 'R'
+            case 82:
+                // TODO
+                break;
+            // button 'A'
+            case 65:
+                if (app.shootMode) {
+                    app.shootMode = false;
+                } else {
+                    app.shootMode = true;
+                    app.currentCharacter.model.stop();
+                }
+                break;
         }
-        // button 'space'
-        // if (app.keys[32]) {
-        //     app.user.shoot();
-        // }
-        // button 'H'
-        if (app.keys[72]) {
-            app.user.heal();
-        }
-
-        // 0   48
-        // 1   49
-        // 2   50
-        // 3   51
-
-        // button '3'
-        if (app.keys[51]) {
-            app.user.stealth();
-        }        
+        return false;   
     });
     window.addEventListener("keyup", function (e) {
         app.keys[e.keyCode] = false;
+        return false;  
     });
     window.onbeforeunload = function() {
         var data = JSON.stringify({

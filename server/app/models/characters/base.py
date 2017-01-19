@@ -7,6 +7,7 @@ import json
 import time
 
 import gevent
+from gevent import Timeout
 from gevent.pool import Pool
 
 from utils import lookahead
@@ -378,7 +379,7 @@ class CharacterModel(object):
     @autosave
     def kill(self):
         self.display_show()
-        self._kill_AP_threads()
+        self._clear_greenlets()
         self.cmd.action = random.choice([
             const.Action.Riddled,
             const.Action.Explode,
@@ -411,10 +412,11 @@ class CharacterModel(object):
     def _kill_path(self):
         try:
             self.PATH_TREADS[self.id].kill()
-            self.PATH_TREADS[self.id] = None
+        except Exception as e:
+            logging.error('GREENLET: kill path - %s' % e.message)
+        finally:
+            del self.PATH_TREADS[self.id]
             self.steps = []
-        except (KeyError, AttributeError):
-            pass
 
     def _clear_greenlets(self):
         self._kill_AP_threads()
@@ -424,7 +426,6 @@ class CharacterModel(object):
     def move(self, point):
         if not self.is_allowed('move'):
             return
-        self._clear_greenlets()
         self.stop()
 
         pf = Pathfinder.build_path(self, point, 'A*')
@@ -469,17 +470,17 @@ class CharacterModel(object):
                         direction = const.Direction.W
                 prev_step = step
 
-                self.steps.append(step)
                 self._plot_path(const.Action.Walk, direction, step)
                 gevent.sleep(speed)
                 if not has_more:
-                    self.stop()
+                    self._delayed_command(0, 'stop')
                     self._delayed_command(1, 'restore_AP')
 
         self.PATH_TREADS[self.id] = self._pool.spawn(_move, pf)
 
     @autosave
     def stop(self):
+        self._clear_greenlets()
         self._plot_path(const.Action.Breathe, self.cmd.direction, self.coords)
 
     @autosave
@@ -501,3 +502,5 @@ class CharacterModel(object):
         if self.cmd.action == const.Action.Walk:
             self.cmd.x = coords[0]
             self.cmd.y = coords[1]
+
+        self.steps.append(self.coords)

@@ -243,6 +243,8 @@ class Pathfinder(object):
     def build_path(cls, obj, goal, alg='A*', chop_directions=None):
         if chop_directions is None:
             chop_directions = []
+        if (not goal[0] or not goal[1]):
+            return []
         goal = cls._centralize_cell(goal)
         # check if clicked point has no collision
         if not cls.passable(goal) or not cls.in_bounds(goal):
