@@ -266,20 +266,18 @@ class CharacterModel(object):
            not self.weapon_in_hands or
            self.operations_blocked or
            self.AP - const.FIRE_AP < 0 or
-           self == other):
+           self == other or
+           not self.weapon.in_vision(other)):
             return
         self.display_show()
         self._clear_greenlets()
         self.cmd.action = const.Action.Attack
+        self.cmd.direction, _ = self.detect_direction_and_speed(self.coords,
+                                                                other.coords)
         self.block_operation('shoot')
         self.use_AP(const.FIRE_AP)
         self.extra_data['sound_to_play'] = self.weapon.w.SOUND
-
-        detected = self.weapon.in_vision(other)
-
-        if detected:
-            logging.info('Found character: %s', detected)
-            self.weapon.shoot(detected)
+        self.weapon.shoot(other)
 
         self._delayed_command(self.weapon.w.SHOOT_TIME, 'stop')
         # self._delayed_command(1, 'restore_AP')
@@ -423,6 +421,40 @@ class CharacterModel(object):
         self._kill_AP_threads()
         self._kill_path()
 
+    def detect_direction_and_speed(self, init, next, speed=0.015):
+        if init[0] - next[0] != 0 and init[1] - next[1] != 0:
+            logging.debug('UID: %s, define GO', self.id)
+            if next[0] > init[0] and next[1] < init[1]:
+                logging.debug('UID: %s, GO UP-RIGHT', self.id)
+                direction = const.Direction.NE
+            elif next[0] > init[0] and next[1] > init[1]:
+                logging.debug('UID: %s, GO BOTTOM-RIGHT', self.id)
+                direction = const.Direction.SE
+            elif next[0] < init[0] and next[1] > init[1]:
+                logging.debug('UID: %s, GO BOTTOM-LEFT', self.id)
+                direction = const.Direction.SW
+            elif next[0] < init[0] and next[1] < init[1]:
+                logging.debug('UID: %s, GO UP-LEFT', self.id)
+                direction = const.Direction.NW
+            speed *= math.sqrt(2)
+        elif init[0] - next[0] == 0:
+            logging.debug('UID: %s, GO Y', self.id)
+            if next[1] - init[1] >= 0:
+                logging.debug('UID: %s, GO BOTTOM', self.id)
+                direction = const.Direction.S
+            else:
+                logging.debug('UID: %s, GO TOP', self.id)
+                direction = const.Direction.N
+        elif init[1] - next[1] == 0:
+            logging.debug('UID: %s, GO X', self.id)
+            if next[0] - init[0] >= 0:
+                logging.debug('UID: %s, GO RIGHT', self.id)
+                direction = const.Direction.E
+            else:
+                logging.debug('UID: %s, GO LEFT', self.id)
+                direction = const.Direction.W
+        return direction, speed
+
     @autosave
     def move(self, point):
         if not self.is_allowed('move'):
@@ -434,41 +466,11 @@ class CharacterModel(object):
         def _move(pf):
             for i, lk in enumerate(lookahead(reversed(list(pf)))):
                 step, has_more = lk
-                speed = 0.015
                 if i == 0:
                     prev_step = step
-                if prev_step[0] - step[0] != 0 and prev_step[1] - step[1] != 0:
-                    logging.debug('UID: %s, define GO', self.id)
-                    if step[0] > prev_step[0] and step[1] < prev_step[1]:
-                        logging.debug('UID: %s, GO UP-RIGHT', self.id)
-                        direction = const.Direction.NE
-                    elif step[0] > prev_step[0] and step[1] > prev_step[1]:
-                        logging.debug('UID: %s, GO BOTTOM-RIGHT', self.id)
-                        direction = const.Direction.SE
-                    elif step[0] < prev_step[0] and step[1] > prev_step[1]:
-                        logging.debug('UID: %s, GO BOTTOM-LEFT', self.id)
-                        direction = const.Direction.SW
-                    elif step[0] < prev_step[0] and step[1] < prev_step[1]:
-                        logging.debug('UID: %s, GO UP-LEFT', self.id)
-                        direction = const.Direction.NW
 
-                    speed *= math.sqrt(2)
-                elif prev_step[0] - step[0] == 0:
-                    logging.debug('UID: %s, GO Y', self.id)
-                    if step[1] - prev_step[1] >= 0:
-                        logging.debug('UID: %s, GO BOTTOM', self.id)
-                        direction = const.Direction.S
-                    else:
-                        logging.debug('UID: %s, GO TOP', self.id)
-                        direction = const.Direction.N
-                elif prev_step[1] - step[1] == 0:
-                    logging.debug('UID: %s, GO X', self.id)
-                    if step[0] - prev_step[0] >= 0:
-                        logging.debug('UID: %s, GO RIGHT', self.id)
-                        direction = const.Direction.E
-                    else:
-                        logging.debug('UID: %s, GO LEFT', self.id)
-                        direction = const.Direction.W
+                direction, speed = self.detect_direction_and_speed(prev_step,
+                                                                   step)
                 prev_step = step
 
                 self._plot_path(const.Action.Walk, direction, step)

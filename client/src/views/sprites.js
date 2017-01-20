@@ -179,7 +179,7 @@ require(['app', 'utils', 'backbone', 'underscore', 'easel', 'tween'], function(a
                 this.initHP.x = this.model.x + size - this.initHP.text.length;
                 this.initHP.y = this.model.y - 2 * size;
             }
-            if (!this.prevHP || this.prevHP !== this.model.health) {
+            if (this.prevHP !== this.model.health) {
                 var diff = this.model.health - this.prevHP;
                 var color = (diff < 0) ? '#990000': '#156526';
                 this.prevHP = this.model.health;

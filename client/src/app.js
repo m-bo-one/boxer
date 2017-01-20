@@ -37,7 +37,7 @@ define(['config', 'jquery', 'backbone', 'easel'], function(config, $, Backbone) 
     app.currentCharacter = null;
     app.stage = new createjs.Stage(app.canvas);
     app.stage.enableMouseOver(10);
-    // createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
+
     createjs.Ticker.addEventListener("tick", gameLoop);
     createjs.Ticker.setFPS(app.config.FPS);
 

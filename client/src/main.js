@@ -19,6 +19,7 @@ requirejs.config({
         appApi: '../api',
         appModels: '../models',
         appViews: '../views',
+        components: '../components',
     },
     shim: {
         underscore: {
@@ -55,6 +56,9 @@ requirejs.config({
         },
         preloader: {
             deps: ['app', 'stream']
+        },
+        appViews: {
+            deps: ['components/abilities']
         }
     }
 });

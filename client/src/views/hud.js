@@ -1,4 +1,9 @@
-require(['app', 'backbone', 'underscore'], function(app, Backbone, _) {
+require([
+    'app',
+    'components/abilities',
+    'backbone',
+    'underscore'
+], function(app, abilities, Backbone, _) {
 
     var size = 20,
         font = size + 'px Russo One',
@@ -105,6 +110,7 @@ require(['app', 'backbone', 'underscore'], function(app, Backbone, _) {
         // MAIN
         initialize: function() {
             _.extend(this, Backbone.Events);
+            this.skill = abilities.Skill.create();
             this.panelLeft();
             this.panelRight();
         },
