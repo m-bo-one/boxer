@@ -58,7 +58,11 @@ require(['app', 'utils', 'backbone', 'underscore', 'easel', 'tween'], function(a
             this.model.currentSprite.y = this.model.y;
 
             this.model.currentSprite.on('click', function() {
-                app.currentCharacter.model.shoot(this.model.id);
+                if (this.model.shootModeEnabled()) {
+                    app.currentCharacter.model.shoot(this.model.id);
+                } else if (this.model.healModeEnabled()) {
+                    app.currentCharacter.model.heal(this.model.id);
+                }
             }, this);
 
             if (!this.model.prevArmor) {

@@ -50,13 +50,6 @@ class GameApplication(WebSocketApplication):
             logging.info('Evaluate msg %s' % message['msg_type'])
             getattr(self, message['msg_type'])(message.get('data', None))
 
-    def player_equip(self, message):
-        self.user.equip(message['equipment'])
-
-    def player_heal(self, message):
-        char = self.get_character_by_cid(message)
-        self.user.heal(char)
-
     def register_user(self, message):
         self.user = Outlander.create(user_id=1, name='hello')
         logging.debug(self.user.id)
@@ -86,6 +79,13 @@ class GameApplication(WebSocketApplication):
     def player_shoot(self, message):
         char = self.get_character_by_cid(message)
         self.user.shoot(char)
+
+    def player_equip(self, message):
+        self.user.equip(message['equipment'])
+
+    def player_heal(self, message):
+        char = self.get_character_by_cid(message)
+        self.user.heal(char)
 
     def player_stealth(self, message):
         self.user.stealth()

@@ -11,6 +11,9 @@ canvas {
 .shoot-cursor {
     cursor:  url(/assets/attack_cursor.png) 10.5 10.5, default;
 }
+.heal-cursor {
+    cursor:  url(/assets/heal_cursor.png) 10.5 10.5, default;
+}
 .login {
     height:110px;
     width:190px;

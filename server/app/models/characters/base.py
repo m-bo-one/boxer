@@ -369,7 +369,13 @@ class CharacterModel(object):
                     target.health = target.max_health
                 target.save()
 
-            target = target if target and target != self else self
+            if target and target != self:
+                target = target
+                self.cmd.direction, _ = \
+                    self.detect_direction_and_speed(self.coords, target.coords)
+            else:
+                target = self
+
             _heal(target)
 
             self._delayed_command(const.HEAL_TIME, 'stop')

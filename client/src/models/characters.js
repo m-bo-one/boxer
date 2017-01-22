@@ -89,8 +89,17 @@ require([
                 this.trigger('action');
             }
         },
+        actionModeEnabled: function() {
+            return (app.modeType !== false);
+        },
+        shootModeEnabled: function() {
+            return (app.modeType == 'shoot');
+        },
+        healModeEnabled: function() {
+            return (app.modeType == 'heal');
+        },
         move: function(point) {
-            if (app.shootMode || this.operationsBlocked || this.isDead()) return;
+            if (this.actionModeEnabled() || this.operationsBlocked || this.isDead()) return;
             Stream.send('player_move', {'point': point});
         },
         stealth: function() {
@@ -98,12 +107,23 @@ require([
             Stream.send('player_stealth');
         },
         shoot: function(cid) {
-            if (!app.shootMode || this.operationsBlocked || !this.equipedByWeapon() || this.AP < 5) return;
+            if (!this.shootModeEnabled() || this.operationsBlocked ||
+                !this.equipedByWeapon() || this.AP < 5) return;
             Stream.send('player_shoot', {'cid': cid});
         },
-        heal: function() {
-            if (this.operationsBlocked || this.isDead() || this.isFullHealth()  || this.AP < 4) return;
-            Stream.send('player_heal');
+        heal: function(cid) {
+            var data, aim;
+            if (cid === undefined) {
+                data = {};
+                aim = this;
+            } else {
+                data = {'cid': cid};
+                aim = app.characters[cid].model;
+            }
+            if (!this.healModeEnabled() || this.operationsBlocked ||
+                aim.isDead() || aim.isFullHealth()  || this.AP < 4) return;
+
+            Stream.send('player_heal', data);
         },
         stop: function() {
             Stream.send('player_stop');

@@ -30,7 +30,15 @@ define([
                     break;
                 // button 'H'
                 case 72:
-                    app.currentCharacter.model.heal();
+                    if (!app.modeType) {
+                        app.modeType = 'heal';
+                        $(app.canvas).addClass('heal-cursor');
+                        app.currentCharacter.model.stop();
+                    } else {
+                        app.modeType = false;
+                        $(app.canvas).removeClass('heal-cursor');
+                    }
+                    // app.currentCharacter.model.heal();
                     break;
                 // button 'Q'
                 case 81:
@@ -50,13 +58,13 @@ define([
                     break;
                 // button 'A'
                 case 65:
-                    if (app.shootMode) {
-                        app.shootMode = false;
-                        $(app.canvas).removeClass('shoot-cursor');
-                    } else {
-                        app.shootMode = true;
+                    if (!app.modeType) {
+                        app.modeType = 'shoot';
                         $(app.canvas).addClass('shoot-cursor');
                         app.currentCharacter.model.stop();
+                    } else {
+                        app.modeType = false;
+                        $(app.canvas).removeClass('shoot-cursor');
                     }
                     break;
             }
@@ -90,6 +98,8 @@ define([
         initialize: function() {
             window.addEventListener('keydown', this.onKeyDown);
             window.addEventListener('keyup', this.onKeyUp);
+
+            app.modeType = false;
         },
         destroy: function() {
             // app.stage.removeChild(this._highlitted);
