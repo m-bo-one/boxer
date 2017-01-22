@@ -10,6 +10,16 @@ from utils import get_files_from_dir
 def build_manifest():
     manifest_path = os.path.join(settings.ASSETS_PATH, 'manifest.json')
 
+    def _spell_builder():
+        jsons = (fname for fname in get_files_from_dir(
+                 os.path.join(settings.ASSETS_PATH, 'spells'))
+                 if '.png' in fname)
+        return ({
+            "id": "spell-" + fname.split('.')[0],
+            "type": "image",
+            "src": os.path.join("spells", fname)
+        } for fname in jsons)
+
     def _image_builder():
         jsons = (fname for fname in get_files_from_dir(
                  settings.ASSETS_PATH) if '.png' in fname)
@@ -42,7 +52,8 @@ def build_manifest():
             "path": settings.ASSETS_URL,
             "manifest": [data for data in chain(_spritesheet_builder(),
                                                 _sound_builder(),
-                                                _image_builder())]
+                                                _image_builder(),
+                                                _spell_builder())]
         }, manifest, indent=4)
 
 
