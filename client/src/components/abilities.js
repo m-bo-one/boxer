@@ -1,8 +1,15 @@
 define(['app', 'jquery', 'backbone', 'easel'], function(app, $, Backbone) {
 
     var Skill = function() {
+        this.canvas = app.canvas;
         this.stage = app.stage;
         this._lastX = -20;
+        // this.keys = {
+        //     q: 81,
+        //     w: 87,
+        //     e: 69,
+        //     r: 82
+        // }
         this.initCoords = {
             x: this._lastX,
             y: -75,
@@ -28,9 +35,6 @@ define(['app', 'jquery', 'backbone', 'easel'], function(app, $, Backbone) {
             imageCont.x = this.initCoords.x;
             imageCont.y = this.initCoords.y;
 
-            var bounds = imageCont.getBounds();
-            imageCont.cache(bounds.x, bounds.y, bounds.width, bounds.height);
-
             this.initCoords.x += 5 * this.initCoords.width * this.initCoords.scale / 4;
             console.log(this.initCoords.x);
         }
@@ -40,7 +44,13 @@ define(['app', 'jquery', 'backbone', 'easel'], function(app, $, Backbone) {
 
         image = skillInfo.image.clone();
         image.scaleX = image.scaleY = this.initCoords.scale;
-        // image.mask = this._drawRect();
+
+        // image.filters = [
+        //     new createjs.ColorMatrixFilter(new createjs.ColorMatrix().adjustBrightness(-25))
+        // ];
+        // image.cache(0, 0, this.initCoords.width, this.initCoords.height);
+
+        this._regKey(skillInfo.button, image);
 
         imgText = new createjs.Text();
         imgText.text = skillInfo.button;
@@ -52,25 +62,28 @@ define(['app', 'jquery', 'backbone', 'easel'], function(app, $, Backbone) {
         imageCont.addChild(imgText);
         imageCont.addChildAt(image, 0);
 
-        var bounds = imageCont.getBounds();
-        imageCont.cache(bounds.x, bounds.y, bounds.width, bounds.height);
-
         this.container.addChild(imageCont);
     };
 
-    Skill.prototype._drawRect = function() {
-        var graphics = new createjs.Graphics()
-            .clear()
-            .setStrokeStyle(1)
-            .beginStroke("#A9A9A9")
-            .drawRoundRect(
-                this.initCoords.x,
-                this.initCoords.y,
-                this.initCoords.width,
-                this.initCoords.height,
-                3)
-
-        return new createjs.Shape(graphics);
+    Skill.prototype._regKey = function(buttonKey, image) {
+        var self = this;
+        var _press = function(evt) {
+            image.filters = [
+                new createjs.ColorMatrixFilter(new createjs.ColorMatrix().adjustBrightness(-25))
+            ];
+            image.cache(0, 0, self.initCoords.width, self.initCoords.height);
+            setTimeout(function() {
+                image.uncache();
+            }, 125);
+            return false;
+        };
+        image.image.onkeydown = function(evt) {
+            if (evt.key == buttonKey) {
+                return _press(evt);
+            }
+        };
+        window.addEventListener("keydown", image.image.onkeydown);
+        image.on('click', _press);
     };
 
     Skill.prototype.remove = function(shape) {

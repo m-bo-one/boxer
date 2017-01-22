@@ -105,10 +105,8 @@ class BaseWeapon(object):
         if random.randrange(100) < self.CRIT_CHANCE:
             calc_damage *= self.CRIT_MULTIPLIER
 
-        is_killed = detected._delayed_command(0.5, 'got_hit', self.user.weapon,
-                                              calc_damage).get()
-        if is_killed:  # killed
-            self.user._delayed_command(0, 'update_scores')
+        detected._delayed_command(0.5, 'got_hit', self.user,
+                                  calc_damage).get()
 
 
 class Unarmed(BaseWeapon):

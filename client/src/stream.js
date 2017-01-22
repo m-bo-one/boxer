@@ -1,8 +1,9 @@
 define([
     'app',
+    'appViews/HudView',
     'backbone',
     'underscore'
-], function(app, Backbone, _) {
+], function(app, HudView, Backbone, _) {
 
     var Stream = function(app) {};
 
@@ -39,10 +40,7 @@ define([
                     model: app.currentCharacter.model
                 });
 
-                app.characters[data.id]['hud'] = new app.HudView({
-                    model: app.currentCharacter.model
-                });
-                // app.weaponVision = new app.WeaponVisionView({ model: app.user });
+                app.characters[data.id]['hud'] = new HudView({app: app});
             });
             ws.on('users_map', function(data) {
                 if (app.currentCharacter) {
@@ -80,6 +78,11 @@ define([
         ws.onclose = function(evt) {
             $('#conn_status').html('<b>WS Closed</b>');
         };
+
+        window.onbeforeunload = function() {
+            Stream.send('unregister_user');
+        };
+
         app.ws = ws;
     };
 

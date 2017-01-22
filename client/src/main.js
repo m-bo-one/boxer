@@ -52,10 +52,10 @@ requirejs.config({
             deps: ['config']
         },
         stream: {
-            deps: ['app']
+            deps: ['app', 'appViews/HudView']
         },
         preloader: {
-            deps: ['app', 'stream']
+            deps: ['app', 'stream', 'appViews/BoardView']
         },
         appViews: {
             deps: ['components/abilities']
@@ -68,7 +68,5 @@ requirejs([
     'appApi/constants',
     'appApi/login',
     'appModels/characters',
-    'appViews/map',
-    'appViews/hud',
     'appViews/sprites',
 ]);

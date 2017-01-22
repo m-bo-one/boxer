@@ -1,10 +1,11 @@
 require([
     'app',
     'stream',
+    'appViews/BoardView',
     'easel',
     'preload',
     'sound'
-], function(app, Stream) {
+], function(app, Stream, BoardView) {
 
     var queue, ss, s, _highlitted, app = window.app;
 
@@ -35,7 +36,7 @@ require([
         createjs.Sound.muted = true;
 
         // app.stage.addChildAt(app.baseImages['map'], 0);
-        app.map = new app.MapView();
+        app.map = new BoardView();
         $(app.canvas).show();
         $('#conn_status').show();
         // if (!app.config.is_authorized) {

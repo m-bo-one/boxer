@@ -327,15 +327,14 @@ class CharacterModel(object):
         logging.info("ID: %s - AP: %s" % (self.id, self.AP))
 
     @autosave
-    def got_hit(self, weapon, dmg):
+    def got_hit(self, shooter, dmg):
         logging.info('Health before hit: %s', self.health)
-        rdmg = self.armor.reduce_damage(weapon, dmg)
+        rdmg = self.armor.reduce_damage(shooter.weapon, dmg)
         self.health -= rdmg
         logging.info('Health after hit: %s', self.health)
         if self.is_dead:
             self.kill()
-            return 1
-        return 0
+            shooter.update_scores()
 
     def display_hide(self):
         self.display = const.Display.Hidden
