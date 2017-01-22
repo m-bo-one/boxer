@@ -30,15 +30,15 @@ define([
                     break;
                 // button 'H'
                 case 72:
-                    if (!app.modeType) {
-                        app.modeType = 'heal';
-                        $(app.canvas).addClass('heal-cursor');
-                        app.currentCharacter.model.stop();
+                    this._healCounter++;
+                    if (app.modeType != 'heal') {
+                        this._addMode('heal');
                     } else {
-                        app.modeType = false;
-                        $(app.canvas).removeClass('heal-cursor');
+                        if (this._healCounter >= 2 && (new Date() - app.modeUpdateAt) / 1000 <= 1) {
+                            app.currentCharacter.model.heal();
+                        }
+                        this._clearMods();
                     }
-                    // app.currentCharacter.model.heal();
                     break;
                 // button 'Q'
                 case 81:
@@ -58,13 +58,10 @@ define([
                     break;
                 // button 'A'
                 case 65:
-                    if (!app.modeType) {
-                        app.modeType = 'shoot';
-                        $(app.canvas).addClass('shoot-cursor');
-                        app.currentCharacter.model.stop();
+                    if (app.modeType != 'shoot') {
+                        this._addMode('shoot');
                     } else {
-                        app.modeType = false;
-                        $(app.canvas).removeClass('shoot-cursor');
+                        this._clearMods();
                     }
                     break;
             }
@@ -73,6 +70,19 @@ define([
         onKeyDown: function(evt) {
             app.keys[evt.keyCode] = false;
             return false;
+        },
+        _addMode: function(name) {
+            app.modeType = name;
+            app.modeUpdateAt = new Date();
+            $(app.canvas).addClass(name + '-cursor');
+            app.currentCharacter.model.stop();
+        },
+        _clearMods: function() {
+            app.modeType = false;
+            $(app.canvas).removeClass('heal-cursor');
+            $(app.canvas).removeClass('shoot-cursor');
+            this._healCounter = 0;
+            app.modeUpdateAt = false;
         },
         // initLintBox: function() {
         //     this._highlitted = new createjs.Shape().set({alpha: 0.5});
@@ -96,10 +106,10 @@ define([
 
         // // MAIN
         initialize: function() {
-            window.addEventListener('keydown', this.onKeyDown);
-            window.addEventListener('keyup', this.onKeyUp);
+            window.addEventListener('keydown', this.onKeyDown.bind(this));
+            window.addEventListener('keyup', this.onKeyUp.bind(this));
 
-            app.modeType = false;
+            this._clearMods();
         },
         destroy: function() {
             // app.stage.removeChild(this._highlitted);
