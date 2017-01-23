@@ -54,7 +54,7 @@ require(['app', 'utils', 'backbone', 'underscore', 'easel', 'tween'], function(a
             return this;
         },
         animate: function() {
-            console.log('Start playing animation: ' + this.model.animation.key);
+            utils._LOG('Start playing animation: ' + this.model.animation.key);
             if (this.model.isDead()) {
                 this.model.currentSprite.gotoAndStop(this.model.animation.key);
                 this.model.currentSprite._animation.next = false;

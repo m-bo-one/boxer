@@ -15,7 +15,7 @@ define(['app', 'jquery', 'backbone', 'easel'], function(app, $, Backbone) {
             y: -75,
             width: 40,
             height: 40,
-            scale: 1.5
+            scale: 1
         };
         this.container = new createjs.Container().set({
             x: app.canvas.width / 2,
@@ -25,49 +25,82 @@ define(['app', 'jquery', 'backbone', 'easel'], function(app, $, Backbone) {
     };
 
     Skill.prototype.add = function(skillInfo) {
-        var image, imageCont, imgText;
-        var childsCount = this.container.children.length;
+        var imageCont,
+            childsCount = this.container.children.length;
+
         if (childsCount > 0) {
             this.initCoords.x = this._lastX - (this.initCoords.scale * childsCount * 3 * this.initCoords.width / 4);
         }
+
         for (var i = 0; i < childsCount; i++) {
             imageCont = this.container.children[i];
             imageCont.x = this.initCoords.x;
             imageCont.y = this.initCoords.y;
 
-            this.initCoords.x += 5 * this.initCoords.width * this.initCoords.scale / 4;
-            console.log(this.initCoords.x);
+            this.initCoords.x += 3 * this.initCoords.width * this.initCoords.scale / 2;
         }
-        imageCont = new createjs.Container();
+
+        this._createAbilityBox(skillInfo);
+    };
+
+    Skill.prototype._createAbilityBox = function(skillInfo) {
+        var imageCont = new createjs.Container();
         imageCont.x = this.initCoords.x;
         imageCont.y = this.initCoords.y;
 
-        image = skillInfo.image.clone();
-        image.scaleX = image.scaleY = this.initCoords.scale;
+        var image = this.__createAbilityImg(skillInfo.button, skillInfo.image);
+        var imgText = this.__createAbilityButton(skillInfo.button);
+        // var descr = this.__createAbilityDescription(skillInfo.description);
 
-        // image.filters = [
-        //     new createjs.ColorMatrixFilter(new createjs.ColorMatrix().adjustBrightness(-25))
-        // ];
-        // image.cache(0, 0, this.initCoords.width, this.initCoords.height);
-
-        this._regKey(skillInfo.button, image);
-
-        imgText = new createjs.Text();
-        imgText.text = skillInfo.button;
-        imgText.x = 4;
-        imgText.color = 'white';
-        imgText.font = '30 px Russo One';
-        imgText.scaleX = imgText.scaleY = this.initCoords.scale;
-
-        imageCont.addChild(imgText);
-        imageCont.addChildAt(image, 0);
+        imageCont.addChild(imgText, image);
 
         this.container.addChild(imageCont);
     };
 
-    Skill.prototype._regKey = function(buttonKey, image) {
+    // Skill.prototype.__createAbilityDescription = function(description) {
+    //     var shape = new createjs.Shape();
+
+    //     shape.x = this.initCoords.x;
+    //     shape.y = this.initCoords.y;
+
+    //     shape.graphics
+    //         .clear()
+    //         .setStrokeStyle(0.5)
+    //         .beginStroke("black")
+    //         .beginFill("grey")
+    //         .drawRect(0, 0, 100, 100)
+    //         .endStroke();
+
+    //     return shape;
+    // };
+
+    Skill.prototype.__createAbilityImg = function(button, image) {
+        var image = image.clone();
+        image.scaleX = image.scaleY = this.initCoords.scale;
+
+        this.__regKey(button, image);
+        return image;
+    };
+
+    Skill.prototype.__createAbilityButton = function(button) {
+        var imgText = new createjs.Text();
+        imgText.text = button;
+        imgText.x = 4;
+        imgText.color = 'white';
+        imgText.font = '30 px Russo One';
+        imgText.scaleX = imgText.scaleY = this.initCoords.scale;
+        return imgText;
+    };
+
+    Skill.prototype.__regKey = function(buttonKey, image) {
         var self = this;
-        var _press = function(evt) {
+
+        window.addEventListener("keydown", function(evt) {
+            if (evt.key == buttonKey) {
+                return _press(evt);
+            }
+        });
+        image.on('click', function(evt) {
             image.filters = [
                 new createjs.ColorMatrixFilter(new createjs.ColorMatrix().adjustBrightness(-25))
             ];
@@ -76,14 +109,29 @@ define(['app', 'jquery', 'backbone', 'easel'], function(app, $, Backbone) {
                 image.uncache();
             }, 125);
             return false;
-        };
-        image.image.onkeydown = function(evt) {
-            if (evt.key == buttonKey) {
-                return _press(evt);
-            }
-        };
-        window.addEventListener("keydown", image.image.onkeydown);
-        image.on('click', _press);
+        });
+        image.on('mouseover', function(evt) {
+            var shape = new createjs.Shape().set({
+                x: self.container.x,
+                y: self.container.y,
+            });
+
+            shape.graphics
+                .clear()
+                .setStrokeStyle(0.5)
+                .beginStroke("black")
+                .beginFill("grey")
+                .drawRect(
+                    self._lastX - (self.initCoords.scale * childsCount * 3 * self.initCoords.width / 4);,
+                    self.initCoords.y, 100, 100)
+                .endStroke();
+
+            self.stage.addChild(shape);
+
+            image.on('mouseout', function(evt) {
+                self.stage.removeChild(shape);
+            });
+        });
     };
 
     Skill.prototype.remove = function(shape) {
