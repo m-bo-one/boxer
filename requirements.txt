@@ -6,13 +6,10 @@ cffi==1.9.1
 colorlog==2.10.0
 cryptography==1.7.1
 decorator==4.0.10
-enum==0.4.6
-enum34==1.1.6
 Fabric==1.13.1
 funcsigs==1.0.2
 futures==3.0.5
 gevent==1.2.1
-gevent-websocket==0.9.5
 greenlet==0.4.11
 idna==2.2
 ipaddress==1.0.18
@@ -20,6 +17,7 @@ ipdb==0.10.1
 ipython==5.1.0
 ipython-genutils==0.1.0
 Jinja2==2.9.4
+karellen-geventws==1.0.1
 MarkupSafe==0.23
 mongoengine==0.11.0
 olefile==0.44
@@ -43,4 +41,6 @@ scandir==1.4
 simplegeneric==0.8.1
 six==1.10.0
 traitlets==4.3.1
+ujson==1.35
 wcwidth==0.1.7
+wsaccel==0.6.2

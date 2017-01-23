@@ -96,9 +96,7 @@ class BaseWeapon(object):
 
     @property
     def damage(self):
-        return int(random.choice(xrange(self.DMG[0],
-                                        self.DMG[1],
-                                        1)))
+        return int(random.choice(range(self.DMG[0], self.DMG[1], 1)))
 
     def shoot(self, detected):
         calc_damage = self.damage

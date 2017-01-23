@@ -99,7 +99,7 @@ def main_ticker(server):
             'users': {
                 'update': [
                     char.to_dict()
-                    for char in local_db['characters'].itervalues()
+                    for char in local_db['characters'].values()
                 ],
                 'remove': []
             },

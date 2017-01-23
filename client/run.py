@@ -5,7 +5,6 @@ from gevent import monkey; monkey.patch_all()  # noqa
 
 import logging
 import time
-import hashlib
 import json
 
 import gevent
@@ -79,9 +78,6 @@ class BaseHttpRunner(object):
         context = {
             'SRC_URL': settings.SRC_URL,
             'ASSETS_URL': settings.ASSETS_URL,
-            'FILE_VERSION': (hashlib.md5(str(time.time())).hexdigest()
-                             if not settings.TEMPLATE_DEBUG else ''),
-            'FILE_VERSION': '',
             'APP_SETTINGS': json.dumps(self.app_settings)
         }
         if isinstance(extra, dict):
