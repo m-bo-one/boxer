@@ -1,15 +1,126 @@
-define(['app', 'jquery', 'backbone', 'easel'], function(app, $, Backbone) {
+define([
+    'app',
+    'jquery',
+    'backbone',
+    'easel'
+], function(app, $, Backbone) {
+
+    var SkillDescription = function(skill, image, info) {
+        this.info = info;
+        this.stage = app.stage;
+        this.container = new createjs.Container().set({
+            x: skill.container.x,
+            y: skill.container.y,
+            alpha: 0
+        });
+
+        this.width = 150;
+        this.height = 200;
+        this.y = -290;
+        this.x = image.parent.x - 0.5 * (this.width - skill.initCoords.width);
+
+        this.plotInfo();
+
+        this.stage.addChild(this.container);
+    };
+    
+    SkillDescription.prototype = {
+        show: function() {
+            this.container.alpha = 1;
+        },
+        hide: function() {
+            this.container.alpha = 0;
+        },
+        remove: function() {
+            this.stage.removeChild(this.container);
+        },
+        plotInfo: function() {
+            this._plotBoundary();
+            this._plotHeader();
+            var bounds = this.container.getBounds();
+        },
+        _plotBoundary: function() {
+            var shape = new createjs.Shape().set({
+                alpha: 0.75
+            });
+
+            shape.graphics
+                .clear()
+                .setStrokeStyle(0.5)
+                .beginStroke("black")
+                .beginFill("#2e3033")
+                .drawRoundRect(this.x, this.y, this.width, this.height, 3)
+                .endStroke();
+            shape.cache(this.x, this.y, this.width, this.height);
+
+            var tric = new createjs.Shape().set({
+                alpha: 0.75,
+                x: this.x + 0.5 * this.width,
+                y: this.y + this.height
+            });
+            tric._diffX = 10;
+            tric._diffY = 10;
+
+            tric.graphics
+                .clear()
+                .setStrokeStyle(0.5)
+                .beginStroke("black")
+                .beginFill("#2e3033")
+                .moveTo(0, tric._diffY)
+                .lineTo(tric._diffX, 0)
+                .lineTo(-tric._diffX, 0)
+                .lineTo(0, tric._diffY)
+                .endStroke();
+            tric.cache(-tric._diffX, 0, tric._diffX * 2, tric._diffY);
+
+            this.container.addChild(shape, tric);
+        },
+        _plotHeader: function() {
+            var headerText = new createjs.Text().set({
+                x: this.x + 5,
+                y: this.y + 5,
+                lineWidth: this.width,
+                text: this.info.header,
+                font: '12px Arial',
+                color: 'white'
+            });
+            headerText.cache(0, 0, this.width, 12);
+            this.container.addChild(headerText);
+
+            this._plotLine(headerText);
+        },
+        _plotLine: function(text, indent) {
+            var indent = indent || 2,
+                w = text.getMeasuredWidth(),
+                h = text.getMeasuredHeight(),
+                underline = new createjs.Shape();
+            underline.graphics
+                .s("white")
+                .mt(text.x, text.y + h + indent)
+                .lt(text.x + w, text.y + h + indent)
+                .es();
+            underline.cache(text.x, text.y + h + indent, w, indent)
+            this.container.addChild(underline);
+        },
+        _plotTypeEffect: function(type, description) {
+
+        },
+        _plotDescription: function(description) {
+
+        },
+        _plotCouldown: function(time) {
+
+        },
+        _plotAPConsumption: function(APCount) {
+
+        }
+    };
+    SkillDescription.constructor = SkillDescription;
 
     var Skill = function() {
         this.canvas = app.canvas;
         this.stage = app.stage;
         this._lastX = -20;
-        // this.keys = {
-        //     q: 81,
-        //     w: 87,
-        //     e: 69,
-        //     r: 82
-        // }
         this.initCoords = {
             x: this._lastX,
             y: -75,
@@ -25,7 +136,7 @@ define(['app', 'jquery', 'backbone', 'easel'], function(app, $, Backbone) {
     };
 
     Skill.prototype.add = function(skillInfo) {
-        var imageCont,
+        var image, imageCont,
             childsCount = this.container.children.length;
 
         if (childsCount > 0) {
@@ -48,19 +159,19 @@ define(['app', 'jquery', 'backbone', 'easel'], function(app, $, Backbone) {
         imageCont.x = this.initCoords.x;
         imageCont.y = this.initCoords.y;
 
-        var image = this.__createAbilityImg(skillInfo.button, skillInfo.description, skillInfo.image);
+        var image = this.__createAbilityImg(skillInfo.image);
         var imgText = this.__createAbilityButton(skillInfo.button);
 
         imageCont.addChild(image, imgText);
 
+        this.__regKey(skillInfo, image);
+
         this.container.addChild(imageCont);
     };
 
-    Skill.prototype.__createAbilityImg = function(button, description, image) {
+    Skill.prototype.__createAbilityImg = function(image) {
         var image = image.clone();
         image.scaleX = image.scaleY = this.initCoords.scale;
-
-        this.__regKey(button, description, image);
         return image;
     };
 
@@ -74,9 +185,11 @@ define(['app', 'jquery', 'backbone', 'easel'], function(app, $, Backbone) {
         return imgText;
     };
 
-    Skill.prototype.__regKey = function(buttonKey, description, image) {
+    Skill.prototype.__regKey = function(skillInfo, image) {
         var self = this;
-        var description = description || 'Empty description';
+        var buttonKey = skillInfo.button;
+        var text = skillInfo.text;
+
         var _press = function(evt) {
             image.filters = [
                 new createjs.ColorMatrixFilter(new createjs.ColorMatrix().adjustBrightness(-25))
@@ -93,64 +206,17 @@ define(['app', 'jquery', 'backbone', 'easel'], function(app, $, Backbone) {
             }
         });
         image.on('click', _press);
-        image.on('mouseover', function(evt, description) {
-            var _cont = new createjs.Container();
-            _cont.x = self.container.x;
-            _cont.y = self.container.y;
+        image.on('mouseover', function(evt) {
 
-            var width = 150, height = 200, y = -290,
-                x = image.parent.x - 0.5 * (width - self.initCoords.width);
-
-            var shape = new createjs.Shape().set({
-                alpha: 0.75
-            });
-
-            shape.graphics
-                .clear()
-                .setStrokeStyle(0.5)
-                .beginStroke("black")
-                .beginFill("#2e3033")
-                .drawRoundRect(x, y, width, height, 3)
-                .endStroke();
-
-            _cont.addChild(shape);
-
-            var tric = new createjs.Shape().set({
-                alpha: 0.75,
-                x: x + 0.5 * width,
-                y: y + height
-            });
-            tric._diffX = 10;
-            tric._diffY = 10;
-
-            tric.graphics
-                .clear()
-                .setStrokeStyle(0.5)
-                .beginStroke("black")
-                .beginFill("#2e3033")
-                .moveTo(0, tric._diffY)
-                .lineTo(tric._diffX, 0)
-                .lineTo(-tric._diffX, 0)
-                .lineTo(0, tric._diffY)
-                .endStroke();
-
-            _cont.addChild(tric);
-
-            var text = new createjs.Text().set({
-                x: x,
-                y: y,
-                lineWidth: width,
-                text: description,
-                font: '12px Russo One'
-            });
-            _cont.addChild(text);
-
-            self.stage.addChild(_cont);
+            if (!image.hasOwnProperty('skillDescription')) {
+                image.skillDescription = new SkillDescription(self, image, text);
+            }
+            image.skillDescription.show();
 
             image.on('mouseout', function(evt) {
-                self.stage.removeChild(_cont);
+                image.skillDescription.hide();
             });
-        }, null, false, description);
+        });
     };
 
     Skill.prototype.remove = function(shape) {
@@ -167,15 +233,23 @@ define(['app', 'jquery', 'backbone', 'easel'], function(app, $, Backbone) {
         skill.add({
             image: app.baseImages['spell-runner'],
             button: 'q',
-            description: "Fewfewfwefwef wefwefwef wefwefwe"
+            text: {
+                header: 'FIRST ABILITY'
+            }
         });
         skill.add({
             image: app.baseImages['spell-invision'],
-            button: 'w'
+            button: 'w',
+            text: {
+                header: 'SECOND ABILITY'
+            }
         });
         skill.add({
             image: app.baseImages['spell-headbones'],
-            button: 'e'
+            button: 'e',
+            text: {
+                header: 'THIRD ABILITY'
+            }
         });
         // skill.add();
         // skill.add();

@@ -1,4 +1,9 @@
-define(['config', 'backbone', 'underscore'], function(config, Backbone, _) {
+define([
+    'config',
+    'backbone',
+    'underscore',
+    'easel'
+], function(config, Backbone, _) {
 
     return {
         _LOG: function (msg) {
@@ -39,6 +44,22 @@ define(['config', 'backbone', 'underscore'], function(config, Backbone, _) {
             };
             // we don't want to wait a full second before the timer starts
             timer();
+        },
+        underlinedText: function(options) {
+            var cont = new createjs.Container();
+            var text = new createjs.Text().set(options);
+            text.textBaseline = "alphabetic";
+            var w = text.getMeasuredWidth();
+
+            var underline = new createjs.Shape();
+            underline.graphics
+                .s("black")
+                .mt(text.x, text.y + 0.5)
+                .lt(text.x + w, text.y + 0.5)
+                .es();
+
+            cont.addChild(text, underline);
+            return cont;
         }
     };
 

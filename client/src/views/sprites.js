@@ -34,7 +34,8 @@ require(['app', 'utils', 'backbone', 'underscore', 'easel', 'tween'], function(a
 
             if (this.model !== app.currentCharacter.model &&
                 app.currentCharacter.model.actionModeEnabled() &&
-                !app.currentCharacter.model.isDead()) {
+                !app.currentCharacter.model.isDead() &&
+                !this.model.isDead()) {
                 if (app.currentCharacter.model.shootModeEnabled()) {
                     sColor = 'red';
                 } else if (app.currentCharacter.model.healModeEnabled()) {
