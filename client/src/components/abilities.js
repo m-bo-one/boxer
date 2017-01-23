@@ -19,6 +19,9 @@ define([
         this.y = -290;
         this.x = image.parent.x - 0.5 * (this.width - skill.initCoords.width);
 
+        this.xIndent = 5;
+        this.yIndent = 5;
+
         this.plotInfo();
 
         this.stage.addChild(this.container);
@@ -36,8 +39,11 @@ define([
         },
         plotInfo: function() {
             this._plotBoundary();
-            this._plotHeader();
-            var bounds = this.container.getBounds();
+            this._plotHeader(this.info.header || 'EMPTY');
+            this._plotTypeEffect(this.info.typeEffects || []);
+            this._plotDescription(this.info.description || 'Some empty description with big text and more more more more more empty descr.');
+            this._plotCooldown(this.info.cooldown || 3);
+            this._plotAPConsumption(this.info.AP || 5);
         },
         _plotBoundary: function() {
             var shape = new createjs.Shape().set({
@@ -46,7 +52,7 @@ define([
 
             shape.graphics
                 .clear()
-                .setStrokeStyle(0.5)
+                .setStrokeStyle(1)
                 .beginStroke("black")
                 .beginFill("#2e3033")
                 .drawRoundRect(this.x, this.y, this.width, this.height, 3)
@@ -75,19 +81,22 @@ define([
 
             this.container.addChild(shape, tric);
         },
-        _plotHeader: function() {
-            var headerText = new createjs.Text().set({
-                x: this.x + 5,
-                y: this.y + 5,
-                lineWidth: this.width,
-                text: this.info.header,
-                font: '12px Arial',
+        _plotHeader: function(title) {
+            var fontSize = 12;
+            var text = new createjs.Text().set({
+                x: this.x + this.xIndent,
+                y: this.y + this.yIndent,
+                lineWidth: this.width - this.xIndent,
+                text: title,
+                font: fontSize + 'px Arial',
                 color: 'white'
             });
-            headerText.cache(0, 0, this.width, 12);
-            this.container.addChild(headerText);
+            var h = text.getMeasuredHeight();
+            text.cache(0, 0, this.width - this.xIndent, h + fontSize);
+            this.yIndent += this.xIndent + h;
+            this.container.addChild(text);
 
-            this._plotLine(headerText);
+            this._plotLine(text);
         },
         _plotLine: function(text, indent) {
             var indent = indent || 2,
@@ -96,23 +105,99 @@ define([
                 underline = new createjs.Shape();
             underline.graphics
                 .s("white")
-                .mt(text.x, text.y + h + indent)
-                .lt(text.x + w, text.y + h + indent)
+                .mt(text.x, text.y + h + indent + this.xIndent)
+                .lt(text.x + w, text.y + h + indent + this.xIndent)
                 .es();
-            underline.cache(text.x, text.y + h + indent, w, indent)
+            underline.cache(text.x, text.y + h + indent + this.xIndent, w, indent)
+            this.yIndent += this.xIndent;
             this.container.addChild(underline);
         },
-        _plotTypeEffect: function(type, description) {
+        _plotTypeEffect: function(effects) {
+            var fontSize = 12;
+            for (var i = 0; i < effects.length; i++) {
+                var text = new createjs.Text().set({
+                    x: this.x + this.xIndent,
+                    y: this.y + this.yIndent,
+                    lineWidth: this.width - this.xIndent,
+                    text: effects[i].type + ': ' + effects[i].description,
+                    font: fontSize + 'px Arial',
+                    color: 'white'
+                });
+                text.cache(0, 0, this.width - this.xIndent, fontSize);
+                this.yIndent += this.xIndent + fontSize;
+                this.container.addChild(text);
+            }
 
+            this._plotLine(text);
         },
         _plotDescription: function(description) {
-
+            var fontSize = 12;
+            var text = new createjs.Text().set({
+                x: this.x + this.xIndent,
+                y: this.y + this.yIndent,
+                lineWidth: this.width - this.xIndent,
+                text: description,
+                font: fontSize + 'px Arial',
+                color: 'white'
+            });
+            var h = text.getMeasuredHeight();
+            text.cache(0, 0, this.width - this.xIndent, h + fontSize);
+            this.yIndent += this.xIndent + h;
+            this.container.addChild(text);
         },
-        _plotCouldown: function(time) {
-
+        _plotCooldown: function(time) {
+            var fontSize = 12, custIndent = 5;
+            var text1 = new createjs.Text().set({
+                x: this.x + 5 * this.xIndent,
+                y: this.y + this.yIndent + custIndent,
+                lineWidth: this.width - this.xIndent,
+                text: 'TIME: ',
+                font: fontSize + 'px Arial',
+                color: '#07ff14'
+            });
+            var w1 = text1.getMeasuredWidth();
+            var text2 = new createjs.Text().set({
+                x: this.x + 5 * this.xIndent + w1,
+                y: this.y + this.yIndent + custIndent,
+                lineWidth: this.width - this.xIndent,
+                text: time,
+                font: fontSize + 'px Arial',
+                color: 'white'
+            });
+            var h1 = text1.getMeasuredHeight();
+            var h2 = text2.getMeasuredHeight();
+            text1.cache(0, 0, this.width - this.xIndent, h1 + fontSize);
+            text2.cache(0, 0, this.width - this.xIndent, h2 + fontSize);
+            this.yIndent += this.xIndent + h2;
+            this.container.addChild(text1);
+            this.container.addChild(text2);
         },
         _plotAPConsumption: function(APCount) {
-
+            var fontSize = 12, custIndent = 10;
+            var text1 = new createjs.Text().set({
+                x: this.x + 5 * this.xIndent,
+                y: this.y + this.yIndent + custIndent,
+                lineWidth: this.width - this.xIndent,
+                text: 'AP: ',
+                font: fontSize + 'px Arial',
+                color: '#07ff14'
+            });
+            var w1 = text1.getMeasuredWidth();
+            var text2 = new createjs.Text().set({
+                x: this.x + 5 * this.xIndent + w1,
+                y: this.y + this.yIndent + custIndent,
+                lineWidth: this.width - this.xIndent,
+                text: APCount,
+                font: fontSize + 'px Arial',
+                color: 'white'
+            });
+            var h1 = text1.getMeasuredHeight();
+            var h2 = text2.getMeasuredHeight();
+            text1.cache(0, 0, this.width - this.xIndent, h1 + fontSize);
+            text2.cache(0, 0, this.width - this.xIndent, h2 + fontSize);
+            this.yIndent += this.xIndent + h2;
+            this.container.addChild(text1);
+            this.container.addChild(text2);
         }
     };
     SkillDescription.constructor = SkillDescription;
@@ -177,7 +262,7 @@ define([
 
     Skill.prototype.__createAbilityButton = function(button) {
         var imgText = new createjs.Text();
-        imgText.text = button;
+        imgText.text = button.toUpperCase();
         imgText.x = 4;
         imgText.color = 'white';
         imgText.font = '30 px Russo One';
@@ -234,21 +319,44 @@ define([
             image: app.baseImages['spell-runner'],
             button: 'q',
             text: {
-                header: 'FIRST ABILITY'
+                header: 'FIRST ABILITY',
+                typeEffects: [
+                    {type: 'ABILITY', description: 'Units'},
+                    {type: 'AFFECTS', description: 'Creeps'},
+                ]
             }
         });
         skill.add({
             image: app.baseImages['spell-invision'],
             button: 'w',
             text: {
-                header: 'SECOND ABILITY'
+                header: 'SECOND ABILITY',
+                typeEffects: [
+                    {type: 'ABILITY', description: 'Units'},
+                    {type: 'AFFECTS', description: 'Creeps'},
+                ]
             }
         });
         skill.add({
             image: app.baseImages['spell-headbones'],
             button: 'e',
             text: {
-                header: 'THIRD ABILITY'
+                header: 'THIRD ABILITY',
+                typeEffects: [
+                    {type: 'ABILITY', description: 'Units'},
+                    {type: 'AFFECTS', description: 'Creeps'},
+                ]
+            }
+        });
+        skill.add({
+            image: app.baseImages['spell-headbones'],
+            button: 'r',
+            text: {
+                header: 'FOURTH ABILITY',
+                typeEffects: [
+                    {type: 'ABILITY', description: 'Units'},
+                    {type: 'AFFECTS', description: 'Creeps'},
+                ]
             }
         });
         // skill.add();
