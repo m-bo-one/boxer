@@ -48,37 +48,19 @@ define(['app', 'jquery', 'backbone', 'easel'], function(app, $, Backbone) {
         imageCont.x = this.initCoords.x;
         imageCont.y = this.initCoords.y;
 
-        var image = this.__createAbilityImg(skillInfo.button, skillInfo.image);
+        var image = this.__createAbilityImg(skillInfo.button, skillInfo.description, skillInfo.image);
         var imgText = this.__createAbilityButton(skillInfo.button);
-        // var descr = this.__createAbilityDescription(skillInfo.description);
 
-        imageCont.addChild(imgText, image);
+        imageCont.addChild(image, imgText);
 
         this.container.addChild(imageCont);
     };
 
-    // Skill.prototype.__createAbilityDescription = function(description) {
-    //     var shape = new createjs.Shape();
-
-    //     shape.x = this.initCoords.x;
-    //     shape.y = this.initCoords.y;
-
-    //     shape.graphics
-    //         .clear()
-    //         .setStrokeStyle(0.5)
-    //         .beginStroke("black")
-    //         .beginFill("grey")
-    //         .drawRect(0, 0, 100, 100)
-    //         .endStroke();
-
-    //     return shape;
-    // };
-
-    Skill.prototype.__createAbilityImg = function(button, image) {
+    Skill.prototype.__createAbilityImg = function(button, description, image) {
         var image = image.clone();
         image.scaleX = image.scaleY = this.initCoords.scale;
 
-        this.__regKey(button, image);
+        this.__regKey(button, description, image);
         return image;
     };
 
@@ -92,15 +74,10 @@ define(['app', 'jquery', 'backbone', 'easel'], function(app, $, Backbone) {
         return imgText;
     };
 
-    Skill.prototype.__regKey = function(buttonKey, image) {
+    Skill.prototype.__regKey = function(buttonKey, description, image) {
         var self = this;
-
-        window.addEventListener("keydown", function(evt) {
-            if (evt.key == buttonKey) {
-                return _press(evt);
-            }
-        });
-        image.on('click', function(evt) {
+        var description = description || 'Empty description';
+        var _press = function(evt) {
             image.filters = [
                 new createjs.ColorMatrixFilter(new createjs.ColorMatrix().adjustBrightness(-25))
             ];
@@ -109,29 +86,71 @@ define(['app', 'jquery', 'backbone', 'easel'], function(app, $, Backbone) {
                 image.uncache();
             }, 125);
             return false;
+        };
+        window.addEventListener("keydown", function(evt) {
+            if (evt.key == buttonKey) {
+                return _press(evt);
+            }
         });
-        image.on('mouseover', function(evt) {
+        image.on('click', _press);
+        image.on('mouseover', function(evt, description) {
+            var _cont = new createjs.Container();
+            _cont.x = self.container.x;
+            _cont.y = self.container.y;
+
+            var width = 150, height = 200, y = -290,
+                x = image.parent.x - 0.5 * (width - self.initCoords.width);
+
             var shape = new createjs.Shape().set({
-                x: self.container.x,
-                y: self.container.y,
+                alpha: 0.75
             });
 
             shape.graphics
                 .clear()
                 .setStrokeStyle(0.5)
                 .beginStroke("black")
-                .beginFill("grey")
-                .drawRect(
-                    self._lastX - (self.initCoords.scale * childsCount * 3 * self.initCoords.width / 4);,
-                    self.initCoords.y, 100, 100)
+                .beginFill("#2e3033")
+                .drawRoundRect(x, y, width, height, 3)
                 .endStroke();
 
-            self.stage.addChild(shape);
+            _cont.addChild(shape);
+
+            var tric = new createjs.Shape().set({
+                alpha: 0.75,
+                x: x + 0.5 * width,
+                y: y + height
+            });
+            tric._diffX = 10;
+            tric._diffY = 10;
+
+            tric.graphics
+                .clear()
+                .setStrokeStyle(0.5)
+                .beginStroke("black")
+                .beginFill("#2e3033")
+                .moveTo(0, tric._diffY)
+                .lineTo(tric._diffX, 0)
+                .lineTo(-tric._diffX, 0)
+                .lineTo(0, tric._diffY)
+                .endStroke();
+
+            _cont.addChild(tric);
+
+            var text = new createjs.Text().set({
+                x: x,
+                y: y,
+                lineWidth: width,
+                text: description,
+                font: '12px Russo One'
+            });
+            _cont.addChild(text);
+
+            self.stage.addChild(_cont);
 
             image.on('mouseout', function(evt) {
-                self.stage.removeChild(shape);
+                self.stage.removeChild(_cont);
             });
-        });
+        }, null, false, description);
     };
 
     Skill.prototype.remove = function(shape) {
@@ -145,9 +164,19 @@ define(['app', 'jquery', 'backbone', 'easel'], function(app, $, Backbone) {
     Skill.create = function(character) {
         var skill = new Skill();
         // TODO: Add skills in future;
-        skill.add({image: app.baseImages['spell-runner'], button: 'q'});
-        skill.add({image: app.baseImages['spell-invision'], button: 'w'});
-        skill.add({image: app.baseImages['spell-headbones'], button: 'e'});
+        skill.add({
+            image: app.baseImages['spell-runner'],
+            button: 'q',
+            description: "Fewfewfwefwef wefwefwef wefwefwe"
+        });
+        skill.add({
+            image: app.baseImages['spell-invision'],
+            button: 'w'
+        });
+        skill.add({
+            image: app.baseImages['spell-headbones'],
+            button: 'e'
+        });
         // skill.add();
         // skill.add();
         // skill.add();

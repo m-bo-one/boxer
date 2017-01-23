@@ -55,8 +55,11 @@ class Pathfinder(object):
     def _possible_steps(self, point, goal):
         steps = []
         for direction in self._aesthetics_directions(point, goal):
-            steps.append(self.dir_funcs[direction](
-                point, self.obj._footpace[0]))
+            try:
+                steps.append(self.dir_funcs[direction](
+                    point, self.obj._footpace[0]))
+            except KeyError:
+                pass
         return steps
 
     @staticmethod
