@@ -81,21 +81,21 @@ class Action(IntEnum):
     Getupback = 9
     Getupforward = 10
     Magiclow = 11
-    Magichigh = 11
-    Pickup = 12
-    Recoil = 13
-    Heal = 14
-    Walk = 15
+    Magichigh = 12
+    Pickup = 13
+    Recoil = 14
+    Heal = 15
+    Walk = 16
 
-    Bighole = 16
-    Cutinhalf = 17
-    Electrify = 18
-    ElectrifyOverlay = 19
-    Explode = 20
-    Fire = 21
-    FireOverlay = 22
-    Melt = 23
-    Riddled = 24
+    Bighole = 17
+    Cutinhalf = 18
+    Electrify = 19
+    ElectrifyOverlay = 20
+    Explode = 21
+    Fire = 22
+    FireOverlay = 23
+    Melt = 24
+    Riddled = 25
 
     @staticmethod
     def get_death_keys():

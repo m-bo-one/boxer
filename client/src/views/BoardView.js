@@ -31,12 +31,12 @@ define([
                 // button 'H'
                 case 72:
                     this._healCounter++;
+                    if (this._healCounter >= 2 && (new Date() - app.modeUpdateAt) / 1000 <= 1) {
+                        app.currentCharacter.model.heal();
+                    }
                     if (app.modeType != 'heal') {
                         this._addMode('heal');
                     } else {
-                        if (this._healCounter >= 2 && (new Date() - app.modeUpdateAt) / 1000 <= 1) {
-                            app.currentCharacter.model.heal();
-                        }
                         this._clearMods();
                     }
                     break;
@@ -74,6 +74,8 @@ define([
         _addMode: function(name) {
             app.modeType = name;
             app.modeUpdateAt = new Date();
+            $(app.canvas).removeClass('heal-cursor');
+            $(app.canvas).removeClass('shoot-cursor');
             $(app.canvas).addClass(name + '-cursor');
             app.currentCharacter.model.stop();
         },

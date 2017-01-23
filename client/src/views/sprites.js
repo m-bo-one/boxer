@@ -1,6 +1,6 @@
 require(['app', 'utils', 'backbone', 'underscore', 'easel', 'tween'], function(app, utils, Backbone, _) {
 
-    var _stars, _hpColor,
+    var _stars, _hpColor, sColor,
         size = 10;
 
     app.SpriteView = Backbone.View.extend({
@@ -31,10 +31,30 @@ require(['app', 'utils', 'backbone', 'underscore', 'easel', 'tween'], function(a
             this.updateUsername();
             this.updateHP();
             this.updateTransparency();
+
+            if (this.model !== app.currentCharacter.model &&
+                app.currentCharacter.model.actionModeEnabled() &&
+                !app.currentCharacter.model.isDead()) {
+                if (app.currentCharacter.model.shootModeEnabled()) {
+                    sColor = 'red';
+                } else if (app.currentCharacter.model.healModeEnabled()) {
+                    sColor = 'green';
+                }
+                this.model.currentSprite.shadow = new createjs.Shadow(sColor, 0, 0, 5);
+            } else {
+                this.model.currentSprite.shadow = null;
+            }
+
+            // var currentFrame = this.model.currentSprite.spriteSheet._frames[this.model.currentSprite.currentFrame];
+            // console.log('PIVOT');
+            // console.log('X ' + currentFrame.regX);
+            // console.log('Y ' + currentFrame.regY);
+            // this.renderPivot(currentFrame.regX, currentFrame.regY);
+
             return this;
         },
         animate: function() {
-            utils._LOG('Start playing animation: ' + this.model.animation.key);
+            console.log('Start playing animation: ' + this.model.animation.key);
             if (this.model.isDead()) {
                 this.model.currentSprite.gotoAndStop(this.model.animation.key);
                 this.model.currentSprite._animation.next = false;
@@ -91,13 +111,13 @@ require(['app', 'utils', 'backbone', 'underscore', 'easel', 'tween'], function(a
             app.stage.addChild(this.sshape);
             this.elements.push(this.sshape);
         },
-        renderPivot: function() {
+        renderPivot: function(x, y) {
             if (this.pv) {
                 app.stage.removeChild(this.pv);
             }
             this.pv = new createjs.Shape().set({
-                x: this.model.pivot.x,
-                y: this.model.pivot.y
+                x: this.model.x + x,
+                y: this.model.y + y
             });
             this.pv.graphics.clear();
             this.pv.graphics.beginFill("red");
