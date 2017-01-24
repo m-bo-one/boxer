@@ -83,6 +83,7 @@ define([
                 .lineTo(tric._diffX, 0)
                 .lineTo(-tric._diffX, 0)
                 .lineTo(0, tric._diffY)
+                .endFill()
                 .endStroke();
             tric.cache(-tric._diffX, 0, tric._diffX * 2, tric._diffY);
 
@@ -208,6 +209,7 @@ define([
     };
     SkillDescription.constructor = SkillDescription;
 
+    /** Skill constructor */
     var Skill = function() {
         this.canvas = app.canvas;
         this.stage = app.stage;
@@ -225,7 +227,9 @@ define([
         });
         this.stage.addChild(this.container);
     };
-
+    /**
+     * @param {object} skillInfo [Object with skill block info]
+     */
     Skill.prototype.add = function(skillInfo) {
         var image, imageCont,
             childsCount = this.container.children.length;
@@ -244,26 +248,72 @@ define([
 
         this._createAbilityBox(skillInfo);
     };
-
+    /** @param {object} [Object with skill block info]  */
     Skill.prototype._createAbilityBox = function(skillInfo) {
         var imageCont = new createjs.Container();
         imageCont.x = this.initCoords.x;
         imageCont.y = this.initCoords.y;
 
         var image = this.__createAbilityImg(skillInfo.imageName);
-        var imgText = this.__createAbilityButton(skillInfo.button);
+        imageCont.addChild(image);
 
-        imageCont.addChild(image, imgText);
+        var cooldown = skillInfo.cooldown || 0;
+        if (cooldown > 0) {
+            var imgText = this.__createAbilityButton(skillInfo.button);
+            imageCont.addChild(imgText);
 
+            var cooldownBox = this.__createCooldownBox(skillInfo.cooldown);
+            imageCont.addChild(cooldownBox);
+        } else {
+            image.filters = [
+                new createjs.ColorMatrixFilter(new createjs.ColorMatrix().adjustBrightness(-25))
+            ];
+            image.cache(0, 0, this.initCoords.width, this.initCoords.height);
+        }
         this.__regKey(skillInfo, image);
 
         this.container.addChild(imageCont);
     };
 
+    /**
+     * [__createAbilityImg description]
+     * @param  {string} imageName [Image name of ability]
+     * @return {object}           [Bitmap instance]
+     */
     Skill.prototype.__createAbilityImg = function(imageName) {
         var image = app.baseImages[imageName].clone();
         image.scaleX = image.scaleY = this.initCoords.scale;
         return image;
+    };
+
+    Skill.prototype.__createCooldownBox = function(cooldown) {
+        var cont = new createjs.Container().set({alpha: 0.7});
+        var box = new createjs.Shape();
+        box.scaleX = box.scaleY = this.initCoords.scale;
+
+        box.graphics
+            .clear()
+            .setStrokeStyle(0.5)
+            .beginStroke("black")
+            .beginFill("black")
+            .drawRoundRect(0, 0, this.initCoords.width, this.initCoords.height, 3)
+            .endFill()
+            .endStroke();
+
+        cont.addChild(box);
+
+        var fontSize = 20;
+        var text = new createjs.Text().set({
+            text: cooldown,
+            font: fontSize + 'px Arial',
+            color: 'white'
+        });
+        var w = text.getMeasuredWidth();
+        var h = text.getMeasuredHeight();
+        text.x = 0.5 * (this.initCoords.width - w);
+        text.y = 0.5 * (this.initCoords.height - h);
+        cont.addChild(text);
+        return cont;
     };
 
     Skill.prototype.__createAbilityButton = function(button) {
@@ -281,23 +331,26 @@ define([
         var self = this;
         var buttonKey = skillInfo.button;
         var text = skillInfo.text;
+        text.cooldown = skillInfo.cooldown || 0;
 
-        var _press = function(evt) {
-            image.filters = [
-                new createjs.ColorMatrixFilter(new createjs.ColorMatrix().adjustBrightness(-25))
-            ];
-            image.cache(0, 0, self.initCoords.width, self.initCoords.height);
-            setTimeout(function() {
-                image.uncache();
-            }, 125);
-            return false;
-        };
-        window.addEventListener("keydown", function(evt) {
-            if (evt.key == buttonKey) {
-                return _press(evt);
-            }
-        });
-        image.on('click', _press);
+        if (text.cooldown > 0) {
+            var _press = function(evt) {
+                image.filters = [
+                    new createjs.ColorMatrixFilter(new createjs.ColorMatrix().adjustBrightness(-25))
+                ];
+                image.cache(0, 0, self.initCoords.width, self.initCoords.height);
+                setTimeout(function() {
+                    image.uncache();
+                }, 125);
+                return false;
+            };
+            window.addEventListener("keydown", function(evt) {
+                if (evt.key == buttonKey) {
+                    return _press(evt);
+                }
+            });
+            image.on('click', _press);
+        }
         image.on('mouseover', function(evt) {
 
             if (!image.hasOwnProperty('skillDescription')) {
@@ -311,8 +364,9 @@ define([
         });
     };
 
-    Skill.prototype.remove = function(shape) {
-        this.container.removeChild(shape);
+    Skill.prototype.remove = function() {
+        var cont = this.container.children.pop();
+        this.container.removeChild(cont);
     };
 
     Skill.prototype.clear = function() {
@@ -323,15 +377,15 @@ define([
         var skill = new Skill();
         // TODO: Add skills in future;
         skill.add({
-            imageName: 'spell-runner',
+            imageName: 'spell-invision',
             button: 'q',
+            cooldown: 5,
             text: {
                 header: 'FIRST ABILITY',
                 typeEffects: [
                     {type: 'ABILITY', description: 'Units'},
                     {type: 'AFFECTS', description: 'Creeps'},
                 ],
-                cooldown: 3,
                 consumer: {
                     type: "AP",
                     value: 10
@@ -339,31 +393,31 @@ define([
             }
         });
         skill.add({
-            imageName: 'spell-invision',
+            imageName: 'spell-runner',
             button: 'w',
+            // cooldown: 5,
             text: {
                 header: 'SECOND ABILITY',
                 typeEffects: [
                     {type: 'ABILITY', description: 'Units'},
                     {type: 'AFFECTS', description: 'Creeps'},
                 ],
-                // cooldown: 5,
                 consumer: {
-                    type: "HP",
-                    value: -5
+                    type: "BONUS",
+                    value: "Ability to run"
                 }
             }
         });
         skill.add({
             imageName: 'spell-headbones',
             button: 'e',
+            cooldown: 5,
             text: {
                 header: 'THIRD ABILITY',
                 typeEffects: [
                     {type: 'ABILITY', description: 'Units'},
                     {type: 'AFFECTS', description: 'Creeps'},
                 ],
-                cooldown: 7,
                 consumer: {
                     type: "AP",
                     value: 10
@@ -373,16 +427,16 @@ define([
         skill.add({
             imageName: 'spell-night',
             button: 'r',
+            // cooldown: 5,
             text: {
                 header: 'FOURTH ABILITY',
                 typeEffects: [
                     {type: 'ABILITY', description: 'Units'},
                     {type: 'AFFECTS', description: 'Creeps'},
                 ],
-                cooldown: 2,
                 consumer: {
-                    type: "AP",
-                    value: 10
+                    type: "DMG",
+                    value: "+300%"
                 }
             }
         });
