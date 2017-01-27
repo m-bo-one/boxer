@@ -13,6 +13,16 @@ cdef extern from "math.h":
     double sqrt(double x)
 
 
+@cython.cdivision(True)
+cdef _centralize_cell(tuple cell, double cell_size):
+    cdef:
+        int x = (cell[0] // cell_size) * cell_size
+        int y = (cell[1] // cell_size) * cell_size
+        tuple central_cell = (x + cell_size / 2, y + cell_size / 2)
+
+    return central_cell
+
+
 cdef _get_nearest_multiple_point(tuple point, double footstep):
     cdef:
         int i
@@ -26,7 +36,7 @@ cdef _get_nearest_multiple_point(tuple point, double footstep):
         else:
             recal = t
         recal += point[i]
-        n_point.append(recal)
+        n_point.append(int(recal))
     return tuple(n_point)
 
 
@@ -102,10 +112,9 @@ cdef class Pathfinder(object):
 
     cdef list _possible_steps(self, tuple point):
         cdef:
-            int i
             list steps = []
-        for i from 0 <= i < len(self._step_funcs):
-            steps.append(self._step_funcs[i](point))
+        for k, step in self._step_funcs.items():
+            steps.append(step(point))
         return steps
 
     cdef list get_neighbors(self, tuple point):
@@ -218,17 +227,17 @@ cdef class Pathfinder(object):
             if not self.step_filters[j](end_point):
                 raise Exception('Goal point lie in filtered.')
 
-        start_point = _get_nearest_multiple_point(start_point, self.footstep)
+        cdef tuple sp = _get_nearest_multiple_point(start_point, self.footstep)
+        cdef tuple ep = _centralize_cell(end_point, self.cell_size)
 
         if self.stype == Stype.A:
-            self.a_star_search(start_point, end_point)
+            self.a_star_search(sp, ep)
         elif self.stype == Stype.BFS:
-            self.g_bfs_search(start_point, end_point)
+            self.g_bfs_search(sp, ep)
 
-        return self.reconstruct_path(start_point, end_point)
-
+        return self.reconstruct_path(sp, ep)
 
     @staticmethod
     def quicktest():
-        return Pathfinder(2, 32, Htype.euclidean, Stype.A, []) \
+        return Pathfinder(1, 32, Htype.euclidean, Stype.A, []) \
             .search((0, 0), (9000, 9000))

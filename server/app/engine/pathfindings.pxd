@@ -39,10 +39,9 @@ cdef class Pathfinder(object):
 
     cdef:
         readonly int cell_size, htype, stype
-        readonly double footstep
         readonly list step_filters
-        list _step_funcs
-        dict _came_from
+        readonly double footstep
+        dict _came_from, _step_funcs
         object __weakref__
 
     cdef tuple _centralize_cell(self, tuple cell)
