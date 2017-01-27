@@ -39,6 +39,7 @@ cdef class Pathfinder(object):
 
     cdef:
         readonly int cell_size, htype, stype
+        readonly double footstep
         readonly list step_filters
         list _step_funcs
         dict _came_from

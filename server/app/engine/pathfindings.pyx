@@ -2,9 +2,10 @@
 cimport cython
 from cpython.exc cimport PyErr_CheckSignals
 
-cimport pathfindings
-
 import heapq
+
+cimport pathfindings
+import constants as const
 
 
 cdef extern from "math.h":
@@ -12,17 +13,34 @@ cdef extern from "math.h":
     double sqrt(double x)
 
 
+cdef _get_nearest_multiple_point(tuple point, double footstep):
+    cdef:
+        int i
+        int point_length = len(point)
+
+    n_point = []
+    for i from 0 <= i < point_length:
+        t = point[i] % footstep
+        if t > 0:
+            recal = footstep - t
+        else:
+            recal = t
+        recal += point[i]
+        n_point.append(recal)
+    return tuple(n_point)
+
+
 cdef class Queue(object):
 
     def __cinit__(self):
         self.elements = []
-    
+
     cdef bint empty(self):
         return len(self.elements) == 0
-    
+
     cdef void put(self, tuple item):
         self.elements.append(item)
-    
+
     cdef tuple get(self):
         return self.elements.pop()
 
@@ -44,8 +62,9 @@ cdef class PriorityQueue(object):
 
 cdef class Pathfinder(object):
 
-    def __cinit__(self, int cell_size, int htype, int stype,
+    def __cinit__(self, double footstep, int cell_size, int htype, int stype,
                   list step_filters):
+        self.footstep = footstep
         self.cell_size = cell_size
         self.htype = htype
         self.stype = stype
@@ -54,20 +73,25 @@ cdef class Pathfinder(object):
             lambda tuple point: (0 <= point[0] < 10000 and
                                  0 <= point[1] < 10000))
         self._came_from = {}
-        self._step_funcs = [
-            lambda tuple p: (
-                <double>p[0] - 1.0, <double>p[1]
-            ),
-            lambda tuple p: (
-                <double>p[0] + 1.0, <double>p[1]
-            ),
-            lambda tuple p: (
-                <double>p[0], <double>p[1] - 1.0
-            ),
-            lambda tuple p: (
-                <double>p[0], <double>p[1] + 1.0
-            )
-        ]
+        self._step_funcs = {
+            const.Direction.W: lambda tuple p: (<double>p[0] - self.footstep,
+                                                <double>p[1]),
+            const.Direction.E: lambda tuple p: (<double>p[0] + self.footstep,
+                                                <double>p[1]),
+            const.Direction.N: lambda tuple p: (<double>p[0],
+                                                <double>p[1] - self.footstep),
+            const.Direction.S: lambda tuple p: (<double>p[0],
+                                                <double>p[1] + self.footstep),
+
+            const.Direction.SW: lambda tuple p: (<double>p[0] + self.footstep,
+                                                 <double>p[1] + self.footstep),
+            const.Direction.SE: lambda tuple p: (<double>p[0] - self.footstep,
+                                                 <double>p[1] + self.footstep),
+            const.Direction.NE: lambda tuple p: (<double>p[0] - self.footstep,
+                                                 <double>p[1] - self.footstep),
+            const.Direction.NW: lambda tuple p: (<double>p[0] + self.footstep,
+                                                 <double>p[1] - self.footstep),
+        }
 
     @cython.cdivision(True)
     cdef tuple _centralize_cell(self, tuple cell):
@@ -194,6 +218,8 @@ cdef class Pathfinder(object):
             if not self.step_filters[j](end_point):
                 raise Exception('Goal point lie in filtered.')
 
+        start_point = _get_nearest_multiple_point(start_point, self.footstep)
+
         if self.stype == Stype.A:
             self.a_star_search(start_point, end_point)
         elif self.stype == Stype.BFS:
@@ -204,5 +230,5 @@ cdef class Pathfinder(object):
 
     @staticmethod
     def quicktest():
-        return Pathfinder(32, Htype.euclidean, Stype.A, []) \
+        return Pathfinder(2, 32, Htype.euclidean, Stype.A, []) \
             .search((0, 0), (9000, 9000))

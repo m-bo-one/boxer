@@ -71,6 +71,7 @@ class CharacterModel(object):
             self.cmd = CmdModel.get_last_or_create(self.id)
             # self.cm = CollisionManager(self,
             #                            pipelines=self.collision_pipeline)
+            # self.pf = Pathfinder(2, 32, 3, 2, [])
 
         self._pool.spawn(self.restore_AP)
 
@@ -111,6 +112,7 @@ class CharacterModel(object):
                    display=display, inventory=[])
         char.save()
         char.cmd = CmdModel.get_last_or_create(char.id)
+        # self.pf = Pathfinder(2, 32, 3, 2, [])
         # char.cm = CollisionManager(char, pipelines=char.collision_pipeline)
         return char
 
@@ -466,6 +468,7 @@ class CharacterModel(object):
             return
         self.stop()
 
+        # path = self.pf.search(self.coords, point)
         pf = Pathfinder.build_path(self, point, 'A*')
 
         def _move(pf):
