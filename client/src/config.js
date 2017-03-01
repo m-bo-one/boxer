@@ -6,5 +6,5 @@ define([''], function() {
             PORT: 9999
         },
         DEBUG: false
-    }
+    };
 });

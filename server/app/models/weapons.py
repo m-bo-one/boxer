@@ -161,7 +161,7 @@ class TurretGun(BaseWeapon):
     CRIT_MULTIPLIER = 2
     SHOOT_TIME = 1.5
     CHARGE_TYPE = 'bullet'
-    DELAY = 1
+    DELAY = 0.15
 
     @property
     def SOUND(self):

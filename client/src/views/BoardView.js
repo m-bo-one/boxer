@@ -42,7 +42,7 @@ define([
                     break;
                 // button 'Q'
                 case 81:
-                    // app.currentCharacter.model.stealth();
+                    app.currentCharacter.model.stealth();
                     break;
                 // button 'W'
                 case 87:

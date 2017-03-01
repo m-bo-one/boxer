@@ -57,7 +57,9 @@ class Turret(object):
         targets = filter(self.in_range, targets)
         new_target = None
         for target in targets:
-            if target and target.is_dead:
+            if target and (
+                target.is_dead or target.display == const.Display.Hidden
+            ):
                 continue
             if not new_target or (
                 self._multiply_vector((new_target.x,

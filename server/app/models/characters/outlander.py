@@ -1,5 +1,3 @@
-import logging
-
 import constants as const
 
 from .base import CharacterModel, autosave
@@ -36,7 +34,8 @@ class Outlander(CharacterModel):
 
     @autosave
     def stealth(self):
-        if (self.operations_blocked or
+        if (self.is_dead or
+           self.operations_blocked or
            self.AP - const.STEALTH_AP < 0 or
            not self.is_allowed('equip')):
             return

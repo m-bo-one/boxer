@@ -369,7 +369,7 @@ class CharacterModel(object):
 
             def _heal(target):
                 logging.info('Health before heal: %s', target.health)
-                target.health += random.randrange(10, 20, 1)
+                target.health += int(target.max_health * 3 * 0.01) + 1
                 logging.info('Health before heal: %s', target.health)
                 if target.health > target.max_health:
                     target.health = target.max_health
