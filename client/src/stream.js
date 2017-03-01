@@ -77,11 +77,7 @@ define([
                     if (!app.turrets[turrets[k].id]) {
                         app.turrets[turrets[k].id] = new app.TurretModel(turrets[k]);                       
                     }
-                    if (charId === null) {
-                        continue;
-                    }
-                    if (app.characters.hasOwnProperty(charId) &&
-                        app.turrets[turrets[k].id]) {
+                    if (app.turrets[turrets[k].id]) {
                         app.turrets[turrets[k].id].refreshData(turrets[k]);
                     }
                 }

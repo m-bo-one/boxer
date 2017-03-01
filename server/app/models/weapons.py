@@ -78,6 +78,7 @@ class Weapon(object):
             const.Weapon.Unarmed: Unarmed,
             const.Weapon.Heavy: Heavy,
             const.Weapon.Rifle: Rifle,
+            const.Weapon.TurretGun: TurretGun
         }
         self.name = name
         self.w = _weapons[const.Weapon(name)]()
@@ -103,8 +104,12 @@ class BaseWeapon(object):
         if random.randrange(100) < self.CRIT_CHANCE:
             calc_damage *= self.CRIT_MULTIPLIER
 
-        detected._delayed_command(0.5, 'got_hit', self.user,
-                                  calc_damage).get()
+        if not self.DELAY:
+            detected.got_hit(self.user, calc_damage)
+        else:
+            detected._delayed_command(self.DELAY,
+                                      'got_hit', self.user,
+                                      calc_damage).get()
 
 
 class Unarmed(BaseWeapon):
@@ -115,6 +120,7 @@ class Unarmed(BaseWeapon):
     CRIT_MULTIPLIER = 1
     SHOOT_TIME = 1
     CHARGE_TYPE = ''
+    DELAY = 1
 
 
 class Rifle(BaseWeapon):
@@ -125,6 +131,7 @@ class Rifle(BaseWeapon):
     CRIT_MULTIPLIER = 2
     SHOOT_TIME = 0.8
     CHARGE_TYPE = 'bullet'
+    DELAY = 0.5
 
     @property
     def SOUND(self):
@@ -139,6 +146,22 @@ class Heavy(BaseWeapon):
     CRIT_MULTIPLIER = 3
     SHOOT_TIME = 1.1
     CHARGE_TYPE = 'bullet'
+    DELAY = 0.5
+
+    @property
+    def SOUND(self):
+        return random.choice(['fire'])
+
+
+class TurretGun(BaseWeapon):
+
+    DMG = (5, 8)
+    RANGE = 200  # px
+    CRIT_CHANCE = 15  # persent
+    CRIT_MULTIPLIER = 2
+    SHOOT_TIME = 1.5
+    CHARGE_TYPE = 'bullet'
+    DELAY = 0.15
 
     @property
     def SOUND(self):

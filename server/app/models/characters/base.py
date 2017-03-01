@@ -283,7 +283,6 @@ class CharacterModel(object):
         self.weapon.shoot(other)
 
         self._delayed_command(self.weapon.w.SHOOT_TIME, 'stop')
-        # self._delayed_command(1, 'restore_AP')
 
     @autosave
     def stealth(self):
@@ -331,10 +330,12 @@ class CharacterModel(object):
 
     @autosave
     def got_hit(self, shooter, dmg):
-        logging.info('Health before hit: %s', self.health)
-        rdmg = self.armor.reduce_damage(shooter.weapon, dmg)
-        self.health -= rdmg
-        logging.info('Health after hit: %s', self.health)
+        if not self.is_dead:
+            logging.info('Health before hit: %s', self.health)
+            rdmg = self.armor.reduce_damage(shooter.weapon, dmg)
+            self.health -= rdmg
+            logging.info('Health after hit: %s', self.health)
+
         if self.is_dead:
             self.kill()
             shooter.update_scores()

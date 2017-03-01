@@ -93,7 +93,14 @@ class GameApplication(WebSocketApplication):
 
 def pre_loader():
     local_db.setdefault('characters', {})
-    local_db.setdefault('turrets', [Turret()])
+    local_db.setdefault('turrets', [
+        Turret(),
+        Turret(x=local_db['map_size']['width'] / 2 + 300),
+        Turret(x=local_db['map_size']['width'] / 2 + 150,
+               y=local_db['map_size']['height'] / 2 + 150),
+        Turret(x=local_db['map_size']['width'] / 2 + 150,
+               y=local_db['map_size']['height'] / 2 - 150),
+    ])
 
 
 def main_ticker(server):

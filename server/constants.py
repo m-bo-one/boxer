@@ -67,6 +67,8 @@ class Weapon(IntEnum):
     SMG = 9
     Spear = 10
 
+    TurretGun = 11
+
 
 class Action(IntEnum):
 
