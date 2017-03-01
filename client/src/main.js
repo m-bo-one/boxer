@@ -68,5 +68,6 @@ requirejs([
     'appApi/constants',
     'appApi/login',
     'appModels/characters',
+    'appModels/turrets',
     'appViews/sprites',
 ]);

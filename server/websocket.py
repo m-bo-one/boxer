@@ -15,7 +15,7 @@ from geventwebsocket import (
 from conf import settings
 from utils import setup_logging
 from db import local_db
-from app.models import CharacterModel, Outlander
+from app.models import CharacterModel, Outlander, Turret
 from app.engine import spatial_hash, TiledReader
 
 
@@ -91,11 +91,19 @@ class GameApplication(WebSocketApplication):
         self.user.stealth()
 
 
-def main_ticker(server):
+def pre_loader():
     local_db.setdefault('characters', {})
+    local_db.setdefault('turrets', [Turret()])
+
+
+def main_ticker(server):
+    pre_loader()
     while True:
         gevent.sleep(0.01)
         data = {
+            'ai': {
+                'turrets': Turret.get_all()
+            },
             'users': {
                 'update': [
                     char.to_dict()

@@ -40,9 +40,5 @@ class Outlander(CharacterModel):
            self.AP - const.STEALTH_AP < 0 or
            not self.is_allowed('equip')):
             return
-        # self._clear_greenlets()
-        # self.stop()
         self.use_AP(const.STEALTH_AP)
         self.display_toggle()
-
-        # self._delayed_command(1, 'restore_AP')

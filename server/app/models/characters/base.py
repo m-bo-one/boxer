@@ -7,11 +7,10 @@ import json
 import time
 
 import gevent
-from gevent import Timeout
 from gevent.pool import Pool
 
 from utils import lookahead
-from db import redis_db
+from db import redis_db, local_db
 import constants as const
 from .commands import CmdModel, field_extractor
 from ..weapons import Weapon
@@ -27,6 +26,8 @@ def autosave(func):
         self.cmd = CmdModel.create(self.id, self.cmd.x, self.cmd.y,
                                    self.cmd.action, self.cmd.direction)
         self.save()
+        for turret in local_db['turrets']:
+            turret.detect_target(local_db['characters'].values())
         return result
     return wrapper
 

@@ -43,13 +43,14 @@ define([
                 app.characters[data.id]['hud'] = new HudView({app: app});
             });
             ws.on('users_map', function(data) {
+                var charId, updateData;
                 if (app.currentCharacter) {
                     app.currentCharacter.hud.trigger('updateOnline', data.count);
                 }
 
                 for (var j = 0; j < data.users.update.length; j++) {
-                    var charId = data.users.update[j].id;
-                    var updateData = data.users.update[j];
+                    charId = data.users.update[j].id;
+                    updateData = data.users.update[j];
 
                     if (app.characters.hasOwnProperty(charId)) {
                         app.characters[charId]['model'].refreshData(updateData);
@@ -68,6 +69,20 @@ define([
                             app.characters[removeId][key].destroy();
                         }
                         delete app.characters[removeId];
+                    }
+                }
+                for (var k = 0; k < data.ai.turrets.length; k++) {
+                    var turrets = data.ai.turrets;
+                    charId = turrets[k].target;
+                    if (!app.turrets[turrets[k].id]) {
+                        app.turrets[turrets[k].id] = new app.TurretModel(turrets[k]);                       
+                    }
+                    if (charId === null) {
+                        continue;
+                    }
+                    if (app.characters.hasOwnProperty(charId) &&
+                        app.turrets[turrets[k].id]) {
+                        app.turrets[turrets[k].id].refreshData(turrets[k]);
                     }
                 }
             });

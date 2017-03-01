@@ -17,6 +17,7 @@ define(['config', 'jquery', 'backbone', 'easel'], function(config, $, Backbone) 
     app.ctx = app.canvas.getContext("2d");
     app.keys = {};
     app.characters = {};
+    app.turrets = {};
     app.shootMode = false;
     app.currentCharacter = null;
     app.stage = new createjs.Stage(app.canvas);

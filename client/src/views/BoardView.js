@@ -18,8 +18,8 @@ define([
 
             if (stage.mouseY > 675) return false;
             app.currentCharacter.model.move([stage.mouseX, stage.mouseY]);
-            console.log("X: " + stage.mouseX);
-            console.log("Y: " + stage.mouseY);
+            // console.log("X: " + stage.mouseX);
+            // console.log("Y: " + stage.mouseY);
         },
         onKeyUp: function(evt) {
             app.keys[evt.keyCode] = true;
