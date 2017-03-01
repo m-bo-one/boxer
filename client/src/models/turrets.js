@@ -31,6 +31,18 @@ require([
 
             this.line = new createjs.Shape();
             app.stage.addChild(this.line);
+
+            this.music = null;
+        },
+
+        _musicRepeater: function() {
+            if (this.music) return;
+            var self = this;
+            this.music = createjs.Sound.play('fire');
+            this.music.addEventListener("complete", function(instance) {
+                if (self.music) self.music.removeAllEventListeners();
+                self._musicRepeater();
+            });
         },
 
         refreshData: function(data) {
@@ -43,6 +55,8 @@ require([
                     .moveTo(this.x, this.y)
                     .lineTo(this.target.x, this.target.y)
                     .endStroke();
+
+                // this._musicRepeater();
             } else {
                 this.target = null;
                 this.line.graphics.clear();

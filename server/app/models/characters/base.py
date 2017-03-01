@@ -68,6 +68,8 @@ class CharacterModel(object):
         self.max_health = self.setup_params['health']
         self._footpace = [2, 2]
         self.display = const.Display(display)
+
+        self._killed = False
         if self.id:
             self.cmd = CmdModel.get_last_or_create(self.id)
             # self.cm = CollisionManager(self,
@@ -386,13 +388,18 @@ class CharacterModel(object):
 
     @autosave
     def kill(self):
-        self.display_show()
-        self._clear_greenlets()
-        self.cmd.action = random.choice([
-            const.Action.Riddled,
-            const.Action.Explode,
-        ])
-        self.extra_data['resurection_time'] = const.RESURECTION_TIME
+        if not self.is_dead:
+            self._killed = False
+
+        if not self._killed:
+            self.display_show()
+            self._clear_greenlets()
+            self.cmd.action = random.choice([
+                const.Action.Riddled,
+                const.Action.Explode,
+            ])
+            self.extra_data['resurection_time'] = const.RESURECTION_TIME
+            self._killed = True
 
         # self._delayed_command(const.RESURECTION_TIME, 'resurect')
 
