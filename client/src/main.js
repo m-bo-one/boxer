@@ -52,7 +52,7 @@ requirejs.config({
             deps: ['config']
         },
         stream: {
-            deps: ['app', 'appViews/HudView']
+            deps: ['app', 'appViews/HudView', 'appViews/WeaponVisionView']
         },
         preloader: {
             deps: ['app', 'stream', 'appViews/BoardView']

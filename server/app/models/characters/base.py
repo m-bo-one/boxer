@@ -144,7 +144,8 @@ class CharacterModel(object):
             'operations': self.operations,
             'AP': self.AP,
             'max_AP': self.max_AP,
-            'steps': self.steps
+            'steps': self.steps,
+            'weapon_range': self.weapon.w.RANGE
         }
 
     # @property
@@ -362,14 +363,15 @@ class CharacterModel(object):
             self.AP - const.HEAL_AP >= 0,
             self.is_allowed('heal')
         ]):
-
+            self.display_show()
             self.cmd.action = const.Action.Heal
             self.block_operation('heal')
             self.use_AP(const.HEAL_AP)
 
             def _heal(target):
                 logging.info('Health before heal: %s', target.health)
-                target.health += int(target.max_health * 3 * 0.01) + 1
+                target.health += int(target.max_health * const.HEAL_PERCENT *
+                                     0.01) + 1
                 logging.info('Health before heal: %s', target.health)
                 if target.health > target.max_health:
                     target.health = target.max_health

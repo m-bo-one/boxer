@@ -1,9 +1,10 @@
 define([
     'app',
     'appViews/HudView',
+    'appViews/WeaponVisionView',
     'backbone',
     'underscore'
-], function(app, HudView, Backbone, _) {
+], function(app, HudView, WeaponVisionView, Backbone, _) {
 
     var Stream = function(app) {};
 
@@ -23,7 +24,7 @@ define([
 
             Stream.send('register_user',
                         {'uid': localStorage.getItem('uid'),
-                         'token': localStorage.getItem('token')})
+                         'token': localStorage.getItem('token')});
 
             ws.onmessage = function(evt) {
                 var answer = JSON.parse(evt.data);
@@ -32,15 +33,16 @@ define([
             };
             ws.on('register_user', function(data) {
                 app.characters[data.id] = {};
-                app.characters[data.id]['model'] = new app.CharacterModel(data);
+                app.characters[data.id].model = new app.CharacterModel(data);
 
                 app.currentCharacter = app.characters[data.id];
                 // TODO: Maybe revert back to model??
-                app.characters[data.id]['sprite'] = new app.SpriteView({
+                app.characters[data.id].sprite = new app.SpriteView({
                     model: app.currentCharacter.model
                 });
 
-                app.characters[data.id]['hud'] = new HudView({app: app});
+                app.characters[data.id].hud = new HudView({app: app});
+                app.characters[data.id].vision = new WeaponVisionView({app: app});
             });
             ws.on('users_map', function(data) {
                 var charId, updateData;
@@ -53,12 +55,12 @@ define([
                     updateData = data.users.update[j];
 
                     if (app.characters.hasOwnProperty(charId)) {
-                        app.characters[charId]['model'].refreshData(updateData);
+                        app.characters[charId].model.refreshData(updateData);
                     } else {
                         app.characters[charId] = {};
-                        app.characters[charId]['model'] = new app.CharacterModel(updateData);
-                        app.characters[charId]['sprite'] = new app.SpriteView({
-                            model: app.characters[charId]['model']
+                        app.characters[charId].model = new app.CharacterModel(updateData);
+                        app.characters[charId].sprite = new app.SpriteView({
+                            model: app.characters[charId].model
                         });  
                     }
                 }

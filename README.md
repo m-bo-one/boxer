@@ -15,6 +15,9 @@ Stealth mechanics <br>
 Path finding (used A* search based on euclidean distance) <br>
 ![](https://media.giphy.com/media/l3q2LhZTFlOFiwbZe/source.gif)
 
+Turret spot target search <br>
+![](https://media.giphy.com/media/l0IxYZxQXjxCvabWE/source.gif)
+
 
 ## FUTURE PLANS:
 - Implement players game search;

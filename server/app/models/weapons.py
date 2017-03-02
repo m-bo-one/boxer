@@ -13,14 +13,16 @@ class WeaponVision(object):
         self.weapon = weapon
 
     def in_vision(self, other):
-        return other
+        return self.in_range(other)
 
     @property
     def vision_direction(self):
         pass
 
-    def _in_circle(self, other):
-        pass
+    def in_range(self, other):
+        return bool((other.x - self.user.x) ** 2 +
+                    (other.y - self.user.y) ** 2 <=
+                    self.weapon.w.RANGE ** 2)
 
     # def in_sector(self, user, other):
     #     def are_clockwise(center, radius, angle, point2):
@@ -126,7 +128,7 @@ class Unarmed(BaseWeapon):
 class Rifle(BaseWeapon):
 
     DMG = (45, 60)
-    RANGE = 180  # px
+    RANGE = 360  # px
     CRIT_CHANCE = 30  # persent
     CRIT_MULTIPLIER = 2
     SHOOT_TIME = 0.8

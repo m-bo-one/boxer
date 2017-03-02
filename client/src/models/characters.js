@@ -31,6 +31,7 @@ require([
             this.maxAP = options.max_AP;
             this.steps = options.steps;
             this.display = options.display;
+            this.weapon_range = options.weapon_range;
             this._options = options;
             this._APCallbacks = [];
         },
@@ -56,6 +57,7 @@ require([
             this.detected = options.detected;
             this.updatedAt = options.updated_at;
             this.scores = options.scores;
+            this.weapon_range = options.weapon_range;
 
             this.health = options.health;
             this.action = options.action;
