@@ -2,18 +2,24 @@ require([
     'app',
     'stream',
     'appViews/BoardView',
+    'components/tiles',
     'easel',
     'preload',
     'sound'
-], function(app, Stream, BoardView) {
+], function(app, Stream, BoardView, tiles) {
 
-    var queue, ss, s, _highlitted, app = window.app;
+    var queue, ss, s, _highlitted;
 
     app.baseSprites = {};
     app.baseImages = {};
 
     var onPreloadFile = function(evt) {
         switch (evt.item.type) {
+            case createjs.AbstractLoader.JSON:
+                if (evt.item.id.indexOf('tileset-') > -1) {
+                    app.tilesets[evt.item.id] = new tiles.TileMap(evt.result);
+                }
+                break;
             case createjs.AbstractLoader.SPRITESHEET:
                 ss = evt.result;
                 s = new createjs.Sprite(ss);
@@ -30,7 +36,7 @@ require([
                 app.baseImages[evt.item.id] = new createjs.Bitmap(evt.result);
                 break;
         }
-    }
+    };
 
     var onPreloadComplete = function(evt) {
         createjs.Sound.muted = true;
@@ -44,7 +50,7 @@ require([
         // }
         $('.cssload-preloader').hide();
         Stream.init(app);
-    }
+    };
 
     queue = new createjs.LoadQueue(true);
     queue.setMaxConnections(20);

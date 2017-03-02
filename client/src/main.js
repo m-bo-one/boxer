@@ -55,7 +55,9 @@ requirejs.config({
             deps: ['app', 'appViews/HudView', 'appViews/WeaponVisionView']
         },
         preloader: {
-            deps: ['app', 'stream', 'appViews/BoardView']
+            deps: [
+                'app', 'stream', 'appViews/BoardView', 'components/tiles'
+            ]
         },
         appViews: {
             deps: ['components/abilities']

@@ -32,7 +32,7 @@ require(['app', 'utils', 'backbone', 'underscore', 'easel', 'tween'], function(a
             this.updateHP();
             this.updateTransparency();
 
-            if (this.model !== app.currentCharacter.model &&
+            if (app.currentCharacter && this.model !== app.currentCharacter.model &&
                 app.currentCharacter.model.actionModeEnabled() &&
                 !app.currentCharacter.model.isDead() &&
                 !this.model.isDead()) {

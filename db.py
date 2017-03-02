@@ -57,7 +57,8 @@ class DBClient(object):
                          port=settings.DATABASES['mongo']['PORT'],
                          initialize=False, username=None, password=None,
                          maxPoolSize=settings.DATABASES['mongo'][
-                            'POOL_MAX_SIZE'],
+                             'POOL_MAX_SIZE'
+                         ],
                          maxIdleTimeMS=5):
                 connection = connect(db_name, host=hostname, port=port,
                                      maxPoolSize=maxPoolSize,

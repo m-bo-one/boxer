@@ -40,7 +40,7 @@ require([
         },
         equipWeapon: function(weaponName) {
             if (this.operationsBlocked) return;
-            var weaponName = weaponName || this.weapon.name;
+            weaponName = weaponName || this.weapon.name;
             Stream.send('player_equip', {'equipment': 'weapon'});
         },
         isDead: function() {

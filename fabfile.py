@@ -10,6 +10,16 @@ from utils import get_files_from_dir
 def build_manifest():
     manifest_path = os.path.join(settings.ASSETS_PATH, 'manifest.json')
 
+    def _map_builder():
+        jsons = (fname for fname in get_files_from_dir(
+                 os.path.join(settings.ASSETS_PATH, 'tilesets'))
+                 if '.json' in fname)
+        return ({
+            "id": "tileset-" + fname.split('.')[0],
+            "type": "json",
+            "src": os.path.join("tilesets", fname)
+        } for fname in jsons)
+
     def _spell_builder():
         jsons = (fname for fname in get_files_from_dir(
                  os.path.join(settings.ASSETS_PATH, 'spells'))
@@ -21,8 +31,8 @@ def build_manifest():
         } for fname in jsons)
 
     def _image_builder():
-        jsons = (fname for fname in get_files_from_dir(
-                 settings.ASSETS_PATH) if '.png' in fname)
+        jsons = (fname for fname in get_files_from_dir(settings.ASSETS_PATH)
+                 if '.png' in fname)
         return ({
             "id": fname.split('.')[0],
             "type": "image",
@@ -53,7 +63,8 @@ def build_manifest():
             "manifest": [data for data in chain(_spritesheet_builder(),
                                                 _sound_builder(),
                                                 _image_builder(),
-                                                _spell_builder())]
+                                                _spell_builder(),
+                                                _map_builder())]
         }, manifest, indent=4)
 
 

@@ -9,17 +9,20 @@ define(['config', 'jquery', 'backbone', 'easel'], function(config, $, Backbone) 
     };
 
     window.app = {};
-    app.config = config;
-    app.canvas = document.getElementById("gameBoard");
-    app.canvas.width = 1280;
-    app.canvas.height = 768;
-    app.canvas.style.backgroundColor = "white";
-    app.ctx = app.canvas.getContext("2d");
     app.keys = {};
     app.characters = {};
     app.turrets = {};
+    app.tilesets = {};
     app.shootMode = false;
     app.currentCharacter = null;
+
+    app.config = config;
+
+    app.canvas = document.getElementById("gameBoard");
+    app.canvas.width = app.config.BOARD.width;
+    app.canvas.height = app.config.BOARD.height;
+    app.canvas.style.backgroundColor = "white";
+    app.ctx = app.canvas.getContext("2d");
     app.stage = new createjs.Stage(app.canvas);
     app.stage.enableMouseOver(10);
 

@@ -1,7 +1,4 @@
-import logging
-import math
 import random
-
 
 import constants as const
 
@@ -15,62 +12,10 @@ class WeaponVision(object):
     def in_vision(self, other):
         return self.in_range(other)
 
-    @property
-    def vision_direction(self):
-        pass
-
     def in_range(self, other):
         return bool((other.x - self.user.x) ** 2 +
                     (other.y - self.user.y) ** 2 <=
                     self.weapon.w.RANGE ** 2)
-
-    # def in_sector(self, user, other):
-    #     def are_clockwise(center, radius, angle, point2):
-    #         point1 = (
-    #             (center[0] + radius) * math.cos(math.radians(angle)),
-    #             (center[1] + radius) * math.sin(math.radians(angle))
-    #         )
-    #         return bool(-point1[0] * point2[1] + point1[1] * point2[0] > 0)
-
-    #     points = [
-    #         (other.x + (other.width / 2), other.y + (other.height / 2)),
-    #         (other.x + (other.width / 2), other.y),
-    #         (other.x + (other.width / 2), other.y + other.height),
-    #     ]
-    #     center = (user.x + (user.width / 2), user.y + (user.height / 2))
-    #     radius = self.R
-    #     angle1 = self._get_alphas(user.cmd.direction)
-    #     angle2 = self._get_alphae(user.cmd.direction)
-
-    #     logging.debug('Points: %s', points)
-    #     logging.debug('Direction: %s', user.cmd.direction)
-    #     logging.debug('Width: %s', other.width)
-    #     logging.debug('Height: %s', other.height)
-
-    #     for point in points:
-    #         rel_point = (point[0] - center[0], point[1] - center[1])
-    #         is_detected = bool(
-    #             not are_clockwise(center, radius, angle1, rel_point) and
-    #             are_clockwise(center, radius, angle2, rel_point) and
-    #             (rel_point[0] ** 2 + rel_point[1] ** 2 <= radius ** 2))
-    #         if is_detected:
-    #             return True
-    #     else:
-    #         return False
-
-    # def _get_alphas(self, direction):
-    #     alpha = self.alpha / 2
-    #     if direction == 'left':
-    #         return 180 - alpha
-    #     elif direction == 'right':
-    #         return -alpha
-    #     elif direction == 'top':
-    #         return -90 - alpha
-    #     elif direction == 'bottom':
-    #         return 90 - alpha
-
-    # def _get_alphae(self, direction):
-    #     return self._get_alphas(direction) + self.alpha
 
 
 class Weapon(object):

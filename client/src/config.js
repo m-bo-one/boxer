@@ -5,6 +5,10 @@ define([''], function() {
             HOST: window.location.hostname,
             PORT: 9999
         },
-        DEBUG: false
+        DEBUG: false,
+        BOARD: {
+            width: 1280,
+            height: 768
+        }
     };
 });
