@@ -63,6 +63,9 @@ define([
                     } else {
                         this._clearMods();
                     }
+                    // for (var k in app.turrets) {
+                    //     app.turrets[k].toogle();
+                    // }
                     break;
             }
             return false;

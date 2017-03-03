@@ -19,7 +19,7 @@ class Outlander(CharacterModel):
     allowed_actions = set(['stealth', 'shoot', 'move', 'heal', 'equip'])
 
     setup_params = {
-        'health': 250,
+        'health': 25000,
         'race': const.Race.Ghoul,
         'weapon': const.Weapon.Rifle,
         'armor': const.Armor.GhoulArmour,

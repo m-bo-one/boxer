@@ -102,13 +102,13 @@ class Heavy(BaseWeapon):
 
 class TurretGun(BaseWeapon):
 
-    DMG = (5, 8)
+    DMG = (5, 32)
     RANGE = 200  # px
-    CRIT_CHANCE = 15  # persent
-    CRIT_MULTIPLIER = 2
+    CRIT_CHANCE = 10  # persent
+    CRIT_MULTIPLIER = 5
     SHOOT_TIME = 1.5
     CHARGE_TYPE = 'bullet'
-    DELAY = 0.15
+    DELAY = 0.05
 
     @property
     def SOUND(self):

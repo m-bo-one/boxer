@@ -49,6 +49,9 @@ require([
         isFullHealth: function() {
             return this.health == this.maxHealth;
         },
+        needToShowVision: function() {
+            return this.equipedByWeapon() && !this.isDead() && this.shootModeEnabled();
+        },
         refreshData: function(options) {
             this._options = options;
             this.x = options.x;

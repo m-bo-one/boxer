@@ -30,7 +30,7 @@
         {
          "columns":16,
          "firstgid":1,
-         "image":"tiled_cave_1.png",
+         "image":"..\/tiled_cave_1.png",
          "imageheight":1920,
          "imagewidth":1024,
          "margin":0,
@@ -40,7 +40,7 @@
          "tileheight":32,
          "tilewidth":64
         }],
- "tilewidth":62,
+ "tilewidth":64,
  "version":1,
  "width":24
 }

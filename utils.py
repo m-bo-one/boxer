@@ -17,6 +17,22 @@ PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] == 3
 
 
+def getCartesianX(x, y):
+    return (2 * y + x) * 0.5
+
+
+def getCartesianY(x, y):
+    return (2 * y - x) * 0.5
+
+
+def getIsoX(x, y):
+    return (x - y) / 2.
+
+
+def getIsoY(x, y):
+    return float(x + y)
+
+
 def lookahead(iterable):
     """Pass through all values from the given iterable, augmented by the
     information if there are more values to come after the current one

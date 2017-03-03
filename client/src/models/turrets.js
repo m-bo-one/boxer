@@ -23,16 +23,21 @@ require([
             this.shape = new createjs.Shape();
             this.shape.graphics
                 .clear()
-                .setStrokeStyle(0.5)
-                .beginStroke("black")
+                .setStrokeStyle(1)
+                .beginStroke("grey")
                 .drawCircle(this.x, this.y, this.R)
                 .endStroke();
+            // this.shape.visible = false;
             app.stage.addChild(this.shape);
 
             this.line = new createjs.Shape();
             app.stage.addChild(this.line);
 
             this.music = null;
+        },
+
+        toogle: function() {
+            this.shape.visible = app.currentCharacter.model.needToShowVision();
         },
 
         _musicRepeater: function() {
@@ -50,8 +55,8 @@ require([
                 this.target = app.characters[data.target].model;
                 this.line.graphics
                     .clear()
-                    .setStrokeStyle(0.5)
-                    .beginStroke("black")
+                    .setStrokeStyle(1.5)
+                    .beginStroke("red")
                     .moveTo(this.x, this.y)
                     .lineTo(this.target.x, this.target.y)
                     .endStroke();

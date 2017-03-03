@@ -69,7 +69,6 @@ class CharacterModel(object):
         self._footpace = [2, 2]
         self.display = const.Display(display)
 
-        self._killed = False
         if self.id:
             self.cmd = CmdModel.get_last_or_create(self.id)
             # self.cm = CollisionManager(self,
@@ -125,8 +124,8 @@ class CharacterModel(object):
             'name': self.name,
             'race': self.race.value,
             'display': self.display.value,
-            'x': self.cmd.x,
-            'y': self.cmd.y,
+            'x': self.x,
+            'y': self.y,
             # 'width': self.width,
             # 'height': self.height,
             # 'pivot': self.pivot,
@@ -390,18 +389,14 @@ class CharacterModel(object):
 
     @autosave
     def kill(self):
-        if not self.is_dead:
-            self._killed = False
-
-        if not self._killed:
-            self.display_show()
-            self._clear_greenlets()
-            self.cmd.action = random.choice([
-                const.Action.Riddled,
-                const.Action.Explode,
-            ])
-            self.extra_data['resurection_time'] = const.RESURECTION_TIME
-            self._killed = True
+        self.display_show()
+        self._clear_greenlets()
+        self.cmd.action = random.choice([
+            const.Action.Riddled,
+            const.Action.Explode,
+        ])
+        self.extra_data['resurection_time'] = const.RESURECTION_TIME
+        self._killed = True
 
         # self._delayed_command(const.RESURECTION_TIME, 'resurect')
 
@@ -521,6 +516,7 @@ class CharacterModel(object):
                      self.weapon.name.value)
 
         if self.cmd.action == const.Action.Walk:
+            # self.cmd.setIsoCoords(coords)
             self.cmd.x = coords[0]
             self.cmd.y = coords[1]
 

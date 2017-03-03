@@ -5,8 +5,9 @@ from ..weapons import Weapon
 from ..armors import Armor
 
 from conf import settings
-from db import redis_db
+from db import redis_db, local_db
 import constants as const
+from utils import getIsoX, getIsoY
 
 
 def field_extractor(inst):
@@ -30,11 +31,20 @@ class CmdModel(object):
         self.character_id = int(character_id)
         self.x = x
         self.y = y
+        # self.setIsoCoords((x, y))
         self.action = const.Action(action)
         self.direction = const.Direction(direction)
 
     def __repr__(self):
         return '<CmdModel: id - %s>' % self.id
+
+    @property
+    def isoX(self):
+        return local_db['map_size']['width'] / 2 + getIsoX((self.x, self.y))
+
+    @property
+    def isoY(self):
+        return getIsoY((self.x, self.y))
 
     @classmethod
     def create(cls, character_id,

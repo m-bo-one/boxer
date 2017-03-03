@@ -41,8 +41,8 @@ require([
     var onPreloadComplete = function(evt) {
         createjs.Sound.muted = true;
 
-        // app.stage.addChildAt(app.baseImages['map'], 0);
         app.map = new BoardView();
+        app.tilesets['tileset-cave'].initLayers();
         $(app.canvas).show();
         $('#conn_status').show();
         // if (!app.config.is_authorized) {

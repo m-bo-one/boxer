@@ -18,7 +18,7 @@ define([
          */
         init: function(mapData) {
             this.mapData = mapData;
-            this.imageId = mapData.tilesets[0].image.split('.')[0];
+            this.imageId = mapData.tilesets[0].image.split('/').pop().split('.')[0];
             this.tileset = app.baseImages[this.imageId];
             this._container = new createjs.Container();
         },
@@ -32,7 +32,7 @@ define([
             var h = this.mapData.tilesets[0].tileheight;
             var imageData = {
                 images : [
-                    this.tileset
+                    this.tileset.image
                 ],
                 frames : {
                     width : w,
@@ -48,8 +48,7 @@ define([
                     this.initLayer(layerData, tilesetSheet);
             }
             this._container.cache(0, 0, app.config.BOARD.width, app.config.BOARD.height);
-            app.stage.addChildAt(this._container, app.stage.numChildren - 1);
-            app.stage.update();
+            app.stage.addChildAt(this._container, 0);
         },
 
         /**
@@ -59,6 +58,7 @@ define([
          * @return {undefined}
          */
         initLayer: function(layerData, tilesetSheet) {
+            var coords, isoX, isoY;
             for (var y = 0; y < layerData.height; y++) {
                 for ( var x = 0; x < layerData.width; x++) {
                     // create a new Bitmap for each cell
@@ -68,12 +68,29 @@ define([
                     // tilemap data uses 1 as first value, EaselJS uses 0 (sub 1 to load correct tile)
                     cellBitmap.gotoAndStop(layerData.data[idx] - 1);
                     // isometrix tile positioning based on X Y order from Tiled
-                    cellBitmap.x = 300 + x * this.mapData.tilewidth / 2 - y * this.mapData.tilewidth / 2;
-                    cellBitmap.y = y * this.mapData.tileheight / 2 + x * this.mapData.tileheight / 2;
+                    coords = this._getIsoCoord(x, y);
+                    isoX = coords.isoX;
+                    isoY = coords.isoY;
+                    cellBitmap.x = this.mapData.tilewidth * isoX + app.config.BOARD.width / 2;
+                    cellBitmap.y = (this.mapData.tileheight / 2) * isoY;
                     // add bitmap to stage
                     this._container.addChild(cellBitmap);
                 }
             }
+        },
+
+        _getIsoCoord: function(x, y) {
+            return {
+                isoX: (x - y) / 2,
+                isoY: x + y
+            };
+        },
+
+        _getCartesianCoord: function(x, y) {
+            return {
+                x: (2 * y + x) / 2,
+                y: (2 * y - x) / 2
+            };
         }
     };
     TileMap.prototype.constructor = TileMap;

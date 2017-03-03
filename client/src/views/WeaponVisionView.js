@@ -16,7 +16,7 @@ define([
             this.sshape = new createjs.Shape().set({
                 x: this.model.currentSprite.x,
                 y: this.model.currentSprite.y,
-                visible: this.model.equipedByWeapon() && !this.model.isDead()
+                visible: this.model.needToShowVision()
             });
             this.stage.addChild(this.sshape);
             this.model.on("change", this.render, this);
@@ -49,7 +49,7 @@ define([
                 .drawCircle(this.cx, this.cy, R)
                 .endStroke();
 
-            this.sshape.visible = this.model.equipedByWeapon() && !this.model.isDead();
+            this.sshape.visible = this.model.needToShowVision();
 
             return this;
         },

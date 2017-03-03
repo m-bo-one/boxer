@@ -95,11 +95,19 @@ def pre_loader():
     local_db.setdefault('characters', {})
     local_db.setdefault('turrets', [
         Turret(),
-        Turret(x=local_db['map_size']['width'] / 2 + 300),
-        Turret(x=local_db['map_size']['width'] / 2 + 150,
-               y=local_db['map_size']['height'] / 2 + 150),
-        Turret(x=local_db['map_size']['width'] / 2 + 150,
-               y=local_db['map_size']['height'] / 2 - 150),
+        Turret(x=local_db['map_size']['width'] / 2 + 50),
+        Turret(x=local_db['map_size']['width'] / 2 + 100),
+        Turret(x=local_db['map_size']['width'] / 2 - 50),
+        Turret(x=local_db['map_size']['width'] / 2 - 100),
+        Turret(y=local_db['map_size']['height'] / 2 + 50),
+        Turret(y=local_db['map_size']['height'] / 2 + 100),
+        Turret(y=local_db['map_size']['height'] / 2 - 50),
+        Turret(y=local_db['map_size']['height'] / 2 - 100),
+        # Turret(x=local_db['map_size']['width'] / 2 + 300),
+        # Turret(x=local_db['map_size']['width'] / 2 + 150,
+        #        y=local_db['map_size']['height'] / 2 + 150),
+        # Turret(x=local_db['map_size']['width'] / 2 + 150,
+        #        y=local_db['map_size']['height'] / 2 - 150),
     ])
 
 
