@@ -26,15 +26,15 @@ class PriorityQueue(object):
 class Pathfinder(object):
 
     dir_funcs = {
-        const.Direction.W: lambda p, s: (p[0] - s, p[1]),
-        const.Direction.E: lambda p, s: (p[0] + s, p[1]),
-        const.Direction.N: lambda p, s: (p[0], p[1] - s),
-        const.Direction.S: lambda p, s: (p[0], p[1] + s),
+        const.Direction.W: lambda p, s: (p[0] - s[0], p[1]),
+        const.Direction.E: lambda p, s: (p[0] + s[0], p[1]),
+        const.Direction.N: lambda p, s: (p[0], p[1] - s[1]),
+        const.Direction.S: lambda p, s: (p[0], p[1] + s[1]),
 
-        const.Direction.SW: lambda p, s: (p[0] + s, p[1] + s),
-        const.Direction.SE: lambda p, s: (p[0] - s, p[1] + s),
-        const.Direction.NE: lambda p, s: (p[0] - s, p[1] - s),
-        const.Direction.NW: lambda p, s: (p[0] + s, p[1] - s),
+        const.Direction.SW: lambda p, s: (p[0] + s[0], p[1] + s[1]),
+        const.Direction.SE: lambda p, s: (p[0] - s[0], p[1] + s[1]),
+        const.Direction.NE: lambda p, s: (p[0] - s[0], p[1] - s[1]),
+        const.Direction.NW: lambda p, s: (p[0] + s[0], p[1] - s[1]),
     }
 
     def __init__(self, obj, chop_directions):
@@ -55,8 +55,8 @@ class Pathfinder(object):
         steps = []
         for direction in self._aesthetics_directions(point, goal):
             try:
-                steps.append(self.dir_funcs[direction](
-                    point, self.obj._footpace[0]))
+                steps.append(self.dir_funcs[direction](point,
+                                                       self.obj._footpace))
             except KeyError:
                 pass
         return steps

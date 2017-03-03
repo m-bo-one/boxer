@@ -71,8 +71,8 @@ define([
                     coords = this._getIsoCoord(x, y);
                     isoX = coords.isoX;
                     isoY = coords.isoY;
-                    cellBitmap.x = this.mapData.tilewidth * isoX + app.config.BOARD.width / 2;
-                    cellBitmap.y = (this.mapData.tileheight / 2) * isoY;
+                    cellBitmap.x = (this.mapData.tilewidth / 2) * isoX + app.config.BOARD.width / 2;
+                    cellBitmap.y = (this.mapData.tileheight) * isoY;
                     // add bitmap to stage
                     this._container.addChild(cellBitmap);
                 }
@@ -81,8 +81,8 @@ define([
 
         _getIsoCoord: function(x, y) {
             return {
-                isoX: (x - y) / 2,
-                isoY: x + y
+                isoX: x - y,
+                isoY: (x + y) / 2
             };
         },
 

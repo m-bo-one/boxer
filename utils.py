@@ -18,19 +18,19 @@ PY3 = sys.version_info[0] == 3
 
 
 def getCartesianX(x, y):
-    return (2 * y + x) * 0.5
+    return y + x / 2.
 
 
 def getCartesianY(x, y):
-    return (2 * y - x) * 0.5
+    return y - x / 2.
 
 
 def getIsoX(x, y):
-    return (x - y) / 2.
+    return float(x - y)
 
 
 def getIsoY(x, y):
-    return float(x + y)
+    return (x + y) / 2.
 
 
 def lookahead(iterable):
