@@ -1,10 +1,11 @@
 define([
+    'config',
     'app',
     'appViews/HudView',
     'appViews/WeaponVisionView',
     'backbone',
     'underscore'
-], function(app, HudView, WeaponVisionView, Backbone, _) {
+], function(config, app, HudView, WeaponVisionView, Backbone, _) {
 
     var Stream = function(app) {};
 
@@ -16,7 +17,14 @@ define([
         app.ws.send(jData);
     };
     Stream.init = function() {
-        var ws = new WebSocket("ws://" + app.config.WS.HOST + ':' + app.config.WS.PORT + "/game");
+        var wsUrl;
+        if (config.DEBUG) {
+            wsUrl = app.config.WS.HOST + ':' + app.config.WS.PORT + "/game";
+        } else {
+            wsUrl = app.config.WS.HOST + "/game";
+        }
+        wsUrl = ((config.USE_SSL) ? "wss" : "ws") + "://" + wsUrl;
+        var ws = new WebSocket(wsUrl);
         _.extend(ws, Backbone.Events);
 
         ws.onopen = function(evt) {

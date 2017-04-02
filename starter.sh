@@ -8,6 +8,7 @@ PROJECT=boxer
 
 sudo apt-get install build-essential virtualenv
 
-virtualenv $ENV_DIR
+virtualenv -p python3 $ENV_DIR
 source $ENV_DIR/bin/activate
+bower install
 pip install -r requirements.txt

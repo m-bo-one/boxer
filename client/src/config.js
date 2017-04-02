@@ -1,5 +1,6 @@
 define([''], function() {
     return {
+        USE_SSL: false,
         FPS: 60,
         WS: {
             HOST: window.location.hostname,
