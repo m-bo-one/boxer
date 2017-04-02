@@ -9,3 +9,5 @@ static/assets/
 manifest.json
 tmp/
 server/extractor/assets/sprites/
+.env/
+settings_local.py

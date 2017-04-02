@@ -53,3 +53,9 @@ SESSION_OPTS = {
     'session.type': 'cookie',
     'session.validate_key': True
 }
+
+try:
+    from .settings_local import *
+except ImportError:
+    pass
+
