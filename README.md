@@ -19,6 +19,10 @@ Turret spot target search <br>
 ![](https://media.giphy.com/media/l0IxYZxQXjxCvabWE/source.gif)
 
 
+## Docker
+`docker-compose build boxer && docker-compose up -d`
+
+
 ## FUTURE PLANS:
 - Implement players game search;
 - Full implementation of character spec;

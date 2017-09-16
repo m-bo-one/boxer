@@ -17,12 +17,7 @@ define([
         app.ws.send(jData);
     };
     Stream.init = function() {
-        var wsUrl;
-        if (config.DEBUG) {
-            wsUrl = app.config.WS.HOST + ':' + app.config.WS.PORT + "/game";
-        } else {
-            wsUrl = app.config.WS.HOST + "/game";
-        }
+        var wsUrl = app.config.WS.HOST + ':' + app.config.WS.PORT + "/game";
         wsUrl = ((config.USE_SSL) ? "wss" : "ws") + "://" + wsUrl;
         var ws = new WebSocket(wsUrl);
         _.extend(ws, Backbone.Events);

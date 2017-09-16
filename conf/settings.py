@@ -1,7 +1,7 @@
 import os
 
-DEBUG = False
-TEMPLATE_DEBUG = False
+DEBUG = True
+TEMPLATE_DEBUG = True
 GAME = {
     'FPS': 60,
     'CELL_SIZE': 32
@@ -13,9 +13,10 @@ CLIENT_PATH = os.path.join(PROJECT_PATH, 'client')
 
 SECRET_KEY = '12ddassdakfji234hf2hfh2iuhfi23hf2'
 
-SITE_ADDRESS = ('127.0.0.1', 8080)
-WEBSOCKET_ADDRESS = ('127.0.0.1', 9999)
-ZMQ_ADDRESS = ('127.0.0.1', 5560)
+SITE_ADDRESS = ('0.0.0.0', 8080)
+WEBSOCKET_ADDRESS = ('0.0.0.0', 9999)
+ZMQ_REP_HOST = os.getenv('ZMQ_REP_HOST', '127.0.0.1')
+ZMQ_REP_PORT = 5560
 
 ASSETS_PATH = os.path.join(CLIENT_PATH, 'assets')
 ASSETS_URL = '/assets/'
@@ -32,14 +33,14 @@ ASSETS_SOUND_URL = os.path.join(ASSETS_URL, 'sounds/')
 
 DATABASES = {
     'redis': {
-        'HOST': '127.0.0.1',
-        'PORT': 6379,
+        'HOST': os.getenv('REDIS_HOST', '127.0.0.1'),
+        'PORT': int(os.getenv('REDIS_PORT', 6379)),
         'NAME': 0,
         'POOL_MAX_SIZE': 100
     },
     'mongo': {
-        'HOST': '127.0.0.1',
-        'PORT': 27017,
+        'HOST': os.getenv('MONGO_HOST', '127.0.0.1'),
+        'PORT': int(os.getenv('MONGO_PORT', 27017)),
         'NAME': 'boxer',
         'POOL_MAX_SIZE': 100
     }
@@ -58,4 +59,3 @@ try:
     from .settings_local import *
 except ImportError:
     pass
-

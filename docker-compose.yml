@@ -1,0 +1,75 @@
+version: "3"
+services:
+  boxer:
+    image: boxer
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/boxer
+    networks:
+      - boxer_net
+
+  client:
+    image: boxer
+    ports:
+     - "8080:8080"
+    expose:
+      - 5560
+    depends_on:
+      - redis
+      - mongodb
+      - queue-server
+    environment:
+      - REDIS_HOST=redis
+      - MONGO_HOST=mongodb
+      - ZMQ_REP_HOST=queue-server
+      - PYTHONPATH=/boxer
+    command: python client/run.py
+    networks:
+      - boxer_net
+
+  websocket:
+    image: boxer
+    ports:
+     - "9999:9999"
+    depends_on:
+      - redis
+      - mongodb
+    environment:
+      - REDIS_HOST=redis
+      - MONGO_HOST=mongodb
+      - PYTHONPATH=/boxer
+    command: python server/websocket.py
+    networks:
+      - boxer_net
+
+  queue-server:
+    image: boxer
+    expose:
+      - 5560
+    depends_on:
+      - redis
+      - mongodb
+    environment:
+      - REDIS_HOST=redis
+      - MONGO_HOST=mongodb
+      - PYTHONPATH=/boxer
+    command: python server/queue_server.py
+    networks:
+      - boxer_net
+
+  redis:
+    image: redis:alpine
+    networks:
+      - boxer_net
+
+  mongodb:
+    image: mongo:3.2
+    networks:
+      - boxer_net
+    environment:
+      - MONGO_URL=mongodb://mongodb:27017/
+
+networks:
+  boxer_net:

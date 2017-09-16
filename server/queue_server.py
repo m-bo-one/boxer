@@ -22,8 +22,8 @@ class EventDispatcherZMQ(object):
         self.db = mongo_db
         self._context = zmq.Context()
         self.socket = self._context.socket(zmq.REP)
-        logging.info('ZMQ: Binding address (%s, %s)', *settings.ZMQ_ADDRESS)
-        self.socket.bind("tcp://%s:%s" % settings.ZMQ_ADDRESS)
+        logging.info('ZMQ: Binding address (*:%s)', settings.ZMQ_REP_PORT)
+        self.socket.bind("tcp://*:%s" % settings.ZMQ_REP_PORT)
 
     def start(self):
         logging.info('ZMQ: Server REP starting...')

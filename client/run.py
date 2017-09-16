@@ -54,8 +54,9 @@ class BaseHttpRunner(object):
         self._context = zmq.Context()
         self.zmq_socket = self._context.socket(zmq.REQ)
         logging.info('ZMQ: Conneting to address (%s, %s)',
-                     *settings.ZMQ_ADDRESS)
-        self.zmq_socket.connect("tcp://%s:%s" % settings.ZMQ_ADDRESS)
+                     (settings.ZMQ_REP_HOST, settings.ZMQ_REP_PORT))
+        self.zmq_socket.connect("tcp://%s:%s" %
+                                (settings.ZMQ_REP_HOST, settings.ZMQ_REP_PORT))
 
     def _zmq_request(self, type, data=None):
         if data is None:
