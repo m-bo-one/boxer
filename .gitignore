@@ -1,6 +1,7 @@
 *.pyc
 *.sqlite3
 logs/
+.idea/
 *.log
 __pycache__/
 bower_components/
