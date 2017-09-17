@@ -1,0 +1,1 @@
+pip install -r requirements.txt && bower install --force && fab build_manifest && python "$1"
